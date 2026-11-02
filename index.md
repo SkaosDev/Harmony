@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: "ITE 351: AI & Applications, Project Proposal"
 ---
 
