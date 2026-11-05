@@ -1,0 +1,5 @@
+# Python 3.10+ (3.12 recommended). scikit-learn is pinned to 1.5.x: the latest
+# version supported by coremltools 8 for model conversion.
+numpy>=1.26
+pandas>=2.2
+scikit-learn==1.5.2

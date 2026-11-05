@@ -1,0 +1,44 @@
+# Datasets under terms of use (EmoPhone, UC Irvine): never commit (NFR9)
+data/*
+!data/README.md
+
+# Local training outputs (the final exported model goes to app/Harmony/Resources/)
+ml/models/
+
+# Secrets
+.env
+*.xcconfig.local
+
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.bbl
+*.blg
+build.log
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Python
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Cloudflare Worker secrets and local config
+.dev.vars
+worker/node_modules/
+worker/.wrangler/
+app/Harmony/Config.xcconfig
+
+# Claude Code personal settings (the shared .claude/settings.json is versioned)
+.claude/settings.local.json
