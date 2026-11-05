@@ -42,3 +42,10 @@ app/Harmony/Config.xcconfig
 
 # Claude Code personal settings (the shared .claude/settings.json is versioned)
 .claude/settings.local.json
+
+# IntelliJ IDEA / JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
