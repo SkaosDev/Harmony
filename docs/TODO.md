@@ -40,8 +40,8 @@
 - [x] **0.D2** Mac : Node 18+ (pour XcodeBuildMCP et wrangler). — ✔ `node -v`.
 - [x] **0.D3** Installer XcodeBuildMCP dans Claude Code. — ✔ `/mcp` le liste comme connecté.
 - [x] **0.D4** PC Windows : Python 3.12, venv, `pip install -r ml/requirements.txt`. — ✔ `python -c "import sklearn; print(sklearn.__version__)"` → 1.5.2.
-- [ ] **0.D5** Copier les vagues EmoPhone (D1, D2, D3) dans `data/emophone/` sur la machine ML. — ✔ dossier présent, absent de `git status`.
-- [ ] **0.D6** Lancer `python ml/explore_d1.py --data data/emophone/D1`. — ✔ mêmes chiffres que le Table VII.
+- [x] **0.D5** Copier les vagues EmoPhone (D1, D2, D3) dans `data/emophone/` sur la machine ML. — ✔ dossier présent, absent de `git status`.
+- [x] **0.D6** Lancer `python ml/explore_d1.py --data data/emophone/D1`. — ✔ mêmes chiffres que le Table VII.
 
 ---
 
