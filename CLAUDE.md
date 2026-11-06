@@ -95,6 +95,8 @@ Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs
 - The features computed in Swift must match `docs/PROJECT.md` §6 exactly; a change there means
   retraining and updating the golden test fixtures.
 - Unknown is not zero: a night or a period without watch data is "unknown", never 0 sleep or 0 steps.
+- NEVER add Claude as co-author of a commit: no `Co-Authored-By: Claude …` trailer (or any other
+  Claude attribution) in commit messages.
 
 ## Commands
 - ML results check: `python ml/explore_d1.py --data <path to D1>` (must reproduce Table VII).
