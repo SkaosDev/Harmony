@@ -21,9 +21,9 @@
 ### 0.B Dépôt GitHub
 - [x] **0.B1** Pousser le contenu de ce dépôt sur `SkaosDev/Harmony`. — ✔ `docs/`, `ml/`, `CLAUDE.md` visibles sur GitHub.
 - [x] **0.B2** Ajouter les 3 autres membres comme collaborateurs. — ✔ invitations acceptées.
-- [ ] **0.B3** Protéger `main` : PR obligatoire, 1 relecture. — ✔ un push direct sur `main` est refusé.
+- [x] **0.B3** Protéger `main` : PR obligatoire, 1 relecture. — ✔ un push direct sur `main` est refusé.
 - [x] **0.B4** Vérifier que `data/` est ignoré. — ✔ `git ls-files data/` n'affiche que `data/README.md`.
-- [ ] **0.B5** Créer un modèle de PR court (quoi, tâche TODO, comment vérifié). — ✔ `.github/pull_request_template.md`.
+- [x] **0.B5** Créer un modèle de PR court (quoi, tâche TODO, comment vérifié). — ✔ `.github/pull_request_template.md`.
 
 ### 0.C Comptes et accès (C)
 - [x] **0.C1** Acheter l'Apple Developer Program (99 $/an). — ✔ compte actif dans developer.apple.com.
