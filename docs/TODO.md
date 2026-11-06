@@ -13,20 +13,20 @@
 ## Phase 0 — Mise en place (5 → 9 nov.)
 
 ### 0.A Équipe et organisation
-- [ ] **0.A1** Décider qui code l'app et sur quel Mac (un seul MacBook Air déclaré). — ✔ décision écrite dans PROJECT.md §13.
-- [ ] **0.A2** Choisir un créneau de réunion hebdomadaire fixe. — ✔ créneau dans le README.
-- [ ] **0.A3** Confirmer qui prend Claude Pro (160 $ annoncés dans le rapport). — ✔ liste des 4 abonnés.
-- [ ] **0.A4** Lire ensemble PROJECT.md §3 (décisions) et §6 (contrat des features). — ✔ chacun a validé ou posé ses questions.
+- [x] **0.A1** Décider qui code l'app et sur quel Mac (un seul MacBook Air déclaré). — ✔ décision écrite dans PROJECT.md §13.
+- [x] **0.A2** Choisir un créneau de réunion hebdomadaire fixe. — ✔ créneau dans le README.
+- [x] **0.A3** Confirmer qui prend Claude Pro (160 $ annoncés dans le rapport). — ✔ liste des 4 abonnés.
+- [x] **0.A4** Lire ensemble PROJECT.md §3 (décisions) et §6 (contrat des features). — ✔ chacun a validé ou posé ses questions.
 
 ### 0.B Dépôt GitHub
-- [ ] **0.B1** Pousser le contenu de ce dépôt sur `SkaosDev/Harmony`. — ✔ `docs/`, `ml/`, `CLAUDE.md` visibles sur GitHub.
-- [ ] **0.B2** Ajouter les 3 autres membres comme collaborateurs. — ✔ invitations acceptées.
+- [x] **0.B1** Pousser le contenu de ce dépôt sur `SkaosDev/Harmony`. — ✔ `docs/`, `ml/`, `CLAUDE.md` visibles sur GitHub.
+- [x] **0.B2** Ajouter les 3 autres membres comme collaborateurs. — ✔ invitations acceptées.
 - [ ] **0.B3** Protéger `main` : PR obligatoire, 1 relecture. — ✔ un push direct sur `main` est refusé.
-- [ ] **0.B4** Vérifier que `data/` est ignoré. — ✔ `git ls-files data/` n'affiche que `data/README.md`.
+- [x] **0.B4** Vérifier que `data/` est ignoré. — ✔ `git ls-files data/` n'affiche que `data/README.md`.
 - [ ] **0.B5** Créer un modèle de PR court (quoi, tâche TODO, comment vérifié). — ✔ `.github/pull_request_template.md`.
 
 ### 0.C Comptes et accès (C)
-- [ ] **0.C1** Acheter l'Apple Developer Program (99 $/an). — ✔ compte actif dans developer.apple.com.
+- [x] **0.C1** Acheter l'Apple Developer Program (99 $/an). — ✔ compte actif dans developer.apple.com.
 - [ ] **0.C2** Enregistrer l'identifiant d'app (ex. `com.firestarter.harmony`) avec la capacité HealthKit. — ✔ App ID visible avec HealthKit coché.
 - [ ] **0.C3** Enregistrer les iPhone de l'équipe (UDID). — ✔ appareils listés dans le compte.
 - [ ] **0.C4** Créer l'app sur le dashboard Spotify for Developers (propriétaire Premium). — ✔ Client ID obtenu.
@@ -36,10 +36,10 @@
 - [ ] **0.C8** Créer un compte API (Console) et acheter un petit crédit. — ✔ une clé API existe, stockée dans un gestionnaire de mots de passe, **pas** dans le dépôt.
 
 ### 0.D Postes de travail
-- [ ] **0.D1** Mac : Xcode 27.2 + outils en ligne de commande. — ✔ `xcodebuild -version`.
-- [ ] **0.D2** Mac : Node 18+ (pour XcodeBuildMCP et wrangler). — ✔ `node -v`.
-- [ ] **0.D3** Installer XcodeBuildMCP dans Claude Code. — ✔ `/mcp` le liste comme connecté.
-- [ ] **0.D4** PC Windows : Python 3.12, venv, `pip install -r ml/requirements.txt`. — ✔ `python -c "import sklearn; print(sklearn.__version__)"` → 1.5.2.
+- [x] **0.D1** Mac : Xcode 27.2 + outils en ligne de commande. — ✔ `xcodebuild -version`.
+- [x] **0.D2** Mac : Node 18+ (pour XcodeBuildMCP et wrangler). — ✔ `node -v`.
+- [x] **0.D3** Installer XcodeBuildMCP dans Claude Code. — ✔ `/mcp` le liste comme connecté.
+- [x] **0.D4** PC Windows : Python 3.12, venv, `pip install -r ml/requirements.txt`. — ✔ `python -c "import sklearn; print(sklearn.__version__)"` → 1.5.2.
 - [ ] **0.D5** Copier les vagues EmoPhone (D1, D2, D3) dans `data/emophone/` sur la machine ML. — ✔ dossier présent, absent de `git status`.
 - [ ] **0.D6** Lancer `python ml/explore_d1.py --data data/emophone/D1`. — ✔ mêmes chiffres que le Table VII.
 
