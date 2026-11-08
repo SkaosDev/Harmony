@@ -46,6 +46,9 @@ iOS apps can only be built on a Mac.
 | Node.js 18+ (for XcodeBuildMCP now, and for `wrangler`, the Cloudflare Worker tool, later) | `node -v` |
 | XcodeBuildMCP in Claude Code: `claude mcp add -s user XcodeBuildMCP -- npx -y xcodebuildmcp@latest mcp` | `/mcp` in Claude Code lists it as connected |
 
+Before the first build, copy `app/Harmony/Config.example.xcconfig` to `app/Harmony/Config.xcconfig`
+and fill it in (see `app/README.md`); this file is ignored by Git.
+
 The simulator needs nothing more. To run the app on a real iPhone you also need:
 - your iPhone registered in the team's Apple Developer account (HealthKit does not work with a free account);
 - the Spotify app, logged in with an account added to the team's Spotify developer dashboard

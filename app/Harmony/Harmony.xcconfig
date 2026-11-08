@@ -1,0 +1,8 @@
+// Base build settings of the Harmony app target (Debug and Release).
+// Local values come from Config.xcconfig: ignored by Git, created from Config.example.xcconfig.
+// Without it the app still builds, with empty values (demo mode only).
+
+SPOTIFY_CLIENT_ID =
+WORKER_URL =
+
+#include? "Config.xcconfig"
