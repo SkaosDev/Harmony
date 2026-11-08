@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.firestarter.harmony</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>harmony</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>spotify</string>
+	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Harmony reads your heart rate, steps, heart rate variability and sleep from Apple Health to pick songs that fit your moment. Everything stays on your phone.</string>
+	<key>SpotifyClientID</key>
+	<string>$(SPOTIFY_CLIENT_ID)</string>
+	<key>WorkerURL</key>
+	<string>$(WORKER_URL)</string>
+</dict>
+</plist>

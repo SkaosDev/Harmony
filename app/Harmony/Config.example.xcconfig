@@ -1,0 +1,9 @@
+// Copy this file to Config.xcconfig (same folder; ignored by Git) and fill in the values.
+// Never commit Config.xcconfig.
+
+// Spotify for Developers dashboard > Harmony app > Client ID (TODO 0.C4).
+SPOTIFY_CLIENT_ID =
+
+// Cloudflare Worker URL (TODO 2.28). "//" starts a comment in .xcconfig files,
+// so write URLs as https:/$()/your-worker.workers.dev
+WORKER_URL =

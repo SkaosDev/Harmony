@@ -1,9 +1,15 @@
 import Testing
 @testable import Harmony
 
-/// Smoke test: the test target builds against the app module and runs.
+@MainActor
 struct HarmonyTests {
-    @Test @MainActor func appModuleIsReachable() {
-        _ = ContentView()
+    /// Smoke test: the test target builds against the app module and runs.
+    @Test func rootViewBuilds() {
+        _ = RootView()
+    }
+
+    /// The tab bar follows `docs/design/`: Home, Library, Settings, in this order.
+    @Test func tabsFollowTheDesign() {
+        #expect(AppTab.allCases.map(\.title) == ["Home", "Library", "Settings"])
     }
 }

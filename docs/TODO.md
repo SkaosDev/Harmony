@@ -49,11 +49,11 @@
 
 ### 1.APP-a Projet Xcode (R/C)
 - [x] **1.1** Créer le projet `Harmony` dans `app/` (SwiftUI, SwiftData, tests unitaires, iOS 18.0). — ✔ l'app vide se lance sur le simulateur.
-- [ ] **1.2** Activer les *synchronized folders* et créer les dossiers `App/ Features/ Core/ Services/ Resources/`. — ✔ un fichier ajouté sur disque apparaît dans Xcode sans modifier `project.pbxproj`.
-- [ ] **1.3** Capacité HealthKit + `NSHealthShareUsageDescription` dans Info.plist. — ✔ build signé sur un iPhone réel.
-- [ ] **1.4** Schéma d'URL `harmony` et `LSApplicationQueriesSchemes` = `spotify`. — ✔ ouvrir `harmony://test` dans Safari ouvre l'app.
-- [ ] **1.5** Fichier de config non versionné pour le Client ID Spotify et l'URL du Worker (`Config.xcconfig` ignoré + exemple versionné). — ✔ `git status` ne montre pas le vrai fichier.
-- [ ] **1.6** Écran racine avec les 3 onglets du design (Home, Library, Settings), contenus vides ; écran Debug accessible depuis Settings, en build Debug seulement. — ✔ navigation OK sur simulateur ; barre d'onglets conforme à `docs/design/V2-Accueil.dc.html`.
+- [x] **1.2** Activer les *synchronized folders* et créer les dossiers `App/ Features/ Core/ Services/ Resources/`. — ✔ un fichier ajouté sur disque apparaît dans Xcode sans modifier `project.pbxproj`.
+- [x] **1.3** Capacité HealthKit + `NSHealthShareUsageDescription` dans Info.plist. — ✔ build signé sur un iPhone réel.
+- [x] **1.4** Schéma d'URL `harmony` et `LSApplicationQueriesSchemes` = `spotify`. — ✔ ouvrir `harmony://test` dans Safari ouvre l'app.
+- [x] **1.5** Fichier de config non versionné pour le Client ID Spotify et l'URL du Worker (`Config.xcconfig` ignoré + exemple versionné). — ✔ `git status` ne montre pas le vrai fichier.
+- [x] **1.6** Écran racine avec les 3 onglets du design (Home, Library, Settings), contenus vides ; écran Debug accessible depuis Settings, en build Debug seulement. — ✔ navigation OK sur simulateur ; barre d'onglets conforme à `docs/design/V2-Accueil.dc.html`.
 
 ### 1.APP-b Modèle de données SwiftData (C)
 - [ ] **1.7** `Track` (spotifyId, title, artists, coverURL, source, addedAt). — ✔ test : insertion + lecture.

@@ -4,7 +4,7 @@ import SwiftUI
 struct HarmonyApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
     }
 }
