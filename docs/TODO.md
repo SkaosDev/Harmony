@@ -27,13 +27,13 @@
 
 ### 0.C Comptes et accès (C)
 - [x] **0.C1** Acheter l'Apple Developer Program (99 $/an). — ✔ compte actif dans developer.apple.com.
-- [ ] **0.C2** Enregistrer l'identifiant d'app (ex. `com.firestarter.harmony`) avec la capacité HealthKit. — ✔ App ID visible avec HealthKit coché.
-- [ ] **0.C3** Enregistrer les iPhone de l'équipe (UDID). — ✔ appareils listés dans le compte.
+- [x] **0.C2** Enregistrer l'identifiant d'app (ex. `com.firestarter.harmony`) avec la capacité HealthKit. — ✔ App ID visible avec HealthKit coché.
+- [x] **0.C3** Enregistrer les iPhone de l'équipe (UDID). — ✔ appareils listés dans le compte.
 - [x] **0.C4** Créer l'app sur le dashboard Spotify for Developers (propriétaire Premium). — ✔ Client ID obtenu.
 - [x] **0.C5** Ajouter le bundle ID iOS et l'URI de redirection (ex. `harmony://callback`). — ✔ enregistrés dans le dashboard.
 - [x] **0.C6** Ajouter les e-mails Spotify des membres (≤ 5) comme utilisateurs. — ✔ 4 utilisateurs listés.
-- [ ] **0.C7** Créer un compte Cloudflare (offre gratuite). — ✔ connexion OK.
-- [ ] **0.C8** Créer un compte API (Console) et acheter un petit crédit. — ✔ une clé API existe, stockée dans un gestionnaire de mots de passe, **pas** dans le dépôt.
+- [x] **0.C7** Créer un compte Cloudflare (offre gratuite). — ✔ connexion OK.
+- [x] **0.C8** Créer un compte API (Console) et acheter un petit crédit. — ✔ une clé API existe, stockée dans un gestionnaire de mots de passe, **pas** dans le dépôt.
 
 ### 0.D Postes de travail
 - [x] **0.D1** Mac : Xcode 27.2 + outils en ligne de commande. — ✔ `xcodebuild -version`.
