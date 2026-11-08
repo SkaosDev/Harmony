@@ -48,7 +48,7 @@
 ## Phase 1 — Fondations (→ M1, 15 nov.)
 
 ### 1.APP-a Projet Xcode (R/C)
-- [ ] **1.1** Créer le projet `Harmony` dans `app/` (SwiftUI, SwiftData, tests unitaires, iOS 18.0). — ✔ l'app vide se lance sur le simulateur.
+- [x] **1.1** Créer le projet `Harmony` dans `app/` (SwiftUI, SwiftData, tests unitaires, iOS 18.0). — ✔ l'app vide se lance sur le simulateur.
 - [ ] **1.2** Activer les *synchronized folders* et créer les dossiers `App/ Features/ Core/ Services/ Resources/`. — ✔ un fichier ajouté sur disque apparaît dans Xcode sans modifier `project.pbxproj`.
 - [ ] **1.3** Capacité HealthKit + `NSHealthShareUsageDescription` dans Info.plist. — ✔ build signé sur un iPhone réel.
 - [ ] **1.4** Schéma d'URL `harmony` et `LSApplicationQueriesSchemes` = `spotify`. — ✔ ouvrir `harmony://test` dans Safari ouvre l'app.

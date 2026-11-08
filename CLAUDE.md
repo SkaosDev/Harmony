@@ -100,6 +100,7 @@ Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs
 
 ## Commands
 - ML results check: `python ml/explore_d1.py --data <path to D1>` (must reproduce Table VII).
-- iOS build/test: through XcodeBuildMCP if installed, otherwise `xcodebuild test -scheme Harmony
-  -destination 'platform=iOS Simulator,name=iPhone 16'`.
+- iOS build/test: through XcodeBuildMCP if installed, otherwise, from the repo root,
+  `xcodebuild test -project app/Harmony.xcodeproj -scheme Harmony
+  -destination 'platform=iOS Simulator,name=iPhone 17'`.
 - Report: `cd docs && latexmk -pdf main.tex`.
