@@ -19,6 +19,7 @@ Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 | Folder | Content |
 |---|---|
 | `docs/` | LaTeX sources of the documents (IEEE template). `main.tex` holds Submission A (revised) and Submission B; `Submission-B.md` is a Markdown version. `submission-A.pdf` is the version handed in for A. |
+| `docs/design/` | The app's screens (copy of the design canvas): to reproduce exactly, see its `README.md` |
 | `app/` | iPhone app (Swift, SwiftUI) — from the implementation phase |
 | `ml/` | Python code for the song scores and the state model (`explore_d1.py` reproduces Table VII of Submission B) |
 | `data/` | **Local only, never committed** (see below) |

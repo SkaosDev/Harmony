@@ -1,0 +1,206 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "V2-APropos.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.5 About & privacy",
+   "w": 390,
+   "x": 2350,
+   "y": 2188
+  },
+  "V2-Accueil.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "3.1 Home",
+   "w": 390,
+   "x": 0,
+   "y": 1224
+  },
+  "V2-AccueilVide.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "3.2 Home \u2013 empty",
+   "w": 390,
+   "x": 470,
+   "y": 1224
+  },
+  "V2-Bibliotheque.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "5.1 My library",
+   "w": 390,
+   "x": 0,
+   "y": 2188
+  },
+  "V2-CompteSpotify.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.2 Spotify account",
+   "w": 390,
+   "x": 940,
+   "y": 2188
+  },
+  "V2-Feedback.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "4.3 Did it fit?",
+   "w": 390,
+   "x": 1880,
+   "y": 1224
+  },
+  "V2-File.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "4.2 Up next",
+   "w": 390,
+   "x": 1410,
+   "y": 1224
+  },
+  "V2-Lecture.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "4.1 Now playing",
+   "w": 390,
+   "x": 940,
+   "y": 1224
+  },
+  "V2-LectureImpossible.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "4.5 Can't play",
+   "w": 390,
+   "x": 2350,
+   "y": 1224
+  },
+  "V2-Main.dc.html": {
+   "h": 844,
+   "title": "1.1 Launch",
+   "w": 390,
+   "x": 0,
+   "y": 260,
+   "is_interactive": false
+  },
+  "V2-MesDonnees.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.4 My data",
+   "w": 390,
+   "x": 1880,
+   "y": 2188
+  },
+  "V2-Onb1-Bienvenue.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.1 Welcome",
+   "w": 390,
+   "x": 470,
+   "y": 260
+  },
+  "V2-Onb2-Comment.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.2 How it works",
+   "w": 390,
+   "x": 940,
+   "y": 260
+  },
+  "V2-Onb3-Spotify.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.3 Connect Spotify",
+   "w": 390,
+   "x": 1410,
+   "y": 260
+  },
+  "V2-Onb4-Sante.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.4 Health data",
+   "w": 390,
+   "x": 1880,
+   "y": 260
+  },
+  "V2-Onb5-Import.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.5 Library import",
+   "w": 390,
+   "x": 2350,
+   "y": 260
+  },
+  "V2-Reglages.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.1 Settings",
+   "w": 390,
+   "x": 470,
+   "y": 2188
+  },
+  "V2-Sante.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.3 Health & consents",
+   "w": 390,
+   "x": 1410,
+   "y": 2188
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-11-06T09:00:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "t5": {
+   "kind": "title1",
+   "maxW": 2740,
+   "text": "Launch + Onboarding",
+   "w": 240,
+   "x": 0,
+   "y": 0
+  },
+  "t6": {
+   "kind": "title1",
+   "maxW": 2740,
+   "text": "Home + Player",
+   "w": 240,
+   "x": 0,
+   "y": 964
+  },
+  "t7": {
+   "kind": "title1",
+   "maxW": 2740,
+   "text": "Library + Settings",
+   "w": 240,
+   "x": 0,
+   "y": 1928
+  }
+ },
+ "order": [
+  "V2-APropos.dc.html",
+  "V2-Accueil.dc.html",
+  "V2-AccueilVide.dc.html",
+  "V2-Bibliotheque.dc.html",
+  "V2-CompteSpotify.dc.html",
+  "V2-Feedback.dc.html",
+  "V2-File.dc.html",
+  "V2-Lecture.dc.html",
+  "V2-LectureImpossible.dc.html",
+  "V2-Main.dc.html",
+  "V2-MesDonnees.dc.html",
+  "V2-Onb1-Bienvenue.dc.html",
+  "V2-Onb2-Comment.dc.html",
+  "V2-Onb3-Spotify.dc.html",
+  "V2-Onb4-Sante.dc.html",
+  "V2-Onb5-Import.dc.html",
+  "V2-Reglages.dc.html",
+  "V2-Sante.dc.html"
+ ],
+ "pages": [],
+ "title": "Harmony \u2014 brand identity + screens"
+}
