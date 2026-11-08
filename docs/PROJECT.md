@@ -94,6 +94,13 @@ l'historique et l'heure, jamais selon le corps. Endel utilise le corps, mais gé
 soir → les deux premiers morceaux ont une énergie moyenne, les suivants sont de plus en plus calmes.
 S'il passe un morceau, c'est enregistré pour les prochaines files.
 
+### 2.6 Design des écrans
+Tous les écrans sont déjà dessinés (18 écrans) dans le canvas
+https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319, copié dans `docs/design/`
+(voir son `README.md`). L'app les reproduit **à l'identique**. Navigation : 3 onglets
+(Home, Library, Settings) ; le lecteur et la file s'ouvrent depuis Home ; l'écran Debug n'est
+pas dans le design (accessible depuis Settings, en build Debug seulement).
+
 ---
 
 ## 3. Décisions déjà prises (ne pas revenir dessus sans en parler)

@@ -98,6 +98,19 @@ Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs
 - NEVER add Claude as co-author of a commit: no `Co-Authored-By: Claude …` trailer (or any other
   Claude attribution) in commit messages.
 
+## UI design (source of truth)
+- Every screen of the app (onboarding, home, player, queue, library, settings…) is already
+  designed in the claude.ai canvas https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319
+  (private), copied in `docs/design/`: one `.dc.html` per screen + `README.md` (screen list,
+  matching TODO tasks, colour/font summary).
+- The app must reproduce these screens **exactly**: colours, font, sizes, spacing, corner radii,
+  texts, icons, navigation (3 tabs: Home, Library, Settings). Before writing or changing a view,
+  read the matching `docs/design/*.dc.html` and take the values from it; never guess or
+  "improve" the design. If the design and `docs/PROJECT.md` disagree, stop and ask.
+- Only for UI tasks (1.6, 3.15–3.19…): non-UI tasks keep placeholder views.
+- Design placeholders are replaced by the real Spotify cover art and the official Spotify logo
+  (NFR6). Texts still follow the hard rules above (no named emotion, no medical claim).
+
 ## Commands
 - ML results check: `python ml/explore_d1.py --data <path to D1>` (must reproduce Table VII).
 - iOS build/test: through XcodeBuildMCP if installed, otherwise `xcodebuild test -scheme Harmony

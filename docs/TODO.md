@@ -53,7 +53,7 @@
 - [ ] **1.3** Capacité HealthKit + `NSHealthShareUsageDescription` dans Info.plist. — ✔ build signé sur un iPhone réel.
 - [ ] **1.4** Schéma d'URL `harmony` et `LSApplicationQueriesSchemes` = `spotify`. — ✔ ouvrir `harmony://test` dans Safari ouvre l'app.
 - [ ] **1.5** Fichier de config non versionné pour le Client ID Spotify et l'URL du Worker (`Config.xcconfig` ignoré + exemple versionné). — ✔ `git status` ne montre pas le vrai fichier.
-- [ ] **1.6** Écran racine avec 4 onglets vides (Accueil, Lecteur, Réglages, Debug). — ✔ navigation OK sur simulateur.
+- [ ] **1.6** Écran racine avec les 3 onglets du design (Home, Library, Settings), contenus vides ; écran Debug accessible depuis Settings, en build Debug seulement. — ✔ navigation OK sur simulateur ; barre d'onglets conforme à `docs/design/V2-Accueil.dc.html`.
 
 ### 1.APP-b Modèle de données SwiftData (C)
 - [ ] **1.7** `Track` (spotifyId, title, artists, coverURL, source, addedAt). — ✔ test : insertion + lecture.
@@ -180,13 +180,13 @@
 - [ ] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
 - [ ] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
 - [ ] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
-- [ ] **3.15** Question « Ça collait ? » à la fin de la file. — ✔ réponse enregistrée.
+- [ ] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
 
-### 3.APP-c Écrans (R, textes Cy)
-- [ ] **3.16** Onboarding : connexion Spotify, explications santé, import. — ✔ parcours complet sur iPhone neuf.
-- [ ] **3.17** Accueil : 4 grands boutons, suggestion mise en avant. — ✔ ≤ 2 taps entre lancement et musique (NFR5).
-- [ ] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like. — ✔ conforme NFR6.
-- [ ] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation. — ✔ après suppression, toutes les tables sont vides (FR13).
+### 3.APP-c Écrans (R, textes Cy) — à l'identique de `docs/design/` (voir son README)
+- [ ] **3.16** Onboarding : connexion Spotify, explications santé, import (design : `V2-Main`, `V2-Onb1` à `V2-Onb5`). — ✔ parcours complet sur iPhone neuf.
+- [ ] **3.17** Accueil : 4 grands boutons, suggestion mise en avant (design : `V2-Accueil`, `V2-AccueilVide`). — ✔ ≤ 2 taps entre lancement et musique (NFR5).
+- [ ] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like (design : `V2-Lecture`, `V2-File`, `V2-LectureImpossible`). — ✔ conforme NFR6.
+- [ ] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation (design : `V2-Reglages`, `V2-CompteSpotify`, `V2-Sante`, `V2-MesDonnees`, `V2-APropos`). — ✔ après suppression, toutes les tables sont vides (FR13).
 - [ ] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR.
 
 ### 3.QA
