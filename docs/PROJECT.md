@@ -323,7 +323,7 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste.
 3. Sinon, envoyer par lots de 50 (titre + artistes seulement) au **Worker**, qui appelle le LLM
    et renvoie `{energy, positivity}` entre 0 et 1 en JSON. Réponse invalide → 0,5 / 0,5, origine
-   « LLM », utilisé en dernier.
+   « neutre » (`SongScore.origin = neutral`), utilisé en dernier.
 4. Mettre en cache : chaque morceau n'est envoyé qu'une fois.
 5. **Contrôle hors ligne** : le même prompt sur 2 000 morceaux MuSe (scores cachés au LLM) →
    corrélation et erreur moyenne, via l'API Batch (moitié prix).

@@ -76,6 +76,39 @@ struct TrackTests {
     }
 }
 
+/// TODO 1.8
+@MainActor
+struct SongScoreTests {
+    @Test func scoreRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(SongScore(spotifyId: "t1", energy: 0.8, positivity: 0.25, origin: .muse))
+        context.insert(SongScore(spotifyId: "t2", energy: 0.5, positivity: 0.5, origin: .neutral))
+        try context.save()
+
+        let scores = try context.fetch(FetchDescriptor<SongScore>(sortBy: [SortDescriptor(\.spotifyId)]))
+        #expect(scores.count == 2)
+        #expect(scores[0].spotifyId == "t1")
+        #expect(scores[0].energy == 0.8)
+        #expect(scores[0].positivity == 0.25)
+        #expect(scores[0].origin == .muse)
+        #expect(scores[1].origin == .neutral)
+    }
+
+    @Test func sameSpotifyIdKeepsOneScore() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(SongScore(spotifyId: "t1", energy: 0.5, positivity: 0.5, origin: .neutral))
+        try context.save()
+        context.insert(SongScore(spotifyId: "t1", energy: 0.9, positivity: 0.7, origin: .llm))
+        try context.save()
+
+        let scores = try context.fetch(FetchDescriptor<SongScore>())
+        #expect(scores.count == 1)
+        #expect(scores.first?.origin == .llm)
+    }
+}
+
 /// A library track with test values; only what a test cares about is a parameter.
 @MainActor
 private func makeTrack(

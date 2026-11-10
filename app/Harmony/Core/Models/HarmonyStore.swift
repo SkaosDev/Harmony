@@ -6,6 +6,7 @@ enum HarmonyStore {
     static var schema: Schema {
         Schema([
             Track.self,
+            SongScore.self,
         ])
     }
 
