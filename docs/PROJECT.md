@@ -375,6 +375,28 @@ z_log_steps_30, z_log_steps_60, z_sleep_min, hours_since_wake, sleep_unknown` (1
 | Stress : notre modèle | 0,543 | 0,514 |
 | Humeur des *autres* participants au même moment | 0,530 | – |
 
+**Résultats par vague (features v0, TODO 1.37)** — 10 nov. 2026, scikit-learn 1.5.2.
+
+| Ligne de sortie | D-1 | D-2 | D-3 |
+|---|---:|---:|---:|
+| Réponses / participants | 10 259 / 92 | 21 042 / 99 | 21 838 / 106 |
+| Nuits avec sommeil estimé | 0,66 | 0,41 | 0,78 |
+| Heure seule — AUROC ± écart / balanced accuracy | 0,530 ± 0,013 / 0,509 | 0,538 ± 0,016 / 0,509 | 0,542 ± 0,007 / 0,500 |
+| Heure + sommeil — AUROC ± écart / balanced accuracy | 0,524 ± 0,016 / 0,506 | 0,552 ± 0,026 / 0,531 | 0,540 ± 0,010 / 0,503 |
+| Heure + FC — AUROC ± écart / balanced accuracy | 0,576 ± 0,009 / 0,544 | 0,570 ± 0,014 / 0,526 | 0,593 ± 0,009 / 0,547 |
+| Heure + FC + pas — AUROC ± écart / balanced accuracy | 0,576 ± 0,008 / 0,544 | 0,571 ± 0,013 / 0,529 | 0,599 ± 0,012 / 0,553 |
+| Notre modèle — AUROC ± écart / balanced accuracy | 0,572 ± 0,005 / 0,544 | 0,576 ± 0,017 / 0,544 | 0,598 ± 0,011 / 0,551 |
+| Gradient boosting — AUROC ± écart / balanced accuracy | 0,558 ± 0,008 / 0,537 | 0,566 ± 0,024 / 0,538 | 0,589 ± 0,012 / 0,552 |
+| FC toutes les 5 min — AUROC ± écart / balanced accuracy | 0,575 ± 0,008 / 0,546 | 0,567 ± 0,014 / 0,523 | 0,591 ± 0,010 / 0,544 |
+| Stress, notre modèle — AUROC ± écart / balanced accuracy | 0,546 ± 0,018 / 0,516 | 0,530 ± 0,027 / 0,512 | 0,558 ± 0,010 / 0,529 |
+| Humeur des autres à même date/heure — AUROC ± écart | 0,521 ± 0,012 | 0,519 ± 0,012 | 0,539 ± 0,021 |
+
+Le modèle complet dépasse l'heure seule en AUROC sur les trois vagues.
+
+Le contrôle D-1 du 10 nov. donne 0,530 pour l'heure seule, 0,576 pour heure + FC et 0,572 pour
+le modèle complet, contre 0,532, 0,577 et 0,573 dans les résultats précédemment consignés ; le
+script n'a pas été ajusté pour rapprocher ces valeurs.
+
 Lecture : la FC porte l'information ; pas et sommeil n'ajoutent rien de mesurable sur D-1
 (écart < variation entre groupes ±0,015). 0,5 = hasard. Le stress est à peine prévisible → la
 situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiquement.
