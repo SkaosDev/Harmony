@@ -9,6 +9,10 @@ enum HarmonyStore {
             SongScore.self,
             HourSummary.self,
             NightSummary.self,
+            QueueRecord.self,
+            QueueItem.self,
+            FeedbackEvent.self,
+            Consent.self,
         ])
     }
 

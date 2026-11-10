@@ -202,6 +202,102 @@ struct NightSummaryTests {
     }
 }
 
+/// TODO 1.11
+@MainActor
+struct QueueAndFeedbackTests {
+    private let now = Date(timeIntervalSince1970: 1_790_050_000)
+
+    private func makeQueue() -> QueueRecord {
+        QueueRecord(
+            createdAt: now,
+            situation: .windDown,
+            startEnergy: 0.6,
+            kind: .body,
+            reason: "Evening: medium songs first, then calmer.",
+            items: [
+                QueueItem(position: 2, spotifyId: "t3", targetEnergy: 0.2, isSuggestion: true),
+                QueueItem(position: 0, spotifyId: "t1", targetEnergy: 0.6, isSuggestion: false),
+                QueueItem(position: 1, spotifyId: "t2", targetEnergy: 0.4, isSuggestion: false),
+            ]
+        )
+    }
+
+    @Test func queueRoundTripsWithOrderedItems() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let queue = makeQueue()
+        context.insert(queue)
+        try context.save()
+
+        let record = try #require(try context.fetch(FetchDescriptor<QueueRecord>()).first)
+        #expect(record.id == queue.id)
+        #expect(record.createdAt == now)
+        #expect(record.situation == .windDown)
+        #expect(record.startEnergy == 0.6)
+        #expect(record.kind == .body)
+        #expect(record.reason == "Evening: medium songs first, then calmer.")
+
+        // SwiftData relationships are unordered: the order comes from `position`.
+        let items = record.items.sorted { $0.position < $1.position }
+        #expect(items.map(\.spotifyId) == ["t1", "t2", "t3"])
+        #expect(items.map(\.targetEnergy) == [0.6, 0.4, 0.2])
+        #expect(items.map(\.isSuggestion) == [false, false, true])
+        #expect(items.allSatisfy { $0.queue?.id == queue.id })
+    }
+
+    @Test func deletingQueueDeletesItsItems() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let queue = makeQueue()
+        context.insert(queue)
+        try context.save()
+        #expect(try context.fetchCount(FetchDescriptor<QueueItem>()) == 3)
+
+        context.delete(queue)
+        try context.save()
+
+        #expect(try context.fetchCount(FetchDescriptor<QueueRecord>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<QueueItem>()) == 0)
+    }
+
+    @Test func feedbackRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let queueId = UUID()
+        context.insert(FeedbackEvent(queueId: queueId, spotifyId: "t1", event: .skip, seconds: 12, time: now))
+        // The "Did it fit?" answer is about the whole queue: no song, no seconds.
+        context.insert(FeedbackEvent(queueId: queueId, spotifyId: nil, event: .fitYes, seconds: nil, time: now))
+        try context.save()
+
+        let events = try context.fetch(FetchDescriptor<FeedbackEvent>())
+        let skip = try #require(events.first { $0.event == .skip })
+        #expect(skip.queueId == queueId)
+        #expect(skip.spotifyId == "t1")
+        #expect(skip.seconds == 12)
+        #expect(skip.time == now)
+        let fit = try #require(events.first { $0.event == .fitYes })
+        #expect(fit.queueId == queueId)
+        #expect(fit.spotifyId == nil)
+        #expect(fit.seconds == nil)
+    }
+
+    @Test func consentRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(Consent(source: .heartRate, granted: true, time: now))
+        context.insert(Consent(source: .hrv, granted: false, time: now))
+        try context.save()
+
+        let consents = try context.fetch(FetchDescriptor<Consent>())
+        #expect(consents.count == 2)
+        let heartRate = try #require(consents.first { $0.source == .heartRate })
+        #expect(heartRate.granted)
+        #expect(heartRate.time == now)
+        let hrv = try #require(consents.first { $0.source == .hrv })
+        #expect(!hrv.granted)
+    }
+}
+
 /// A library track with test values; only what a test cares about is a parameter.
 @MainActor
 private func makeTrack(
