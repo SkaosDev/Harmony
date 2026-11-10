@@ -232,6 +232,14 @@ médianes d'intervalle FC sont 0,08 min (101 participants avec mesures), 0,08 mi
 (106), soit environ 5 s. Les réponses couvrent le 8 fév.–2 avr. 2020, le 7 déc. 2020–27 janv. 2021
 et le 24 nov. 2021–11 janv. 2022 (heures KST, timestamps en ms UTC).
 
+### Identité des participants entre vagues (TODO 1.36)
+L'article dit « All three cohorts were drawn from the same university student population »
+(annexe A.2), mais ne précise pas si des personnes reviennent d'une vague à l'autre. Les `pcode`
+sont numérotés par vague ; 82/78/86 codes sont communs à D-1/D-2, D-1/D-3 et D-2/D-3, sans
+permettre d'identifier les mêmes personnes. Il faut demander confirmation à l'équipe EmoPhone.
+En attendant, tout entraînement combinant des vagues utilise un identifiant `vague + pcode`
+(ex. `D1_P050`) pour éviter de fusionner des personnes distinctes.
+
 ### 5.2 MuSe (scores des morceaux)
 - Akiki & Burghardt 2021 (doi:10.5334/johd.33), **CC BY 4.0** (redistribuable avec citation).
 - **Version utilisée : v3 sur Kaggle** (`cakiki/muse-the-musical-sentiment-dataset`, version 5 du
@@ -376,7 +384,8 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
-4. Vérifier qu'aucun participant n'apparaît dans deux vagues.
+4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
+   demander confirmation. En combinant des vagues, grouper par `vague + pcode` jusque-là.
 
 ### 6.7 Export vers l'app
 - Coefficients, moyennes, écarts-types, médianes d'imputation et **ordre des features** dans
