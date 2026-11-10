@@ -17,6 +17,6 @@ final class Consent {
 }
 
 /// The Apple Health data the app can read (PROJECT.md §10, design `V2-Sante`).
-enum HealthSignal: String, Codable {
+enum HealthSignal: String, Codable, CaseIterable {
     case heartRate, steps, sleep, hrv
 }

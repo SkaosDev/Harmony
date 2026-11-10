@@ -7,6 +7,11 @@ enum DemoMode {
     /// `UserDefaults` key of the switch.
     static let key = "demoMode"
 
+    /// The health provider of the mode: demo files, or Apple Health.
+    static func healthProvider(_ isOn: Bool) throws -> any HealthProvider {
+        isOn ? try DemoHealthProvider() : HealthKitProvider.live
+    }
+
     /// An in-memory store holding the demo library and its scores.
     static func container() throws -> ModelContainer {
         let container = try HarmonyStore.container(inMemory: true)

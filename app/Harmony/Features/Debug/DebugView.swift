@@ -3,8 +3,8 @@ import SwiftData
 import SwiftUI
 
 /// Developer screen, Debug builds only, opened from Settings (not in the design).
-/// Content: demo mode switch (TODO 1.17); Spotify outside demo mode (TODO 1.18+);
-/// current features and state (TODO 2.22).
+/// Content: demo mode switch (TODO 1.17); Apple Health (TODO 1.28+); Spotify outside demo mode
+/// (TODO 1.18+); current features and state (TODO 2.22).
 struct DebugView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Query private var tracks: [Track]
@@ -25,6 +25,7 @@ struct DebugView: View {
                 LabeledContent("Tracks", value: tracks.count, format: .number)
                 LabeledContent("Song scores", value: scores.count, format: .number)
             }
+            HealthDebugSection()
             if demoMode {
                 Section("Demo health samples, last 14 days") {
                     ForEach(Self.signals, id: \.self) { signal in
