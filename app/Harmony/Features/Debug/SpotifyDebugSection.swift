@@ -9,6 +9,7 @@ struct SpotifyDebugSection: View {
     @Environment(\.modelContext) private var context
     @Query private var tracks: [Track]
     @State private var isWorking = false
+    @State private var confirmingDisconnect = false
     @State private var message: String?
     /// Size and duration of the last import (TODO 1.27).
     @State private var lastImport: String?
@@ -23,6 +24,11 @@ struct SpotifyDebugSection: View {
                 if let lastImport {
                     LabeledContent("Last import", value: lastImport)
                 }
+                Button("Disconnect", role: .destructive) { confirmingDisconnect = true }
+                    .confirmationDialog("Disconnect from Spotify?", isPresented: $confirmingDisconnect) {
+                        Button("Disconnect", role: .destructive) { disconnect(deletingLibrary: false) }
+                        Button("Disconnect and delete library", role: .destructive) { disconnect(deletingLibrary: true) }
+                    }
             } else {
                 LabeledContent("Status", value: "Not connected")
                 Button("Connect") { run { try await auth.signIn() } }
@@ -51,6 +57,12 @@ struct SpotifyDebugSection: View {
         try context.save()
         let duration = (clock.now - start).formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 1)))
         lastImport = "\(imported.count) tracks in \(duration)"
+    }
+
+    /// TODO 1.26.
+    private func disconnect(deletingLibrary: Bool) {
+        lastImport = nil
+        run { try SpotifyProvider.live.signOut(deletingLibraryFrom: deletingLibrary ? context : nil) }
     }
 
     /// Runs a Spotify action, showing its error if any.

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 /// The real music provider: the user's Spotify account (PROJECT.md §4.3, §9).
 /// Library through the Web API (TODO 1.23+); playback through App Remote later (TODO 3.10+).
@@ -12,6 +13,16 @@ struct SpotifyProvider: MusicProvider {
 
     func signIn() async throws {
         try await auth.signIn()
+    }
+
+    /// Forgets the tokens, in the Keychain too (TODO 1.26). With a `context`, also deletes the
+    /// imported songs; their scores stay, as a cache that holds no account data.
+    func signOut(deletingLibraryFrom context: ModelContext? = nil) throws {
+        try auth.signOut()
+        if let context {
+            try context.delete(model: Track.self)
+            try context.save()
+        }
     }
 
     /// Liked songs, then the 50 top tracks of the last ~6 months and the 50 last songs played

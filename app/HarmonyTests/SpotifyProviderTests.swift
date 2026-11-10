@@ -117,6 +117,36 @@ struct SpotifyProviderTests {
         #expect(try await makeProvider().savedTracks().map(\.spotifyId) == ["id1"])
     }
 
+    /// TODO 1.26: the Keychain is empty after signing out.
+    @Test func signOutEmptiesTheKeychainAndKeepsTheLibrary() async throws {
+        defer { try? store.delete() }
+        let container = try HarmonyStore.container(inMemory: true)
+        container.mainContext.insert(Track(spotifyId: "a", title: "A", artists: ["X"], coverURL: nil, source: .saved, addedAt: now))
+        try container.mainContext.save()
+        let provider = try makeProvider()
+
+        try provider.signOut()
+
+        #expect(provider.auth.tokens == nil)
+        #expect(try store.load() == nil)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<Track>()) == 1)
+        await #expect(throws: SpotifyError.notSignedIn) { _ = try await provider.importLibrary() }
+    }
+
+    @Test func signOutCanDeleteTheLibrary() async throws {
+        defer { try? store.delete() }
+        let container = try HarmonyStore.container(inMemory: true)
+        container.mainContext.insert(Track(spotifyId: "a", title: "A", artists: ["X"], coverURL: nil, source: .saved, addedAt: now))
+        container.mainContext.insert(SongScore(spotifyId: "a", energy: 0.5, positivity: 0.5, origin: .muse))
+        try container.mainContext.save()
+
+        try makeProvider().signOut(deletingLibraryFrom: container.mainContext)
+
+        #expect(try store.load() == nil)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<Track>()) == 0)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<SongScore>()) == 1)
+    }
+
     @Test func lookUpReadsASong() async throws {
         defer { try? store.delete() }
         server.on("/v1/tracks/id1", body: trackJSON(id: "id1", name: "First Song", artists: ["Main"]))
