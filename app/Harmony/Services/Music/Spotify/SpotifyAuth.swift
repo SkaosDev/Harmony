@@ -35,6 +35,8 @@ final class SpotifyAuth {
 
     /// Nil when nobody is signed in. Read from the Keychain at launch (TODO 1.19).
     private(set) var tokens: SpotifyTokens?
+    /// The refresh under way, shared by every caller (see `refresh()`).
+    @ObservationIgnored private var refreshing: Task<SpotifyTokens, Error>?
 
     private let clientID: String
     private let store: KeychainTokenStore
@@ -80,6 +82,46 @@ final class SpotifyAuth {
         ]))
     }
 
+    /// A valid access token, refreshed first if it expires within a minute (TODO 1.20).
+    func validAccessToken() async throws -> String {
+        guard let tokens else { throw SpotifyError.notSignedIn }
+        if tokens.expiresAt.timeIntervalSince(now()) > 60 { return tokens.accessToken }
+        return try await refresh().accessToken
+    }
+
+    /// Gets a new access token with the refresh token (TODO 1.20). Callers arriving during a
+    /// refresh wait for it instead of starting another one: Spotify may replace the refresh token,
+    /// so a second request could use an old one. If Spotify refuses the refresh token
+    /// (revoked or expired), the user is signed out.
+    @discardableResult
+    func refresh() async throws -> SpotifyTokens {
+        if let refreshing { return try await refreshing.value }
+        guard let current = tokens else { throw SpotifyError.notSignedIn }
+        let task = Task {
+            defer { refreshing = nil }
+            do {
+                let new = try await requestTokens([
+                    ("grant_type", "refresh_token"),
+                    ("refresh_token", current.refreshToken),
+                    ("client_id", clientID),
+                ], previous: current)
+                try keep(new)
+                return new
+            } catch SpotifyError.http(400) {
+                try? signOut()
+                throw SpotifyError.notSignedIn
+            }
+        }
+        refreshing = task
+        return try await task.value
+    }
+
+    /// Forgets the tokens, in the Keychain too.
+    func signOut() throws {
+        try store.delete()
+        tokens = nil
+    }
+
     /// Saves the tokens in the Keychain, then uses them.
     private func keep(_ tokens: SpotifyTokens) throws {
         try store.save(tokens)
@@ -101,8 +143,9 @@ final class SpotifyAuth {
         return components.url!
     }
 
-    /// `POST /api/token`.
-    private func requestTokens(_ fields: [(String, String)]) async throws -> SpotifyTokens {
+    /// `POST /api/token`. A refresh may come back without a refresh token or scopes:
+    /// those of `previous` are kept.
+    private func requestTokens(_ fields: [(String, String)], previous: SpotifyTokens? = nil) async throws -> SpotifyTokens {
         var request = URLRequest(url: URL(string: "https://accounts.spotify.com/api/token")!)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -111,12 +154,14 @@ final class SpotifyAuth {
         let (data, response) = try await send(request)
         guard response.statusCode == 200 else { throw SpotifyError.http(response.statusCode) }
         let body = try JSONDecoder().decode(TokenResponse.self, from: data)
-        guard let refreshToken = body.refreshToken else { throw SpotifyError.loginFailed("no refresh token") }
+        guard let refreshToken = body.refreshToken ?? previous?.refreshToken else {
+            throw SpotifyError.loginFailed("no refresh token")
+        }
         return SpotifyTokens(
             accessToken: body.accessToken,
             refreshToken: refreshToken,
             expiresAt: now().addingTimeInterval(body.expiresIn),
-            scope: body.scope ?? ""
+            scope: body.scope ?? previous?.scope ?? ""
         )
     }
 

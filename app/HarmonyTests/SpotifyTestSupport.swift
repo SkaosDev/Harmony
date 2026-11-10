@@ -50,6 +50,19 @@ func makeTestStore() -> KeychainTokenStore {
     KeychainTokenStore(service: "com.firestarter.harmony.tests.\(UUID().uuidString)")
 }
 
+/// A `SpotifyAuth` already signed in with `access-1` / `refresh-1`, as after an app restart.
+@MainActor
+func makeSignedInAuth(server: StubHTTP, store: KeychainTokenStore, now: Date, expiresAt: Date) throws -> SpotifyAuth {
+    try store.save(SpotifyTokens(accessToken: "access-1", refreshToken: "refresh-1", expiresAt: expiresAt, scope: "user-library-read"))
+    return SpotifyAuth(
+        clientID: "client-123",
+        store: store,
+        send: server.send,
+        openLogin: { _ in throw SpotifyError.loginFailed("no login page in tests") },
+        now: { now }
+    )
+}
+
 /// A token response as Spotify sends it.
 func tokenJSON(access: String, refresh: String? = nil, expiresIn: Int = 3600, scope: String = "user-library-read") -> String {
     let refreshField = refresh.map { #","refresh_token":"\#($0)""# } ?? ""
