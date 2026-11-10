@@ -18,16 +18,7 @@ struct DemoMusicProvider: MusicProvider {
     func signIn() async throws {}
 
     func importLibrary() async throws -> [Track] {
-        songs.map { song in
-            Track(
-                spotifyId: song.spotifyId,
-                title: song.title,
-                artists: song.artists,
-                coverURL: nil,
-                source: song.source,
-                addedAt: now.addingTimeInterval(-Double(song.addedDaysAgo) * 86_400)
-            )
-        }
+        tracks()
     }
 
     func lookUp(spotifyId: String) async throws -> TrackInfo? {
@@ -39,6 +30,20 @@ struct DemoMusicProvider: MusicProvider {
     func play(spotifyIds: [String]) async throws {}
 
     func save(spotifyId: String) async throws {}
+
+    /// The demo library, without waiting (fills the demo store, TODO 1.17).
+    func tracks() -> [Track] {
+        songs.map { song in
+            Track(
+                spotifyId: song.spotifyId,
+                title: song.title,
+                artists: song.artists,
+                coverURL: nil,
+                source: song.source,
+                addedAt: now.addingTimeInterval(-Double(song.addedDaysAgo) * 86_400)
+            )
+        }
+    }
 
     /// Scores of the demo songs. A real library gets them from MuSe or the LLM (TODO 2.34).
     func scores() -> [SongScore] {

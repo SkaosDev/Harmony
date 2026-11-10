@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import Harmony
 
@@ -31,6 +32,21 @@ struct DemoMusicProviderTests {
         let info = try await provider.lookUp(spotifyId: track.spotifyId)
         #expect(info == TrackInfo(spotifyId: track.spotifyId, title: track.title, artists: track.artists, coverURL: nil))
         #expect(try await provider.lookUp(spotifyId: "not-a-demo-song") == nil)
+    }
+}
+
+/// TODO 1.17: demo mode runs on its own in-memory store, never on the user's real data.
+@MainActor
+struct DemoModeTests {
+    @Test func demoStoreHoldsTheDemoLibraryInMemory() throws {
+        let container = try DemoMode.container()
+        #expect(container.configurations.allSatisfy { $0.isStoredInMemoryOnly })
+
+        let tracks = try container.mainContext.fetch(FetchDescriptor<Track>())
+        let scores = try container.mainContext.fetch(FetchDescriptor<SongScore>())
+        #expect(tracks.count == 50)
+        #expect(scores.count == 50)
+        #expect(Set(scores.map(\.spotifyId)) == Set(tracks.map(\.spotifyId)))
     }
 }
 
