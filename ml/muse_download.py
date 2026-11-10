@@ -1,10 +1,15 @@
-"""Download MuSe from Zenodo and print its columns and value ranges (TODO 1.38).
+"""Download MuSe v3 from Kaggle and print its columns and value ranges (TODO 1.38).
 
-MuSe, The Musical Sentiment Dataset: doi:10.5281/zenodo.4281165, CC BY 4.0.
-Downloads every file of the Zenodo record into data/muse/ (ignored by Git), checks each MD5
-against the one published by Zenodo, then prints aggregates of the CSV only: number of rows,
-and for each column how many values are filled and their range (or the most common values).
-Files already present with the right MD5 are not downloaded again. Standard library only.
+MuSe, The Musical Sentiment Dataset (Akiki & Burghardt 2021, doi:10.5334/johd.33), CC BY 4.0.
+We use version 3 of the data, published by the authors on Kaggle
+(cakiki/muse-the-musical-sentiment-dataset, dataset version 5, file muse_v3.csv): unlike the
+Zenodo version (doi:10.5281/zenodo.4281165), it has a genre column. See docs/PROJECT.md §5.2.
+
+Downloads muse_v3.csv into data/muse/ (ignored by Git), checks its size against Kaggle and its
+SHA-256 against the value recorded below (so every team member gets the same file), then
+prints aggregates of the CSV only: number of rows, and for each column how many values are
+filled and their range (or the most common values). A correct file already present is not
+downloaded again. Standard library only.
 
     python ml/muse_download.py
 """
@@ -12,43 +17,43 @@ Files already present with the right MD5 are not downloaded again. Standard libr
 import argparse
 import csv
 import hashlib
-import json
+import io
 import statistics
 import urllib.request
+import zipfile
 from collections import Counter
 from pathlib import Path
 
-RECORD = "https://zenodo.org/api/records/4281165"
+URL = ("https://www.kaggle.com/api/v1/datasets/download/"
+       "cakiki/muse-the-musical-sentiment-dataset?datasetVersionNumber=5")
+FILE = "muse_v3.csv"
+SIZE = 18_200_150  # bytes, as listed by Kaggle
+SHA256 = "9fdba18b43c2b05187a4136bc0c0996c2cf41a3e5d55b27015131fafd410aa07"  # Nov. 10, 2026
 OUT = Path(__file__).resolve().parent.parent / "data" / "muse"
 
 
-def md5(path):
-    digest = hashlib.md5()
-    with path.open("rb") as f:
-        for block in iter(lambda: f.read(1 << 20), b""):
-            digest.update(block)
-    return digest.hexdigest()
+def sha256(data):
+    return hashlib.sha256(data).hexdigest()
 
 
 def download(out):
-    """Every file of the record, checked against Zenodo's MD5. Returns the local paths."""
-    with urllib.request.urlopen(RECORD, timeout=60) as response:
-        files = json.load(response)["files"]
-    paths = []
-    for file in files:
-        path = out / file["key"]
-        expected = file["checksum"].removeprefix("md5:")
-        if not (path.exists() and md5(path) == expected):
-            print(f"downloading {file['key']} ({file['size'] / 1e6:.1f} MB)")
-            partial = path.with_name(path.name + ".part")
-            urllib.request.urlretrieve(file["links"]["self"], partial)
-            if md5(partial) != expected:
-                partial.unlink()
-                raise SystemExit(f"{file['key']}: MD5 does not match Zenodo, file deleted")
-            partial.replace(path)
-        print(f"{file['key']}: {path.stat().st_size} bytes, md5 {expected} OK (same as Zenodo)")
-        paths.append(path)
-    return paths
+    """muse_v3.csv in `out`, checked. Returns its path."""
+    path = out / FILE
+    if not (path.exists() and path.stat().st_size == SIZE):
+        print(f"downloading {FILE} from Kaggle ({SIZE / 1e6:.1f} MB)")
+        request = urllib.request.Request(URL, headers={"User-Agent": "harmony-ml-script"})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            archive = zipfile.ZipFile(io.BytesIO(response.read()))
+        path.write_bytes(archive.read(FILE))
+    data = path.read_bytes()
+    if len(data) != SIZE:
+        raise SystemExit(f"{FILE}: {len(data)} bytes, Kaggle lists {SIZE}")
+    digest = sha256(data)
+    if SHA256 is not None and digest != SHA256:
+        raise SystemExit(f"{FILE}: SHA-256 {digest} differs from the recorded {SHA256}")
+    print(f"{FILE}: {len(data)} bytes (same as Kaggle), sha256 {digest}"
+          + (" OK (same as recorded)" if SHA256 else " (not recorded yet)"))
+    return path
 
 
 def floats(values):
@@ -83,9 +88,7 @@ def main():
     parser.add_argument("--out", type=Path, default=OUT, help="download folder (default: %(default)s)")
     out = parser.parse_args().out
     out.mkdir(parents=True, exist_ok=True)
-    for path in download(out):
-        if path.suffix == ".csv":
-            summarise(path)
+    summarise(download(out))
 
 
 if __name__ == "__main__":
