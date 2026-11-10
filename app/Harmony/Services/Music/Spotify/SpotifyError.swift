@@ -9,4 +9,6 @@ enum SpotifyError: Error, Equatable {
     case http(Int)
     /// Too many requests, and Spotify asks to wait longer than `SpotifyAPI.longestWait` seconds.
     case rateLimited(retryAfter: Int)
+    /// Playback and likes come with the Spotify SDK (TODO 3.11, 3.14).
+    case notImplemented
 }

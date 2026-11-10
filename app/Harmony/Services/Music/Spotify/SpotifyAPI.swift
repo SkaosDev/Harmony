@@ -59,10 +59,18 @@ final class SpotifyAPI {
         }
     }
 
-    /// Spotify's JSON uses snake_case keys.
+    /// Spotify's JSON uses snake_case keys and ISO 8601 dates, with fractions of a second
+    /// (`played_at`) or without (`added_at`).
     static func decoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let text = try container.decode(String.self)
+            if let date = try? Date.ISO8601FormatStyle().parse(text) { return date }
+            if let date = try? Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse(text) { return date }
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Not an ISO 8601 date: \(text)")
+        }
         return decoder
     }
 }
