@@ -216,6 +216,22 @@ Harmony/
   - 10 participants de D-1 ont des fichiers capteurs mais aucune réponse (exclus au contrôle qualité) ;
   - la montre n'était pas portée sur ~34 % des nuits.
 
+### Différences entre vagues (TODO 1.35)
+Exploration du 10 nov. 2026 : D-1/D-2/D-3 ont respectivement 10 259/21 042/21 838 réponses
+et 92/99/106 participants répondants. D-2 ajoute `intendedTriggerTime`, `valenceChange` et
+`arousalChange`, remplaçant `change` ; D-3 ajoute `intendedTriggerTime` et les huit adjectifs
+PANAS (happy, relaxed, cheerful, content, sad, anxious, depressed, angry), et ne contient plus
+attention, mental, duration ni les items de changement. Valence et arousal restent sur −3..+3
+dans les trois vagues. En D-3, stress, dérangement et les huit adjectifs sont sur 0..+6.
+
+Les archives capteurs sont au nombre de 102/112/106 ; 10/13/0 ont un fichier capteur mais aucune
+réponse, et 0/0/0 participants répondants n'ont pas d'archive. Les colonnes Fitbit restent
+`timestamp,value`. D-2 ajoute `KeyEvent.csv`, `Proximity.csv` et quatre fichiers `Fitness-*` ;
+D-3 a `KeyEvent.csv` mais pas `Proximity.csv` ni ces fichiers `Fitness-*`. Les médianes des
+médianes d'intervalle FC sont 0,08 min (101 participants avec mesures), 0,08 min (77) et 0,08 min
+(106), soit environ 5 s. Les réponses couvrent le 8 fév.–2 avr. 2020, le 7 déc. 2020–27 janv. 2021
+et le 24 nov. 2021–11 janv. 2022 (heures KST, timestamps en ms UTC).
+
 ### 5.2 MuSe (scores des morceaux)
 - Akiki & Burghardt 2021 (doi:10.5334/johd.33), **CC BY 4.0** (redistribuable avec citation).
 - **Version utilisée : v3 sur Kaggle** (`cakiki/muse-the-musical-sentiment-dataset`, version 5 du

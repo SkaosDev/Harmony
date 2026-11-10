@@ -92,7 +92,7 @@
 - [x] **1.34** Taux de port de la montre la nuit sur 3 nuits. — ✔ noté ; règle « 60 % » confirmée ou ajustée.
 
 ### 1.ML Données (L) — en parallèle de 1.APP
-- [ ] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
+- [x] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
 - [ ] **1.36** Vérifier qu'aucun participant n'est présent dans deux vagues. — ✔ résultat noté.
 - [ ] **1.37** Lancer `explore_d1.py` sur D-2 puis D-3 (adapter le préfixe de fichier si besoin). — ✔ tableau de résultats par vague.
 - [x] **1.38** Télécharger MuSe (v3, Kaggle) dans `data/muse/` ; afficher colonnes et plages de valeurs. — ✔ échelle de valence/arousal notée dans PROJECT.md §5.2.
