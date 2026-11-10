@@ -9,7 +9,7 @@ Python code for the state model and the song scores.
 | `make_demo_data.py` | Writes the app's synthetic demo data (`app/Harmony/Resources/demo/`): 14 days of watch data and 50 scored songs, from a fixed seed (no real person, no real song). Standard library only: `python ml/make_demo_data.py`. |
 | `muse_download.py` | Downloads MuSe v3 (`muse_v3.csv`, Kaggle, CC BY 4.0) into `data/muse/`, checks its size against Kaggle and its SHA-256 against the recorded one (same file for everyone), then prints the columns and value ranges (aggregates only). Standard library only: `python ml/muse_download.py`. Results and decisions: `docs/PROJECT.md` §5.2. |
 | `normalize.py` | Normalizes song titles and artists for MuSe lookup (TODO 1.40); shared cases: `ml/fixtures/normalize_cases.json`. |
-| `muse_build.py` | Builds the reduced local MuSe SQLite table with percentile scores (TODO 1.39): `python ml/muse_build.py`. |
+| `muse_build.py` | Rebuilds the ignored local SQLite file (TODO 1.39): run `python ml/muse_download.py`, then `python ml/muse_build.py`; no database file is stored in Git. |
 | `requirements.txt` | Python dependencies. |
 
 Run:

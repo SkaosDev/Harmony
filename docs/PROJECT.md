@@ -301,7 +301,10 @@ dupliqués (889 ID, 1 863 lignes), puis garde une ligne par clé titre/artiste :
 est sa clé primaire indexée, avec un index sur `spotify_id`. 89 269 lignes sont gardées, dont
 59 679 avec ID et 82 685 avec genre. Scores centiles : énergie min/médiane/max =
 0,000011/0,499717/0,999000 ; positivité = 0,000011/0,500500/1,000000.
-Le fichier fait 14 155 776 octets après `VACUUM`, donc dépasse 10 Mo : la tâche reste décochée.
+Le fichier fait 14 155 776 octets après `VACUUM`, donc dépasse 10 Mo. Il n'est pas versionné :
+`data/` est ignoré par Git. Après téléchargement du CSV avec `python ml/muse_download.py`,
+`python ml/muse_build.py` régénère cette base localement. La tâche est validée sur ce critère de
+reproductibilité locale ; le dépassement de 10 Mo reste à réduire si la taille devient bloquante.
 Le stockage `WITHOUT ROWID` avec `match_key` comme clé primaire et une taille de page de 16 Kio
 a réduit le fichier de 15 532 032 octets (table avec rowid, page 4 Kio) à 14 155 776 octets,
 sans suffire. Une compression exigeant une extension SQLite ou une représentation qui modifie le
