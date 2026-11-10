@@ -8,6 +8,7 @@ enum HarmonyStore {
             Track.self,
             SongScore.self,
             HourSummary.self,
+            NightSummary.self,
         ])
     }
 

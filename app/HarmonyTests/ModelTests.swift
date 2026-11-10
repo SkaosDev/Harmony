@@ -156,6 +156,52 @@ struct HourSummaryTests {
     }
 }
 
+/// TODO 1.10
+@MainActor
+struct NightSummaryTests {
+    private let day = Date(timeIntervalSince1970: 1_790_000_000)
+
+    @Test func nightRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let sleepEnd = day.addingTimeInterval(7 * 3600)
+        context.insert(NightSummary(date: day, sleepMinutes: 432, sleepEnd: sleepEnd, wornFraction: 0.92))
+        try context.save()
+
+        let night = try #require(try context.fetch(FetchDescriptor<NightSummary>()).first)
+        #expect(night.date == day)
+        #expect(night.sleepMinutes == 432)
+        #expect(night.sleepEnd == sleepEnd)
+        #expect(night.wornFraction == 0.92)
+    }
+
+    /// Unknown is not zero: a night without enough watch data keeps nil sleep, not 0 minutes.
+    @Test func unknownNightStaysUnknown() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(NightSummary(date: day, sleepMinutes: nil, sleepEnd: nil, wornFraction: 0.3))
+        try context.save()
+
+        let night = try #require(try context.fetch(FetchDescriptor<NightSummary>()).first)
+        #expect(night.sleepMinutes == nil)
+        #expect(night.sleepEnd == nil)
+        #expect(night.wornFraction == 0.3)
+    }
+
+    @Test func sameDateKeepsOneRow() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(NightSummary(date: day, sleepMinutes: nil, sleepEnd: nil, wornFraction: 0.4))
+        try context.save()
+        context.insert(NightSummary(date: day, sleepMinutes: 400, sleepEnd: day, wornFraction: 0.8))
+        try context.save()
+
+        let nights = try context.fetch(FetchDescriptor<NightSummary>())
+        #expect(nights.count == 1)
+        #expect(nights.first?.sleepMinutes == 400)
+    }
+}
+
 /// A library track with test values; only what a test cares about is a parameter.
 @MainActor
 private func makeTrack(
