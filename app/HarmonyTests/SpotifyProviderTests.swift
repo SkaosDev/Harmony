@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import Harmony
 
@@ -28,7 +29,51 @@ struct SpotifyProviderTests {
 
     private func makeProvider() throws -> SpotifyProvider {
         let auth = try makeSignedInAuth(server: server, store: store, now: now, expiresAt: now.addingTimeInterval(3600))
-        return SpotifyProvider(auth: auth, api: SpotifyAPI(auth: auth, send: server.send))
+        return SpotifyProvider(auth: auth, api: SpotifyAPI(auth: auth, send: server.send), now: { now })
+    }
+
+    /// Saved: a, b. Top: b, c, a local file. Recent: c, d, then d played earlier.
+    private func queueLibrary() {
+        server.on("/v1/me/tracks", body: pageJSON([savedItemJSON(trackJSON(id: "a")), savedItemJSON(trackJSON(id: "b"))]))
+        server.on("/v1/me/top/tracks", body: pageJSON(
+            [trackJSON(id: "b"), trackJSON(id: "c"), trackJSON(id: nil, isLocal: true)],
+            next: "https://api.spotify.com/v1/me/top/tracks?offset=50&limit=50"
+        ))
+        server.on("/v1/me/player/recently-played", body: pageJSON([
+            #"{"played_at":"2026-11-09T12:00:00.500Z","track":\#(trackJSON(id: "c"))}"#,
+            #"{"played_at":"2026-11-09T12:00:00.250Z","track":\#(trackJSON(id: "d"))}"#,
+            #"{"played_at":"2026-11-08T09:00:00.000Z","track":\#(trackJSON(id: "d"))}"#,
+        ]))
+    }
+
+    /// TODO 1.25: top tracks and recently played join the liked songs, without duplicates.
+    @Test func importMergesTheThreeListsWithoutDuplicates() async throws {
+        defer { try? store.delete() }
+        queueLibrary()
+
+        let tracks = try await makeProvider().importLibrary()
+
+        #expect(tracks.map(\.spotifyId) == ["a", "b", "c", "d"])
+        #expect(tracks.map(\.source) == [.saved, .saved, .top, .recent])
+        #expect(tracks[2].addedAt == now)
+        // 2026-11-09T12:00:00.250Z: the last play of d.
+        #expect(abs(tracks[3].addedAt.timeIntervalSince1970 - 1_794_225_600.25) < 0.001)
+        let top = try #require(server.requests.first { $0.url?.path() == "/v1/me/top/tracks" })
+        #expect(StubHTTP.query(top.url!) == ["limit": "50", "time_range": "medium_term"])
+        let recent = try #require(server.requests.first { $0.url?.path() == "/v1/me/player/recently-played" })
+        #expect(StubHTTP.query(recent.url!) == ["limit": "50"])
+    }
+
+    @Test func importingAgainKeepsOneRowPerSong() async throws {
+        defer { try? store.delete() }
+        let container = try HarmonyStore.container(inMemory: true)
+        let provider = try makeProvider()
+        for _ in 0..<2 {
+            queueLibrary()
+            try await provider.importLibrary().forEach(container.mainContext.insert)
+            try container.mainContext.save()
+        }
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<Track>()) == 4)
     }
 
     /// TODO 1.23: 50 per page, following `next` until the last page.

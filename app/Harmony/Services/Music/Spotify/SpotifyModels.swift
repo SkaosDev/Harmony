@@ -14,6 +14,12 @@ struct SpotifySavedItem: Decodable {
     let track: SpotifyTrack?
 }
 
+/// An item of `GET /me/player/recently-played`.
+struct SpotifyPlayedItem: Decodable {
+    let playedAt: Date
+    let track: SpotifyTrack
+}
+
 /// A song as the Web API describes it (only the fields the app uses).
 struct SpotifyTrack: Decodable {
     /// Nil for a local file.

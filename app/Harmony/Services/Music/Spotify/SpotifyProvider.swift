@@ -8,13 +8,24 @@ struct SpotifyProvider: MusicProvider {
 
     let auth: SpotifyAuth
     let api: SpotifyAPI
+    var now: () -> Date = Date.init
 
     func signIn() async throws {
         try await auth.signIn()
     }
 
+    /// Liked songs, then the 50 top tracks of the last ~6 months and the 50 last songs played
+    /// (TODO 1.25). One `Track` per song: a song in several lists keeps the first of
+    /// saved, top, recent. `addedAt` is the like date, the import date (top) or the last play.
     func importLibrary() async throws -> [Track] {
-        try await savedTracks()
+        let saved = try await savedTracks()
+        let top = try await api.get("me/top/tracks?limit=50&time_range=medium_term", as: SpotifyPage<SpotifyTrack>.self)
+            .items.compactMap { $0.makeTrack(source: .top, addedAt: now()) }
+        // Newest first, so a song played twice keeps its last play.
+        let recent = try await api.get("me/player/recently-played?limit=50", as: SpotifyPage<SpotifyPlayedItem>.self)
+            .items.compactMap { $0.track.makeTrack(source: .recent, addedAt: $0.playedAt) }
+        var seen = Set<String>()
+        return (saved + top + recent).filter { seen.insert($0.spotifyId).inserted }
     }
 
     /// Every liked song, 50 per page (Spotify's maximum), following each page's `next` (TODO 1.23).
