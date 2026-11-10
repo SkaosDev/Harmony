@@ -222,6 +222,36 @@ Harmony/
 - Dans l'app : une table réduite (titre, artistes, genre, valence, arousal, spotify_id), ramenée
   sur 0–1. **Vérifier l'échelle réelle des colonnes dans le fichier** avant de normaliser.
 
+**Fichiers vérifiés le 10 nov. 2026 (TODO 1.38)** — `python ml/muse_download.py` → `data/muse/`
+(ignoré par Git). Version 1.0.0 (la seule), MD5 identiques à ceux publiés par Zenodo :
+
+| Fichier | Taille (octets) | MD5 |
+|---|---|---|
+| `muse_dataset.csv` | 10 026 011 | `fd653643f1fdcec68cfdbbe98fc979d0` |
+| `muse_dataset.jsonl` | 18 455 731 | `10a0eaaeb0faa2a6964a5ebf24c420ca` |
+
+Le `.jsonl` a les mêmes 8 champs que le CSV : utiliser le CSV. **90 408 lignes, 8 colonnes** :
+`id` (0 à 90 407), `track` (79 668 titres distincts), `artist` (un seul champ texte, 26 067 valeurs
+distinctes), `valence_tags`, `arousal_tags`, `dominance_tags` (remplies à 100 %), `mbid` (68,2 %),
+`spotify_id` (68,5 % : 61 902 remplis mais 60 741 distincts → environ 1 160 lignes partagent un ID
+avec une autre).
+
+Échelle **observée** (l'échelle théorique n'est pas documentée sur Zenodo) :
+
+| Colonne | min | q1 | médiane | q3 | max | moyenne |
+|---|---|---|---|---|---|---|
+| `valence_tags` | 0,235 | 4,280 | 5,650 | 6,695 | 8,475 | 5,454 |
+| `arousal_tags` | 0,108 | 3,528 | 4,330 | 5,150 | 7,270 | 4,317 |
+| `dominance_tags` (non utilisée) | 0,229 | 4,551 | 5,460 | 6,115 | 7,440 | 5,246 |
+
+- Ce n'est pas une échelle 1–9 stricte (minimum < 1) et l'arousal est plus resserrée que la
+  valence : la normalisation 0–1 de 1.39 doit être choisie (min–max observé, centiles…) et
+  écrite ici.
+- **Pas de colonne genre** dans le jeu Zenodo (la description propose de l'ajouter soi-même à
+  partir des ID Spotify ou MusicBrainz). Cela touche 1.39 (table réduite), §8 et 3.5 (repli
+  « artiste ou genre ») : **à décider en équipe avant 1.39**.
+- ID Spotify en double : choisir en 1.39 quelle ligne garder pour la recherche par ID.
+
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Optionnel ; mêmes règles de confidentialité qu'EmoPhone.

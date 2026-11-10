@@ -95,7 +95,7 @@
 - [ ] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
 - [ ] **1.36** Vérifier qu'aucun participant n'est présent dans deux vagues. — ✔ résultat noté.
 - [ ] **1.37** Lancer `explore_d1.py` sur D-2 puis D-3 (adapter le préfixe de fichier si besoin). — ✔ tableau de résultats par vague.
-- [ ] **1.38** Télécharger MuSe (Zenodo) dans `data/muse/` ; afficher colonnes et plages de valeurs. — ✔ échelle de valence/arousal notée dans PROJECT.md §5.2.
+- [x] **1.38** Télécharger MuSe (Zenodo) dans `data/muse/` ; afficher colonnes et plages de valeurs. — ✔ échelle de valence/arousal notée dans PROJECT.md §5.2.
 - [ ] **1.39** Script `ml/muse_build.py` → `muse.sqlite` réduit (titre, artistes, genre, valence, arousal, spotify_id normalisés 0–1). — ✔ < 10 Mo, 90 408 lignes.
 - [ ] **1.40** Fonction de normalisation titre/artiste en Python (minuscules, accents, « feat. », « Remastered »…). — ✔ tests sur 20 cas.
 
