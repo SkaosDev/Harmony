@@ -102,6 +102,22 @@ struct SummaryStoreTests {
         #expect(try context.fetchCount(FetchDescriptor<NightSummary>()) == 1)
     }
 
+    /// Demo mode (FR12) gets the same summaries: 14 nights, the one without watch data unknown.
+    @Test func demoModeGivesTwoWeeksOfSummaries() async throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let now = at(10, 15)
+        let provider = try DemoHealthProvider(now: now, calendar: calendar)
+        _ = try #require(try await SummaryStore.update(provider: provider, context: context, now: now, calendar: calendar))
+
+        let nights = try context.fetch(FetchDescriptor<NightSummary>(sortBy: [SortDescriptor(\.date)]))
+        // Wake-up days 28 Oct (first demo day) → 10 Nov; tonight's window has not started at 15:00.
+        let firstDay = calendar.date(from: DateComponents(year: 2026, month: 10, day: 28))!
+        #expect(nights.map(\.date) == (0..<14).map { calendar.date(byAdding: .day, value: $0, to: firstDay)! })
+        #expect(nights.count { $0.sleepMinutes == nil } == 1)
+        #expect(try context.fetchCount(FetchDescriptor<HourSummary>()) > 13 * 24 / 2)
+    }
+
     /// TODO 1.32: only summaries are stored; the store has no table for raw samples.
     @Test func noRawSampleIsStored() {
         let tables = Set(HarmonyStore.schema.entities.map(\.name))
