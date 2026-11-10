@@ -93,8 +93,8 @@ def night_sleep(pcode, days, hr, st):
     for d in days:
         d0 = int(pd.Timestamp(d).value // 10**6 // MIN_MS)       # local midnight, in minutes
         minutes = np.arange(d0 - 3 * 60, d0 + 12 * 60)
-        h = hm.reindex(minutes).values
-        s = sm.reindex(minutes).fillna(0).values
+        h = pd.to_numeric(hm.reindex(minutes), errors="coerce").to_numpy(dtype=float)
+        s = pd.to_numeric(sm.reindex(minutes), errors="coerce").fillna(0).to_numpy(dtype=float)
         worn = ~np.isnan(h)
         asleep = worn & (s == 0) & (np.nan_to_num(h, nan=999) <= threshold * 1.05)
         r = {"pcode": pcode, "day": str(pd.Timestamp(d).date()), "night_worn": worn.mean()}

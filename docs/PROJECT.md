@@ -216,6 +216,30 @@ Harmony/
   - 10 participants de D-1 ont des fichiers capteurs mais aucune réponse (exclus au contrôle qualité) ;
   - la montre n'était pas portée sur ~34 % des nuits.
 
+### Différences entre vagues (TODO 1.35)
+Exploration du 10 nov. 2026 : D-1/D-2/D-3 ont respectivement 10 259/21 042/21 838 réponses
+et 92/99/106 participants répondants. D-2 ajoute `intendedTriggerTime`, `valenceChange` et
+`arousalChange`, remplaçant `change` ; D-3 ajoute `intendedTriggerTime` et les huit adjectifs
+PANAS (happy, relaxed, cheerful, content, sad, anxious, depressed, angry), et ne contient plus
+attention, mental, duration ni les items de changement. Valence et arousal restent sur −3..+3
+dans les trois vagues. En D-3, stress, dérangement et les huit adjectifs sont sur 0..+6.
+
+Les archives capteurs sont au nombre de 102/112/106 ; 10/13/0 ont un fichier capteur mais aucune
+réponse, et 0/0/0 participants répondants n'ont pas d'archive. Les colonnes Fitbit restent
+`timestamp,value`. D-2 ajoute `KeyEvent.csv`, `Proximity.csv` et quatre fichiers `Fitness-*` ;
+D-3 a `KeyEvent.csv` mais pas `Proximity.csv` ni ces fichiers `Fitness-*`. Les médianes des
+médianes d'intervalle FC sont 0,08 min (101 participants avec mesures), 0,08 min (77) et 0,08 min
+(106), soit environ 5 s. Les réponses couvrent le 8 fév.–2 avr. 2020, le 7 déc. 2020–27 janv. 2021
+et le 24 nov. 2021–11 janv. 2022 (heures KST, timestamps en ms UTC).
+
+### Identité des participants entre vagues (TODO 1.36)
+L'article dit « All three cohorts were drawn from the same university student population »
+(annexe A.2), mais ne précise pas si des personnes reviennent d'une vague à l'autre. Les `pcode`
+sont numérotés par vague ; 82/78/86 codes sont communs à D-1/D-2, D-1/D-3 et D-2/D-3, sans
+permettre d'identifier les mêmes personnes. Il faut demander confirmation à l'équipe EmoPhone.
+En attendant, tout entraînement combinant des vagues utilise un identifiant `vague + pcode`
+(ex. `D1_P050`) pour éviter de fusionner des personnes distinctes.
+
 ### 5.2 MuSe (scores des morceaux)
 - Akiki & Burghardt 2021 (doi:10.5334/johd.33), **CC BY 4.0** (redistribuable avec citation).
 - **Version utilisée : v3 sur Kaggle** (`cakiki/muse-the-musical-sentiment-dataset`, version 5 du
@@ -269,6 +293,22 @@ indie, rock, electronic, pop, ambient).
    **Clé titre + premier artiste en double** (2 097 clés et 5 544 lignes avec une normalisation
    simple) : une seule ligne par clé normalisée (fonction de 1.40), celle qui a le plus de tags
    d'émotion (scores les plus fiables) ; à égalité, la première du fichier.
+
+**Construction (TODO 1.39)** — `ml/muse_build.py` lit 90 001 lignes, retire les ID Spotify
+dupliqués (889 ID, 1 863 lignes), puis garde une ligne par clé titre/artiste : 678 clés en double
+(1 410 lignes concernées ; 732 retirées). Aucune clé n'est vide. La table `songs` contient
+`spotify_id`, `title`, `artists`, `genre`, `energy`, `positivity`, `match_key` ; la clé normalisée
+est sa clé primaire indexée, avec un index sur `spotify_id`. 89 269 lignes sont gardées, dont
+59 679 avec ID et 82 685 avec genre. Scores centiles : énergie min/médiane/max =
+0,000011/0,499717/0,999000 ; positivité = 0,000011/0,500500/1,000000.
+Le fichier fait 14 155 776 octets après `VACUUM`, donc dépasse 10 Mo. Il n'est pas versionné :
+`data/` est ignoré par Git. Après téléchargement du CSV avec `python ml/muse_download.py`,
+`python ml/muse_build.py` régénère cette base localement. La tâche est validée sur ce critère de
+reproductibilité locale ; le dépassement de 10 Mo reste à réduire si la taille devient bloquante.
+Le stockage `WITHOUT ROWID` avec `match_key` comme clé primaire et une taille de page de 16 Kio
+a réduit le fichier de 15 532 032 octets (table avec rowid, page 4 Kio) à 14 155 776 octets,
+sans suffire. Une compression exigeant une extension SQLite ou une représentation qui modifie le
+schéma nécessite une décision d'équipe avant d'être retenue.
 
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
@@ -351,6 +391,28 @@ z_log_steps_30, z_log_steps_60, z_sleep_min, hours_since_wake, sleep_unknown` (1
 | Stress : notre modèle | 0,543 | 0,514 |
 | Humeur des *autres* participants au même moment | 0,530 | – |
 
+**Résultats par vague (features v0, TODO 1.37)** — 10 nov. 2026, scikit-learn 1.5.2.
+
+| Ligne de sortie | D-1 | D-2 | D-3 |
+|---|---:|---:|---:|
+| Réponses / participants | 10 259 / 92 | 21 042 / 99 | 21 838 / 106 |
+| Nuits avec sommeil estimé | 0,66 | 0,41 | 0,78 |
+| Heure seule — AUROC ± écart / balanced accuracy | 0,530 ± 0,013 / 0,509 | 0,538 ± 0,016 / 0,509 | 0,542 ± 0,007 / 0,500 |
+| Heure + sommeil — AUROC ± écart / balanced accuracy | 0,524 ± 0,016 / 0,506 | 0,552 ± 0,026 / 0,531 | 0,540 ± 0,010 / 0,503 |
+| Heure + FC — AUROC ± écart / balanced accuracy | 0,576 ± 0,009 / 0,544 | 0,570 ± 0,014 / 0,526 | 0,593 ± 0,009 / 0,547 |
+| Heure + FC + pas — AUROC ± écart / balanced accuracy | 0,576 ± 0,008 / 0,544 | 0,571 ± 0,013 / 0,529 | 0,599 ± 0,012 / 0,553 |
+| Notre modèle — AUROC ± écart / balanced accuracy | 0,572 ± 0,005 / 0,544 | 0,576 ± 0,017 / 0,544 | 0,598 ± 0,011 / 0,551 |
+| Gradient boosting — AUROC ± écart / balanced accuracy | 0,558 ± 0,008 / 0,537 | 0,566 ± 0,024 / 0,538 | 0,589 ± 0,012 / 0,552 |
+| FC toutes les 5 min — AUROC ± écart / balanced accuracy | 0,575 ± 0,008 / 0,546 | 0,567 ± 0,014 / 0,523 | 0,591 ± 0,010 / 0,544 |
+| Stress, notre modèle — AUROC ± écart / balanced accuracy | 0,546 ± 0,018 / 0,516 | 0,530 ± 0,027 / 0,512 | 0,558 ± 0,010 / 0,529 |
+| Humeur des autres à même date/heure — AUROC ± écart | 0,521 ± 0,012 | 0,519 ± 0,012 | 0,539 ± 0,021 |
+
+Le modèle complet dépasse l'heure seule en AUROC sur les trois vagues.
+
+Le contrôle D-1 du 10 nov. donne 0,530 pour l'heure seule, 0,576 pour heure + FC et 0,572 pour
+le modèle complet, contre 0,532, 0,577 et 0,573 dans les résultats précédemment consignés ; le
+script n'a pas été ajusté pour rapprocher ces valeurs.
+
 Lecture : la FC porte l'information ; pas et sommeil n'ajoutent rien de mesurable sur D-1
 (écart < variation entre groupes ±0,015). 0,5 = hasard. Le stress est à peine prévisible → la
 situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiquement.
@@ -360,7 +422,8 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
-4. Vérifier qu'aucun participant n'apparaît dans deux vagues.
+4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
+   demander confirmation. En combinant des vagues, grouper par `vague + pcode` jusque-là.
 
 ### 6.7 Export vers l'app
 - Coefficients, moyennes, écarts-types, médianes d'imputation et **ordre des features** dans
@@ -373,7 +436,16 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 
 ## 7. Scores des morceaux
 
-1. Normaliser titre et artiste (minuscules, sans accents, sans « Remastered », « feat. », etc.).
+1. Normaliser titre et artiste avec les mêmes règles en Python (`ml/normalize.py`) et en Swift :
+   NFKC, puis `casefold` ; couper au premier marqueur `feat.`, `ft.` ou `featuring` (et tout ce
+   qui suit) ; supprimer les mentions de version seulement entre parenthèses/crochets ou en
+   suffixe après un tiret/espace : `Remaster`/`Remastered` avec année avant ou après, `Radio Edit`,
+   `Single Version`, `Album Version`, `Mono`, `Stereo`. Garder `Live`, `Remix`, `Acoustic`,
+   `Instrumental` et `Demo`. Convertir les apostrophes typographiques en `'`, les autres signes
+   de ponctuation/symboles en espaces, retirer les accents des seules lettres latines et fusionner
+   les espaces. Ne pas décomposer les écritures non latines. Si le titre devient vide, reprendre
+   le titre normalisé avant suppression des marqueurs featuring/version. Le premier artiste est
+   la partie avant le premier marqueur featuring ; ne pas couper sur `&`, `and` ou `,`.
 2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste.
 3. Sinon, envoyer par lots de 50 (titre + artistes seulement) au **Worker**, qui appelle le LLM
    et renvoie `{energy, positivity}` entre 0 et 1 en JSON. Réponse invalide → 0,5 / 0,5, origine

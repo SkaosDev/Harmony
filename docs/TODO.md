@@ -92,12 +92,12 @@
 - [x] **1.34** Taux de port de la montre la nuit sur 3 nuits. — ✔ noté ; règle « 60 % » confirmée ou ajustée.
 
 ### 1.ML Données (L) — en parallèle de 1.APP
-- [ ] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
-- [ ] **1.36** Vérifier qu'aucun participant n'est présent dans deux vagues. — ✔ résultat noté.
-- [ ] **1.37** Lancer `explore_d1.py` sur D-2 puis D-3 (adapter le préfixe de fichier si besoin). — ✔ tableau de résultats par vague.
+- [x] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
+- [x] **1.36** Vérifier si un participant peut apparaître dans deux vagues. — ✔ résultat noté ; identité inter-vagues non précisée par la documentation, question ouverte dans PROJECT.md §5.1.
+- [x] **1.37** Lancer `explore_d1.py` sur D-2 puis D-3 (adapter le préfixe de fichier si besoin). — ✔ tableau de résultats par vague.
 - [x] **1.38** Télécharger MuSe (v3, Kaggle) dans `data/muse/` ; afficher colonnes et plages de valeurs. — ✔ échelle de valence/arousal notée dans PROJECT.md §5.2.
-- [ ] **1.39** Script `ml/muse_build.py` → `muse.sqlite` réduit (titre, artistes, genre, valence, arousal, spotify_id ; scores en centiles 0–1 et doublons traités selon les décisions de PROJECT.md §5.2). — ✔ < 10 Mo ; 90 001 lignes lues, nombre de lignes gardées noté dans §5.2.
-- [ ] **1.40** Fonction de normalisation titre/artiste en Python (minuscules, accents, « feat. », « Remastered »…). — ✔ tests sur 20 cas.
+- [x] **1.39** Script `ml/muse_build.py` → `muse.sqlite` réduit et reproductible localement (titre, artistes, genre, scores en centiles 0–1 et doublons traités selon PROJECT.md §5.2). — ✔ source retéléchargeable, base régénérable dans `data/` ignoré par Git ; 90 001 lignes lues, 89 269 gardées, taille et limite de 10 Mo documentées dans §5.2.
+- [x] **1.40** Fonction de normalisation titre/artiste en Python (minuscules, accents, « feat. », « Remastered »…). — ✔ tests sur 20 cas.
 
 ### 1.DOC
 - [ ] **1.41** Démo M1 au customer (Cyprien) : connexion, import, données santé, mode démo. — ✔ retours notés dans une issue GitHub.
