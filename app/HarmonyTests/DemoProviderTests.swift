@@ -85,6 +85,20 @@ struct DemoHealthProviderTests {
         #expect(try #require(samples.last).start >= now.addingTimeInterval(-30 * 60))
     }
 
+    /// `samples` keeps a sleep interval that began before `since` (a night started at 20:50 counts
+    /// in the 21:00 window); `newSamples` returns only the ones that began after it.
+    @Test func samplesOverlapSinceButNewSamplesStartAfterIt() async throws {
+        let provider = try makeProvider()
+        let sleep = try await provider.samples(.sleep, since: .distantPast)
+        let night = try #require(sleep.first { $0.end.timeIntervalSince($0.start) > 3600 })
+        let since = night.start.addingTimeInterval(1800)
+
+        #expect(try await provider.samples(.sleep, since: since).first == night)
+        #expect(try await provider.newSamples(.sleep, since: since).allSatisfy { $0.start >= since })
+        #expect(try await provider.newSamples(.heartRate, since: .distantPast)
+            == provider.samples(.heartRate, since: .distantPast))
+    }
+
     /// Unknown is not zero: exactly one demo night has no sleep at all (watch not worn).
     @Test func oneDemoNightIsUnknown() async throws {
         let sleep = try await makeProvider().samples(.sleep, since: .distantPast)

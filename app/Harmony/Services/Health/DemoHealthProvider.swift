@@ -38,6 +38,12 @@ struct DemoHealthProvider: HealthProvider {
     func requestConsent(_ signals: Set<HealthSignal>) async throws {}
 
     func samples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] {
+        samplesBySignal[signal, default: []].filter { $0.end >= since && $0.end <= now }
+    }
+
+    /// The demo keeps no anchor: every call returns everything since `since`. The summaries
+    /// recomputed from it are the same, so demo mode behaves like the real app.
+    func newSamples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] {
         samplesBySignal[signal, default: []].filter { $0.start >= since && $0.end <= now }
     }
 }
