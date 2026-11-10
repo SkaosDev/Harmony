@@ -64,11 +64,11 @@
 - [x] **1.12** Conteneur SwiftData en mémoire pour les tests. — ✔ les tests ne laissent aucune donnée.
 
 ### 1.APP-c Protocoles et mode démo (C)
-- [ ] **1.13** Protocole `MusicProvider` (signIn, importLibrary, lookUp, play, save). — ✔ compile.
-- [ ] **1.14** Protocole `HealthProvider` (requestConsent, samples(type, since)). — ✔ compile.
-- [ ] **1.15** Fichiers démo synthétiques (`Resources/demo/`) : 14 jours de FC/pas/sommeil + 50 morceaux scorés. — ✔ générés par un script, aucune donnée réelle.
-- [ ] **1.16** `DemoMusicProvider` et `DemoHealthProvider` lisant ces fichiers. — ✔ test : renvoient les données attendues.
-- [ ] **1.17** Interrupteur « mode démo » dans Debug. — ✔ l'app fonctionne entièrement sur simulateur en mode démo.
+- [x] **1.13** Protocole `MusicProvider` (signIn, importLibrary, lookUp, play, save). — ✔ compile.
+- [x] **1.14** Protocole `HealthProvider` (requestConsent, samples(type, since)). — ✔ compile.
+- [x] **1.15** Fichiers démo synthétiques (`Resources/demo/`) : 14 jours de FC/pas/sommeil + 50 morceaux scorés. — ✔ générés par un script, aucune donnée réelle.
+- [x] **1.16** `DemoMusicProvider` et `DemoHealthProvider` lisant ces fichiers. — ✔ test : renvoient les données attendues.
+- [x] **1.17** Interrupteur « mode démo » dans Debug. — ✔ l'app fonctionne entièrement sur simulateur en mode démo.
 
 ### 1.APP-d Spotify (R)
 - [ ] **1.18** Prototype d'auth PKCE avec `ASWebAuthenticationSession` (verifier, challenge, échange du code). — ✔ un jeton d'accès obtenu sur un vrai iPhone.
