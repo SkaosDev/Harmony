@@ -173,3 +173,22 @@ struct NightSummariesTests {
         #expect(days(at(10, 10), at(11, 22)) == [at(10, 0), at(11, 0), at(12, 0)])
     }
 }
+
+/// TODO 1.33: the Debug measure of how often the watch reads the heart rate.
+@MainActor
+struct HeartRateIntervalTests {
+    @Test func medianIntervalByTimeOfDay() throws {
+        // Night: every 5 min from 01:00 to 02:00. Day: 10:00, 10:04, 10:10, 10:30.
+        let night = heartRate(every: 5, from: at(10, 1), to: at(10, 2))
+        let day = [at(10, 10), at(10, 10, 4), at(10, 10, 10), at(10, 10, 30)].map { instant($0, 70) }
+        let samples = night + day
+
+        let atNight = try #require(HealthDebugSection.medianInterval(samples, hours: 0..<6, calendar: calendar))
+        #expect(atNight.minutes == 5)
+        #expect(atNight.count == 12)  // the last one runs to 10:00
+        let byDay = try #require(HealthDebugSection.medianInterval(samples, hours: 8..<24, calendar: calendar))
+        #expect(byDay.minutes == 6)  // 4, 6, 20
+        #expect(byDay.count == 3)
+        #expect(HealthDebugSection.medianInterval([], hours: 0..<24, calendar: calendar) == nil)
+    }
+}
