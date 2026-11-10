@@ -45,6 +45,11 @@ final class StubHTTP {
     }
 }
 
+/// A Keychain store used by one test only. Tests that save tokens delete them at the end.
+func makeTestStore() -> KeychainTokenStore {
+    KeychainTokenStore(service: "com.firestarter.harmony.tests.\(UUID().uuidString)")
+}
+
 /// A token response as Spotify sends it.
 func tokenJSON(access: String, refresh: String? = nil, expiresIn: Int = 3600, scope: String = "user-library-read") -> String {
     let refreshField = refresh.map { #","refresh_token":"\#($0)""# } ?? ""

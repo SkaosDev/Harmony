@@ -19,9 +19,54 @@ struct PKCETests {
     }
 }
 
+/// TODO 1.19: tokens in the Keychain.
+@MainActor
+struct KeychainTokenStoreTests {
+    private let tokens = SpotifyTokens(
+        accessToken: "access",
+        refreshToken: "refresh",
+        expiresAt: Date(timeIntervalSince1970: 1_790_003_600),
+        scope: "user-library-read"
+    )
+
+    @Test func savedTokensComeBack() throws {
+        let store = makeTestStore()
+        defer { try? store.delete() }
+        #expect(try store.load() == nil)
+        try store.save(tokens)
+        #expect(try store.load() == tokens)
+    }
+
+    @Test func savingAgainReplacesTheTokens() throws {
+        let store = makeTestStore()
+        defer { try? store.delete() }
+        try store.save(tokens)
+        var newer = tokens
+        newer.accessToken = "access-2"
+        try store.save(newer)
+        #expect(try store.load() == newer)
+    }
+
+    @Test func deleteEmptiesTheStore() throws {
+        let store = makeTestStore()
+        try store.save(tokens)
+        try store.delete()
+        #expect(try store.load() == nil)
+        try store.delete()
+    }
+
+    @Test func storesDoNotShareTokens() throws {
+        let store = makeTestStore()
+        defer { try? store.delete() }
+        try store.save(tokens)
+        #expect(try makeTestStore().load() == nil)
+    }
+}
+
 @MainActor
 struct SpotifySignInTests {
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
+    private let store = makeTestStore()
 
     /// A fake login page: remembers the URL it was opened with and answers with `callback(state)`.
     private final class FakeLoginPage {
@@ -37,7 +82,7 @@ struct SpotifySignInTests {
     }
 
     private func makeAuth(server: StubHTTP, page: FakeLoginPage, clientID: String = "client-123") -> SpotifyAuth {
-        SpotifyAuth(clientID: clientID, send: server.send, openLogin: page.open, now: { now })
+        SpotifyAuth(clientID: clientID, store: store, send: server.send, openLogin: page.open, now: { now })
     }
 
     @Test func authorizeURLAsksForACodeWithPKCEAndTheScopes() throws {
@@ -60,15 +105,18 @@ struct SpotifySignInTests {
         server.on("/api/token", body: tokenJSON(access: "access-1", refresh: "refresh-1", scope: "user-library-read user-top-read"))
         let page = FakeLoginPage { state in "harmony://callback?code=the-code&state=\(state)" }
         let auth = makeAuth(server: server, page: page)
+        defer { try? store.delete() }
 
         try await auth.signIn()
 
-        #expect(auth.tokens == SpotifyTokens(
+        let expected = SpotifyTokens(
             accessToken: "access-1",
             refreshToken: "refresh-1",
             expiresAt: now.addingTimeInterval(3600),
             scope: "user-library-read user-top-read"
-        ))
+        )
+        #expect(auth.tokens == expected)
+        #expect(try store.load() == expected)
         let request = try #require(server.requests.first)
         #expect(server.requests.count == 1)
         #expect(request.httpMethod == "POST")
@@ -81,6 +129,18 @@ struct SpotifySignInTests {
         // The verifier sent now is the one whose challenge was on the login page.
         let challenge = StubHTTP.query(try #require(page.openedURL))["code_challenge"]
         #expect(PKCE.challenge(for: try #require(form["code_verifier"])) == challenge)
+    }
+
+    /// A new `SpotifyAuth` (as after an app restart) finds the tokens in the Keychain.
+    @Test func tokensSurviveARestart() async throws {
+        let server = StubHTTP()
+        server.on("/api/token", body: tokenJSON(access: "access-1", refresh: "refresh-1"))
+        defer { try? store.delete() }
+        try await makeAuth(server: server, page: FakeLoginPage { "harmony://callback?code=c&state=\($0)" }).signIn()
+
+        let restarted = makeAuth(server: StubHTTP(), page: FakeLoginPage { _ in "" })
+        #expect(restarted.tokens?.accessToken == "access-1")
+        #expect(restarted.tokens?.refreshToken == "refresh-1")
     }
 
     @Test func wrongStateIsRejected() async throws {

@@ -29,13 +29,15 @@ final class SpotifyAuth {
 
     /// The app's instance; the client ID comes from `Config.xcconfig` through Info.plist.
     static let shared = SpotifyAuth(
-        clientID: Bundle.main.object(forInfoDictionaryKey: "SpotifyClientID") as? String ?? ""
+        clientID: Bundle.main.object(forInfoDictionaryKey: "SpotifyClientID") as? String ?? "",
+        store: KeychainTokenStore(service: "com.firestarter.harmony.spotify")
     )
 
-    /// Nil when nobody is signed in.
+    /// Nil when nobody is signed in. Read from the Keychain at launch (TODO 1.19).
     private(set) var tokens: SpotifyTokens?
 
     private let clientID: String
+    private let store: KeychainTokenStore
     private let send: Send
     private let openLogin: (URL) async throws -> URL
     private let now: () -> Date
@@ -43,14 +45,18 @@ final class SpotifyAuth {
     /// `send` and `openLogin` are replaced in tests by a fake server and a fake login page.
     init(
         clientID: String,
+        store: KeychainTokenStore,
         send: @escaping Send = { try await URLSession.shared.httpData(for: $0) },
         openLogin: @escaping (URL) async throws -> URL = { try await WebLogin().open($0) },
         now: @escaping () -> Date = Date.init
     ) {
         self.clientID = clientID
+        self.store = store
         self.send = send
         self.openLogin = openLogin
         self.now = now
+        // Unreadable tokens count as signed out: the user signs in again.
+        tokens = try? store.load()
     }
 
     /// Opens Spotify's login page, then exchanges the returned code for tokens.
@@ -65,13 +71,19 @@ final class SpotifyAuth {
         guard value("state") == state else { throw SpotifyError.loginFailed("state mismatch") }
         guard let code = value("code") else { throw SpotifyError.loginFailed(value("error") ?? "no code") }
 
-        tokens = try await requestTokens([
+        try keep(await requestTokens([
             ("grant_type", "authorization_code"),
             ("code", code),
             ("redirect_uri", Self.redirectURI),
             ("client_id", clientID),
             ("code_verifier", verifier),
-        ])
+        ]))
+    }
+
+    /// Saves the tokens in the Keychain, then uses them.
+    private func keep(_ tokens: SpotifyTokens) throws {
+        try store.save(tokens)
+        self.tokens = tokens
     }
 
     /// Spotify's login page for this app.
