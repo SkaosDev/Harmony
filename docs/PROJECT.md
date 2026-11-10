@@ -324,7 +324,7 @@ moins de 60 % de la fenêtre 21 h–12 h → nuit **inconnue**.
 | Moyennes personnelles calculées sur toute la période | Utilise le futur → légèrement optimiste ; impossible dans l'app | Moyenne/écart-type sur les **14 jours précédents** uniquement (prêt à partir de 7 jours), en Python comme en Swift |
 | Moyennes calculées aux instants des réponses | L'app n'a pas de réponses | Calculer la référence sur une **grille régulière** (ex. toutes les 30 min, 8 h–24 h, quand la montre est portée) des 14 derniers jours, des deux côtés |
 | FC Fitbit toutes les 5 s, seuils 5/10 mesures | L'Apple Watch mesure beaucoup moins souvent au repos | Utiliser la FC **rééchantillonnée à 1 mesure / 5 min** (déjà testé : AUROC 0,575, identique) et un seuil de 1 mesure minimum par fenêtre |
-| Sommeil estimé (Fitbit) vs sommeil mesuré (Apple Watch) | Pas la même mesure | Assumé ; documenter, et vérifier sur le pilote |
+| Sommeil estimé (Fitbit) vs sommeil mesuré (Apple Watch) | Pas la même mesure | Assumé ; documenté en §10 (sommeil « comme Santé ») ; vérifier sur le pilote |
 | `hr_std_30` | Peu de sens avec 6 mesures | Retirer en v1 |
 
 Proposition de vecteur v1 (ordre fixe, à confirmer par Lucas) :
@@ -472,6 +472,25 @@ suggéré automatiquement (modèle trop faible sur le stress).
   `asleepCore`, `asleepDeep`, `asleepREM`, `asleepUnspecified` ; ignorer `inBed` saisi sur l'iPhone.
 - **Montre portée ?** Pas de FC = montre pas portée (nuit < 60 % couverte → sommeil inconnu).
 - Le simulateur n'a pas de montre : utiliser le **mode démo** (fichiers enregistrés).
+
+### Ce que fait l'app (1.APP-e, 10 nov.)
+- **Apple Watch seulement**, pour les 4 types (`sourceRevision.productType` commence par `Watch`) :
+  les pas de l'iPhone seraient comptés deux fois, et « pas de FC = montre non portée » doit rester vrai.
+- **À chaque ouverture** (`SummaryStore.update`) : requête ancrée par type (ancre dans
+  `UserDefaults`) ; à partir du plus ancien échantillon nouveau, l'app relit les échantillons et
+  réécrit toutes les heures et nuits touchées (une synchronisation tardive de la montre corrige
+  les heures anciennes). Premier import : 14 jours. Les échantillons bruts ne restent qu'en
+  mémoire ; seuls `HourSummary` et `NightSummary` sont stockés. Échantillons supprimés dans Santé : ignorés.
+- **Heure** : FC moyenne + nombre de mesures, HRV moyenne, pas répartis entre heures au prorata.
+  Pas = `nil` (inconnu) si l'heure n'a ni FC ni pas ; 0 si FC sans pas. Heure sans donnée : pas de ligne.
+- **Nuit** (fenêtre 21 h → 12 h, rattachée au jour du réveil), mesurée « comme Santé » :
+  `sleepMinutes` = total des intervalles asleep* dans la fenêtre (comptés une fois s'ils se
+  chevauchent) ; `sleepEnd` = fin du dernier. Couverture = part des créneaux de **5 min** contenant
+  au moins une FC, sur la partie **écoulée** de la fenêtre (une file à 7 h connaît la nuit).
+  Nuit **inconnue** si couverture < 60 % **ou** aucun intervalle asleep* (suivi du sommeil
+  désactivé) : jamais 0. Différent de v0 (bloc le plus long ≥ 2 h, §6.3) : à reprendre en 2.5 (Lucas).
+- Créneau de 5 min et seuil de 60 % à confirmer par les mesures 1.33 / 1.34 (écran Debug).
+- La suppression totale (3.19) devra aussi effacer les ancres HealthKit.
 
 ## 11. Confidentialité et sécurité (résumé)
 - Santé : sur le téléphone uniquement, résumés horaires/nocturnes, échantillons bruts jetés.
