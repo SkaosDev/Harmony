@@ -7,6 +7,7 @@ enum HarmonyStore {
         Schema([
             Track.self,
             SongScore.self,
+            HourSummary.self,
         ])
     }
 

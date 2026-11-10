@@ -109,6 +109,53 @@ struct SongScoreTests {
     }
 }
 
+/// TODO 1.9
+@MainActor
+struct HourSummaryTests {
+    private let hour = Date(timeIntervalSince1970: 1_790_002_800)
+
+    @Test func hourRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(HourSummary(hourStart: hour, meanHR: 72.5, hrCount: 9, sdnnHRV: 48.0, steps: 1200))
+        try context.save()
+
+        let summary = try #require(try context.fetch(FetchDescriptor<HourSummary>()).first)
+        #expect(summary.hourStart == hour)
+        #expect(summary.meanHR == 72.5)
+        #expect(summary.hrCount == 9)
+        #expect(summary.sdnnHRV == 48.0)
+        #expect(summary.steps == 1200)
+    }
+
+    /// Unknown is not zero: an hour without the watch keeps nil, not 0.
+    @Test func hourWithoutWatchStaysUnknown() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(HourSummary(hourStart: hour, meanHR: nil, hrCount: 0, sdnnHRV: nil, steps: nil))
+        try context.save()
+
+        let summary = try #require(try context.fetch(FetchDescriptor<HourSummary>()).first)
+        #expect(summary.meanHR == nil)
+        #expect(summary.hrCount == 0)
+        #expect(summary.sdnnHRV == nil)
+        #expect(summary.steps == nil)
+    }
+
+    @Test func sameHourKeepsOneRow() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        context.insert(HourSummary(hourStart: hour, meanHR: 70, hrCount: 3, sdnnHRV: nil, steps: 100))
+        try context.save()
+        context.insert(HourSummary(hourStart: hour, meanHR: 71, hrCount: 6, sdnnHRV: nil, steps: 250))
+        try context.save()
+
+        let summaries = try context.fetch(FetchDescriptor<HourSummary>())
+        #expect(summaries.count == 1)
+        #expect(summaries.first?.hrCount == 6)
+    }
+}
+
 /// A library track with test values; only what a test cares about is a parameter.
 @MainActor
 private func makeTrack(
