@@ -420,7 +420,16 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 
 ## 7. Scores des morceaux
 
-1. Normaliser titre et artiste (minuscules, sans accents, sans « Remastered », « feat. », etc.).
+1. Normaliser titre et artiste avec les mêmes règles en Python (`ml/normalize.py`) et en Swift :
+   NFKC, puis `casefold` ; couper au premier marqueur `feat.`, `ft.` ou `featuring` (et tout ce
+   qui suit) ; supprimer les mentions de version seulement entre parenthèses/crochets ou en
+   suffixe après un tiret/espace : `Remaster`/`Remastered` avec année avant ou après, `Radio Edit`,
+   `Single Version`, `Album Version`, `Mono`, `Stereo`. Garder `Live`, `Remix`, `Acoustic`,
+   `Instrumental` et `Demo`. Convertir les apostrophes typographiques en `'`, les autres signes
+   de ponctuation/symboles en espaces, retirer les accents des seules lettres latines et fusionner
+   les espaces. Ne pas décomposer les écritures non latines. Si le titre devient vide, reprendre
+   le titre normalisé avant suppression des marqueurs featuring/version. Le premier artiste est
+   la partie avant le premier marqueur featuring ; ne pas couper sur `&`, `and` ou `,`.
 2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste.
 3. Sinon, envoyer par lots de 50 (titre + artistes seulement) au **Worker**, qui appelle le LLM
    et renvoie `{energy, positivity}` entre 0 et 1 en JSON. Réponse invalide → 0,5 / 0,5, origine

@@ -5,8 +5,11 @@ Python code for the state model and the song scores.
 | File | What it does |
 |---|---|
 | `explore_d1.py` | Reproduces Table VII of Submission B (first results on EmoPhone wave D-1). Checked on Nov. 5, 2026 with scikit-learn 1.5.2: same numbers as the report. |
+| `explore_waves.py` | Compares aggregate ESM and sensor structure across EmoPhone waves D-1, D-2 and D-3 (TODO 1.35): `python ml/explore_waves.py --data data/emophone`. |
 | `make_demo_data.py` | Writes the app's synthetic demo data (`app/Harmony/Resources/demo/`): 14 days of watch data and 50 scored songs, from a fixed seed (no real person, no real song). Standard library only: `python ml/make_demo_data.py`. |
 | `muse_download.py` | Downloads MuSe v3 (`muse_v3.csv`, Kaggle, CC BY 4.0) into `data/muse/`, checks its size against Kaggle and its SHA-256 against the recorded one (same file for everyone), then prints the columns and value ranges (aggregates only). Standard library only: `python ml/muse_download.py`. Results and decisions: `docs/PROJECT.md` §5.2. |
+| `normalize.py` | Normalizes song titles and artists for MuSe lookup (TODO 1.40); shared cases: `ml/fixtures/normalize_cases.json`. |
+| `muse_build.py` | Builds the reduced local MuSe SQLite table with percentile scores (TODO 1.39): `python ml/muse_build.py`. |
 | `requirements.txt` | Python dependencies. |
 
 Run:
@@ -15,6 +18,7 @@ Run:
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r ml/requirements.txt
 python ml/explore_d1.py --data /path/to/dataverse_files/D1
+python -m unittest ml.tests.test_normalize -v
 ```
 
 The EmoPhone files stay outside the repository (`data/` is ignored by Git). Never commit them,
