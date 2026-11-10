@@ -56,12 +56,12 @@
 - [x] **1.6** Écran racine avec les 3 onglets du design (Home, Library, Settings), contenus vides ; écran Debug accessible depuis Settings, en build Debug seulement. — ✔ navigation OK sur simulateur ; barre d'onglets conforme à `docs/design/V2-Accueil.dc.html`.
 
 ### 1.APP-b Modèle de données SwiftData (C)
-- [ ] **1.7** `Track` (spotifyId, title, artists, coverURL, source, addedAt). — ✔ test : insertion + lecture.
-- [ ] **1.8** `SongScore` (spotifyId, energy, positivity, origin). — ✔ test unitaire.
-- [ ] **1.9** `HourSummary` (hourStart, meanHR, hrCount, sdnnHRV, steps). — ✔ test unitaire.
-- [ ] **1.10** `NightSummary` (date, sleepMinutes, sleepEnd, wornFraction). — ✔ test unitaire.
-- [ ] **1.11** `QueueRecord`, `QueueItem`, `FeedbackEvent`, `Consent`. — ✔ tests unitaires.
-- [ ] **1.12** Conteneur SwiftData en mémoire pour les tests. — ✔ les tests ne laissent aucune donnée.
+- [x] **1.7** `Track` (spotifyId, title, artists, coverURL, source, addedAt). — ✔ test : insertion + lecture.
+- [x] **1.8** `SongScore` (spotifyId, energy, positivity, origin). — ✔ test unitaire.
+- [x] **1.9** `HourSummary` (hourStart, meanHR, hrCount, sdnnHRV, steps). — ✔ test unitaire.
+- [x] **1.10** `NightSummary` (date, sleepMinutes, sleepEnd, wornFraction). — ✔ test unitaire.
+- [x] **1.11** `QueueRecord`, `QueueItem`, `FeedbackEvent`, `Consent`. — ✔ tests unitaires.
+- [x] **1.12** Conteneur SwiftData en mémoire pour les tests. — ✔ les tests ne laissent aucune donnée.
 
 ### 1.APP-c Protocoles et mode démo (C)
 - [ ] **1.13** Protocole `MusicProvider` (signIn, importLibrary, lookUp, play, save). — ✔ compile.

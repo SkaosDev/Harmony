@@ -27,7 +27,6 @@
 			membershipExceptions = (
 				Config.example.xcconfig,
 				Config.xcconfig,
-				Core/.gitkeep,
 				Harmony.xcconfig,
 				Info.plist,
 				Services/.gitkeep,
