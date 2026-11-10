@@ -327,6 +327,12 @@ moins de 60 % de la fenêtre 21 h–12 h → nuit **inconnue**.
 | Sommeil estimé (Fitbit) vs sommeil mesuré (Apple Watch) | Pas la même mesure | Assumé ; documenté en §10 (sommeil « comme Santé ») ; vérifier sur le pilote |
 | `hr_std_30` | Peu de sens avec 6 mesures | Retirer en v1 |
 
+**Mesure terrain (TODO 1.33, 10 nov.)** — Apple Watch (Watch7,2) portée jour et nuit sur les
+48 h mesurées, hors charge le soir, 552 FC : intervalle **médian** entre deux FC = **4,2 min la nuit**
+(0–6 h, 133 intervalles) et **4,6 min le jour** (8–24 h, 360 intervalles). La FC à 1 mesure / 5 min
+correspond bien à l'Apple Watch ; une fenêtre de 15 min contient ~3 mesures, donc le seuil
+« 1 mesure minimum par fenêtre » tient.
+
 Proposition de vecteur v1 (ordre fixe, à confirmer par Lucas) :
 `hour_sin, hour_cos, weekend, z_hr_15, z_hr_30, z_hr_60, zb_hr_30, z_log_steps_15,
 z_log_steps_30, z_log_steps_60, z_sleep_min, hours_since_wake, sleep_unknown` (13 entrées).
@@ -470,7 +476,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
   renvoie juste aucune donnée → c'est le cas « inconnu », pas une erreur.
 - **Sommeil** : garder seulement les échantillons de l'Apple Watch (source) et les valeurs
   `asleepCore`, `asleepDeep`, `asleepREM`, `asleepUnspecified` ; ignorer `inBed` saisi sur l'iPhone.
-- **Montre portée ?** Pas de FC = montre pas portée (nuit < 60 % couverte → sommeil inconnu).
+- **Montre portée ?** Pas de FC = montre pas portée (nuit < 60 % couverte, en créneaux de 15 min → sommeil inconnu).
 - Le simulateur n'a pas de montre : utiliser le **mode démo** (fichiers enregistrés).
 
 ### Ce que fait l'app (1.APP-e, 10 nov.)
@@ -485,11 +491,17 @@ suggéré automatiquement (modèle trop faible sur le stress).
   Pas = `nil` (inconnu) si l'heure n'a ni FC ni pas ; 0 si FC sans pas. Heure sans donnée : pas de ligne.
 - **Nuit** (fenêtre 21 h → 12 h, rattachée au jour du réveil), mesurée « comme Santé » :
   `sleepMinutes` = total des intervalles asleep* dans la fenêtre (comptés une fois s'ils se
-  chevauchent) ; `sleepEnd` = fin du dernier. Couverture = part des créneaux de **5 min** contenant
+  chevauchent) ; `sleepEnd` = fin du dernier. Couverture = part des créneaux de **15 min** contenant
   au moins une FC, sur la partie **écoulée** de la fenêtre (une file à 7 h connaît la nuit).
   Nuit **inconnue** si couverture < 60 % **ou** aucun intervalle asleep* (suivi du sommeil
   désactivé) : jamais 0. Différent de v0 (bloc le plus long ≥ 2 h, §6.3) : à reprendre en 2.5 (Lucas).
-- Créneau de 5 min et seuil de 60 % à confirmer par les mesures 1.33 / 1.34 (écran Debug).
+- **Règle 60 % (TODO 1.34, 10 nov.)** : 3 nuits portées (8, 9, 10 nov., montre en charge quelques
+  dizaines de minutes le soir) → couverture **87 %, 95 %, 95 %** avec des créneaux de 15 min, mais
+  seulement 68 %, 68 %, 71 % avec des créneaux de 5 min (la montre mesure toutes les 4–5 min,
+  §6.4) : trop près du seuil. Seuil de 60 % **gardé**, créneau **passé de 5 à 15 min**.
+- Vérifié sur iPhone 16 + Apple Watch (10 nov.) : pas du jour 4 873 (Santé 4 919, écart dû aux
+  pas de l'iPhone) ; dernière HRV 181 ms (Santé 181) ; nuit 8 h 49 (Santé 8 h 51) ; premier import
+  de 14 jours en 3,4 s ; à l'ouverture suivante, seule la nouvelle FC est lue.
 - La suppression totale (3.19) devra aussi effacer les ancres HealthKit.
 
 ## 11. Confidentialité et sécurité (résumé)

@@ -83,13 +83,13 @@
 - [x] **1.27** Mesurer le temps d'import de 2 000 titres (NFR3 : < 60 s). — ✔ temps noté dans PROJECT.md.
 
 ### 1.APP-e HealthKit (R/C)
-- [ ] **1.28** Demande d'autorisation pour FC, pas, HRV, sommeil, avec écran d'explication. — ✔ la feuille système s'affiche avec les 4 types.
-- [ ] **1.29** Lecture ancrée (`HKAnchoredObjectQuery`) de la FC depuis la dernière ancre. — ✔ les nouvelles mesures arrivent à chaque ouverture.
-- [ ] **1.30** Même chose pour les pas et la HRV. — ✔ valeurs cohérentes avec l'app Santé.
-- [ ] **1.31** Sommeil : seulement source Apple Watch, valeurs asleep*. — ✔ total d'une nuit = celui affiché dans l'app Santé (± 5 min).
-- [ ] **1.32** Résumés horaires et nocturnes, puis échantillons bruts jetés. — ✔ aucun échantillon brut stocké.
-- [ ] **1.33** **Mesure terrain** : fréquence réelle de la FC Apple Watch au repos et en journée (2 jours portés). — ✔ médiane de l'intervalle entre mesures notée dans PROJECT.md §6.4.
-- [ ] **1.34** Taux de port de la montre la nuit sur 3 nuits. — ✔ noté ; règle « 60 % » confirmée ou ajustée.
+- [x] **1.28** Demande d'autorisation pour FC, pas, HRV, sommeil, avec écran d'explication. — ✔ la feuille système s'affiche avec les 4 types.
+- [x] **1.29** Lecture ancrée (`HKAnchoredObjectQuery`) de la FC depuis la dernière ancre. — ✔ les nouvelles mesures arrivent à chaque ouverture.
+- [x] **1.30** Même chose pour les pas et la HRV. — ✔ valeurs cohérentes avec l'app Santé.
+- [x] **1.31** Sommeil : seulement source Apple Watch, valeurs asleep*. — ✔ total d'une nuit = celui affiché dans l'app Santé (± 5 min).
+- [x] **1.32** Résumés horaires et nocturnes, puis échantillons bruts jetés. — ✔ aucun échantillon brut stocké.
+- [x] **1.33** **Mesure terrain** : fréquence réelle de la FC Apple Watch au repos et en journée (2 jours portés). — ✔ médiane de l'intervalle entre mesures notée dans PROJECT.md §6.4.
+- [x] **1.34** Taux de port de la montre la nuit sur 3 nuits. — ✔ noté ; règle « 60 % » confirmée ou ajustée.
 
 ### 1.ML Données (L) — en parallèle de 1.APP
 - [ ] **1.35** Explorer D-2 et D-3 : même structure que D-1 ? colonnes ESM, échelles. — ✔ différences listées dans PROJECT.md §5.1.
