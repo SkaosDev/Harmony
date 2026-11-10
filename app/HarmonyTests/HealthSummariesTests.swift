@@ -148,15 +148,16 @@ struct NightSummariesTests {
         #expect(summary.sleepEnd == at(11, 6, 30))
     }
 
-    /// Coverage is measured in 5-min slots: one reading every 10 min covers half of them.
+    /// Coverage is measured in 15-min slots (TODO 1.34): one reading every 10 min covers all of
+    /// them, but only half of 5-min slots.
     @Test func coverageCountsSlotsWithAReading() throws {
         let summary = try #require(night(heartRate: heartRate(every: 10, from: at(10, 21), to: at(11, 12)), sleep: []))
-        #expect(summary.wornFraction == 0.5)
-        let wide = try #require(HealthSummaries.night(
+        #expect(summary.wornFraction == 1)
+        let narrow = try #require(HealthSummaries.night(
             wakeDay: wakeDay, heartRate: heartRate(every: 10, from: at(10, 21), to: at(11, 12)), sleep: [],
-            now: at(11, 15), calendar: calendar, slotMinutes: 15
+            now: at(11, 15), calendar: calendar, slotMinutes: 5
         ))
-        #expect(wide.wornFraction == 1)
+        #expect(narrow.wornFraction == 0.5)
     }
 
     @Test func nightNotStartedYetIsNil() {

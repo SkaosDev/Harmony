@@ -18,7 +18,7 @@ struct HealthDebugSection: View {
     @State private var lastUpdate: String?
     /// Heart-rate measures of TODO 1.33 and 1.34, read again from the provider, never stored.
     @State private var intervals: String?
-    @State private var coverage15: [Date: Double] = [:]
+    @State private var coverage5: [Date: Double] = [:]
 
     var body: some View {
         Section("Apple Health") {
@@ -74,15 +74,15 @@ struct HealthDebugSection: View {
     }
 
     /// TODO 1.31, 1.34: sleep, its end, and the share of the window covered by heart rate
-    /// (5-min slots, as the app uses; 15-min slots once measured).
+    /// (15-min slots, as the app uses; 5-min slots, the first rule, once measured).
     private func describe(_ night: NightSummary) -> String {
         var text = night.sleepMinutes.map { "\(Int($0) / 60) h \(Int($0) % 60) min" } ?? "unknown"
         if let end = night.sleepEnd {
             text += ", end \(end.formatted(date: .omitted, time: .shortened))"
         }
         text += ", worn \(night.wornFraction.formatted(.percent.precision(.fractionLength(0))))"
-        if let wide = coverage15[night.date] {
-            text += " (15 min: \(wide.formatted(.percent.precision(.fractionLength(0)))))"
+        if let narrow = coverage5[night.date] {
+            text += " (5 min: \(narrow.formatted(.percent.precision(.fractionLength(0)))))"
         }
         return text
     }
@@ -124,7 +124,7 @@ struct HealthDebugSection: View {
     }
 
     /// TODO 1.33: median time between two heart rates over the last 48 h, at night (0–6 h) and
-    /// during the day (8–24 h). TODO 1.34: coverage of the last 3 nights with 15-min slots.
+    /// during the day (8–24 h). TODO 1.34: coverage of the last 3 nights with 5-min slots.
     private func measure() async throws {
         let calendar = Calendar.current
         let now = Date.now
@@ -142,11 +142,11 @@ struct HealthDebugSection: View {
         intervals = "Last 48 h, \(recent.count) heart rates. Median interval: night 0–6 h \(median(0..<6)); day 8–24 h \(median(8..<24))."
         print("Health intervals: \(intervals!)")
 
-        coverage15 = [:]
+        coverage5 = [:]
         for night in lastNights {
-            let wide = HealthSummaries.night(wakeDay: night.date, heartRate: heartRate, sleep: [], now: now,
-                                             calendar: calendar, slotMinutes: 15)
-            coverage15[night.date] = wide?.wornFraction
+            let narrow = HealthSummaries.night(wakeDay: night.date, heartRate: heartRate, sleep: [], now: now,
+                                               calendar: calendar, slotMinutes: 5)
+            coverage5[night.date] = narrow?.wornFraction
             print("Health night \(night.date.formatted(date: .numeric, time: .omitted)): \(describe(night))")
         }
     }

@@ -9,8 +9,9 @@ enum HealthSummaries {
     static let nightEndHour = 12
     /// Below this share of the window covered by heart rate, the night is unknown.
     static let wornThreshold = 0.6
-    /// A slot of the window is "worn" if it holds at least one heart rate (to check with TODO 1.34).
-    static let slotMinutes = 5
+    /// A slot of the window is "worn" if it holds at least one heart rate. 15 min (TODO 1.34): the
+    /// Apple Watch reads about every 4–5 min, so 5-min slots left a night worn throughout at ~70 %.
+    static let slotMinutes = 15
 
     /// One summary per hour from `from` on that has data. Heart rate and HRV count in the hour
     /// they were measured; steps are shared between hours by overlap. Steps are known (0 or more)
