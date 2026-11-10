@@ -71,16 +71,16 @@
 - [x] **1.17** Interrupteur « mode démo » dans Debug. — ✔ l'app fonctionne entièrement sur simulateur en mode démo.
 
 ### 1.APP-d Spotify (R)
-- [ ] **1.18** Prototype d'auth PKCE avec `ASWebAuthenticationSession` (verifier, challenge, échange du code). — ✔ un jeton d'accès obtenu sur un vrai iPhone.
-- [ ] **1.19** Stocker access/refresh token dans le Keychain. — ✔ le jeton survit à un redémarrage de l'app.
-- [ ] **1.20** Rafraîchissement automatique du jeton. — ✔ appel réussi après expiration simulée.
-- [ ] **1.21** Tester chaque endpoint prévu avec un vrai compte : `/me`, `/me/tracks`, `/me/top/tracks`, `/me/player/recently-played`, `/tracks/{id}`. — ✔ tableau OK/KO ajouté à PROJECT.md §9.
-- [ ] **1.22** Noter les scopes réellement nécessaires. — ✔ liste mise à jour dans PROJECT.md §9.
-- [ ] **1.23** Import paginé de `/me/tracks` (50 par page) dans `Track`. — ✔ nombre importé = nombre de titres aimés dans Spotify.
-- [ ] **1.24** Gestion du 429 (attendre `Retry-After`). — ✔ test avec une réponse simulée.
-- [ ] **1.25** Ajouter top tracks et écoutes récentes (source = top/recent). — ✔ doublons fusionnés.
-- [ ] **1.26** Déconnexion : supprimer les jetons (et la bibliothèque si l'utilisateur accepte). — ✔ Keychain vide après déconnexion.
-- [ ] **1.27** Mesurer le temps d'import de 2 000 titres (NFR3 : < 60 s). — ✔ temps noté dans PROJECT.md.
+- [x] **1.18** Prototype d'auth PKCE avec `ASWebAuthenticationSession` (verifier, challenge, échange du code). — ✔ un jeton d'accès obtenu sur un vrai iPhone.
+- [x] **1.19** Stocker access/refresh token dans le Keychain. — ✔ le jeton survit à un redémarrage de l'app.
+- [x] **1.20** Rafraîchissement automatique du jeton. — ✔ appel réussi après expiration simulée.
+- [x] **1.21** Tester chaque endpoint prévu avec un vrai compte : `/me`, `/me/tracks`, `/me/top/tracks`, `/me/player/recently-played`, `/tracks/{id}`. — ✔ tableau OK/KO ajouté à PROJECT.md §9.
+- [x] **1.22** Noter les scopes réellement nécessaires. — ✔ liste mise à jour dans PROJECT.md §9.
+- [x] **1.23** Import paginé de `/me/tracks` (50 par page) dans `Track`. — ✔ nombre importé = nombre de titres aimés dans Spotify.
+- [x] **1.24** Gestion du 429 (attendre `Retry-After`). — ✔ test avec une réponse simulée.
+- [x] **1.25** Ajouter top tracks et écoutes récentes (source = top/recent). — ✔ doublons fusionnés.
+- [x] **1.26** Déconnexion : supprimer les jetons (et la bibliothèque si l'utilisateur accepte). — ✔ Keychain vide après déconnexion.
+- [x] **1.27** Mesurer le temps d'import de 2 000 titres (NFR3 : < 60 s). — ✔ temps noté dans PROJECT.md.
 
 ### 1.APP-e HealthKit (R/C)
 - [ ] **1.28** Demande d'autorisation pour FC, pas, HRV, sommeil, avec écran d'explication. — ✔ la feuille système s'affiche avec les 4 types.

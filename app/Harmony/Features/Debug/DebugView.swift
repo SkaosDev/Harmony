@@ -3,7 +3,8 @@ import SwiftData
 import SwiftUI
 
 /// Developer screen, Debug builds only, opened from Settings (not in the design).
-/// Content: demo mode switch (TODO 1.17); current features and state (TODO 2.22).
+/// Content: demo mode switch (TODO 1.17); Spotify outside demo mode (TODO 1.18+);
+/// current features and state (TODO 2.22).
 struct DebugView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Query private var tracks: [Track]
@@ -30,6 +31,8 @@ struct DebugView: View {
                         LabeledContent(signal.rawValue, value: demoSamples[signal] ?? 0, format: .number)
                     }
                 }
+            } else {
+                SpotifyDebugSection()
             }
         }
         .scrollContentBackground(.hidden)
