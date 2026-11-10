@@ -4,7 +4,9 @@ import SwiftData
 enum HarmonyStore {
     /// Every table of the app. A new `@Model` must be added here.
     static var schema: Schema {
-        Schema([])
+        Schema([
+            Track.self,
+        ])
     }
 
     /// `inMemory: true` is for tests: nothing is written to disk.
