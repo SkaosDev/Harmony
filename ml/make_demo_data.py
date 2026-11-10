@@ -46,12 +46,14 @@ def inside(t, intervals):
 
 
 def split_night(rng, bed, wake):
-    """A night as 3 or 4 asleep intervals separated by short awake gaps."""
-    gaps = sorted(rng.uniform(bed + HOUR, wake - 30 * MINUTE) for _ in range(rng.choice((2, 3))))
+    """A night as up to 4 asleep intervals (1.5-3 h each) separated by short awake gaps."""
     intervals, start = [], bed
-    for gap in gaps:
-        intervals.append((start, int(gap)))
-        start = int(gap + rng.uniform(4, 12) * MINUTE)
+    for _ in range(rng.choice((2, 3))):
+        gap = start + int(rng.uniform(1.5, 3) * HOUR)
+        if gap > wake - 30 * MINUTE:
+            break
+        intervals.append((start, gap))
+        start = gap + int(rng.uniform(4, 12) * MINUTE)
     intervals.append((start, wake))
     return intervals
 
