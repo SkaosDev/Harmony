@@ -118,6 +118,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Météo retirée | Localisations EmoPhone anonymisées ; plafond mesuré à 0,53 AUROC pour tout effet partagé |
 | Évaluation par personnes entières tenues à part | Un split aléatoire donne des résultats trop optimistes |
 | Un seul composant cloud : Cloudflare Worker | La clé API LLM ne doit jamais être dans l'app |
+| MuSe v3 (Kaggle), scores en rang centile, ID Spotify en double retirés | Seule version avec un genre ; échelle brute trop resserrée ; ID partagés souvent faux (§5.2) |
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 
@@ -216,11 +217,58 @@ Harmony/
   - la montre n'était pas portée sur ~34 % des nuits.
 
 ### 5.2 MuSe (scores des morceaux)
-- Zenodo, doi:10.5281/zenodo.4281165, **CC BY 4.0** (redistribuable avec citation).
-- 90 408 morceaux, valence / arousal / dominance issues des tags Last.fm, ID Spotify pour ~68 %
-  (« provisoires » selon les auteurs → à vérifier avant de jouer une suggestion).
+- Akiki & Burghardt 2021 (doi:10.5334/johd.33), **CC BY 4.0** (redistribuable avec citation).
+- **Version utilisée : v3 sur Kaggle** (`cakiki/muse-the-musical-sentiment-dataset`, version 5 du
+  jeu, fichier `muse_v3.csv`), publiée par les auteurs. Contrairement à la version Zenodo
+  (doi:10.5281/zenodo.4281165 : 90 408 lignes, 8 colonnes, ni genre ni nombre de tags), elle a un
+  **genre** et le **nombre de tags d'émotion** de chaque morceau. Le rapport B cite 90 408
+  morceaux (Zenodo) ; le rapport final citera la v3 (90 001).
+- Valence / arousal / dominance issues des tags Last.fm (lexique de Warriner et al.), ID Spotify
+  pour ~68 % (« provisoires » selon les auteurs → à vérifier avant de jouer une suggestion).
 - Dans l'app : une table réduite (titre, artistes, genre, valence, arousal, spotify_id), ramenée
-  sur 0–1. **Vérifier l'échelle réelle des colonnes dans le fichier** avant de normaliser.
+  sur 0–1 selon les décisions ci-dessous.
+
+**Fichier vérifié le 10 nov. 2026 (TODO 1.38)** — `python ml/muse_download.py` →
+`data/muse/muse_v3.csv` (ignoré par Git) : 18 200 150 octets (taille donnée par Kaggle), SHA-256
+`9fdba18b43c2b05187a4136bc0c0996c2cf41a3e5d55b27015131fafd410aa07` (contrôlé par le script).
+
+**90 001 lignes, 11 colonnes** : `lastfm_url` (unique), `track` (79 392 titres distincts),
+`artist` (un seul champ texte, 26 012 valeurs), `seeds`, `number_of_emotion_tags` (1 à 50,
+médiane 2 ; 28,6 % des morceaux n'ont qu'un tag), `valence_tags`, `arousal_tags`,
+`dominance_tags` (remplies à 100 %), `mbid` (68,0 %, sans doublon), `spotify_id` (68,5 % :
+61 630 remplis, 60 656 distincts), `genre` (92,6 %, 811 valeurs dont 107 couvrent 90 % ; en tête
+indie, rock, electronic, pop, ambient).
+
+Échelle **observée** (l'échelle théorique n'est pas documentée) :
+
+| Colonne | min | q1 | médiane | q3 | max | moyenne |
+|---|---|---|---|---|---|---|
+| `valence_tags` | 0,235 | 4,277 | 5,650 | 6,697 | 8,475 | 5,454 |
+| `arousal_tags` | 0,108 | 3,527 | 4,330 | 5,150 | 7,270 | 4,318 |
+| `dominance_tags` (non utilisée) | 0,229 | 4,550 | 5,460 | 6,115 | 7,440 | 5,246 |
+
+**Décisions du 10 nov. 2026, à appliquer dans `ml/muse_build.py` (1.39) :**
+1. **Échelle 0–1 = rang centile** sur les 90 001 lignes, avant tout filtrage :
+   `energy = arousal_tags.rank(pct=True)`, `positivity = valence_tags.rank(pct=True)` (ex aequo :
+   rang moyen). Une énergie de 0,2 veut dire « plus calme que 80 % des morceaux MuSe ».
+   Pourquoi : l'échelle brute n'est pas 1–9 stricte et l'arousal est très resserrée ; un min–max
+   mettrait 63 % des morceaux entre 0,45 et 0,75 et seulement 4,7 % sous 0,3, si bien que
+   Wind-down (0,2) et Stress (0,3) ne trouveraient presque rien. Le centile répartit les morceaux
+   sur 0–1 et donne un sens aux cibles (§2.3), à la tolérance de 0,15 et au seuil de positivité
+   0,5 (§8). Conséquence : les scores LLM (absolus) sont comparés à cette échelle en 2.30 ; s'ils
+   s'en écartent, on les convertit en centiles MuSe (décision en 2.31).
+2. **Genre = colonne `genre` de la v3.** `Track` n'a pas de genre et on n'ajoute aucun appel
+   Spotify : les « genres de la bibliothèque » sont les genres MuSe des morceaux de la
+   bibliothèque trouvés dans MuSe. Repli (§8, 3.5) : d'abord un morceau MuSe d'un artiste de la
+   bibliothèque, sinon d'un de ces genres. 58 687 lignes ont à la fois un genre et un ID Spotify.
+3. **ID Spotify en double** (889 ID sur 1 863 lignes) : l'ID est **retiré de toutes ces lignes**.
+   Dans 490 cas sur 889, ce sont des morceaux différents (titre ou artiste différents après
+   normalisation) : au moins une correspondance est fausse ; même pour le même morceau, les
+   scores diffèrent presque toujours. Ces lignes restent trouvables par titre + artiste, mais ne
+   peuvent pas être suggérées (pas d'ID sûr).
+   **Clé titre + premier artiste en double** (2 097 clés et 5 544 lignes avec une normalisation
+   simple) : une seule ligne par clé normalisée (fonction de 1.40), celle qui a le plus de tags
+   d'émotion (scores les plus fiables) ; à égalité, la première du fichier.
 
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
@@ -352,8 +400,9 @@ Paramètres de départ (à ajuster au pilote) :
 - Pour chaque cible : morceau de la bibliothèque le plus proche en énergie, avec pénalités
   (+0,2 si positivité < 0,5 pour Stress/Low energy ; +0,3 artiste déjà dans la file ; +0,1 score LLM).
   Exclure les morceaux joués dans les 3 derniers jours et ceux passés 2 fois dans cette situation.
-- Si aucun morceau à moins de 0,15 de la cible et < 2 suggestions : morceau MuSe (artiste ou genre
-  présent dans la bibliothèque), ID vérifié par `GET /tracks/{id}` (titre + artiste), marqué « nouveau ».
+- Si aucun morceau à moins de 0,15 de la cible et < 2 suggestions : morceau MuSe d'un artiste de la
+  bibliothèque, sinon d'un genre de la bibliothèque (genres MuSe de ses morceaux, §5.2), ID vérifié
+  par `GET /tracks/{id}` (titre + artiste), marqué « nouveau ».
 - Explication : phrases fixes (contexte + plan), **jamais** un mot d'émotion.
 
 Suggestion de situation (FR5) : Wake-up dans les 2 h après la fin du sommeil ; Wind-down après

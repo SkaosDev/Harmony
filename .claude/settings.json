@@ -3,7 +3,6 @@
     "deny": [
       "Read(.env)",
       "Read(.dev.vars)",
-      "Read(./data/**)",
       "Read(./app/Harmony/Config.xcconfig)"
     ]
   }

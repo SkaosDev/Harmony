@@ -29,7 +29,6 @@
 				Config.xcconfig,
 				Harmony.xcconfig,
 				Info.plist,
-				Services/.gitkeep,
 			);
 			target = A10000000000000000000007 /* Harmony */;
 		};
