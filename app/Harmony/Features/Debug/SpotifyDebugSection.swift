@@ -13,6 +13,8 @@ struct SpotifyDebugSection: View {
     @State private var message: String?
     /// Size and duration of the last import (TODO 1.27).
     @State private var lastImport: String?
+    /// Spotify's answer per endpoint (TODO 1.21).
+    @State private var endpointResults: [(endpoint: String, result: String)] = []
 
     var body: some View {
         Section {
@@ -23,6 +25,10 @@ struct SpotifyDebugSection: View {
                 Button("Import library") { run(importLibrary) }
                 if let lastImport {
                     LabeledContent("Last import", value: lastImport)
+                }
+                Button("Check endpoints") { run(checkEndpoints) }
+                ForEach(endpointResults, id: \.endpoint) { row in
+                    LabeledContent(row.endpoint, value: row.result)
                 }
                 Button("Disconnect", role: .destructive) { confirmingDisconnect = true }
                     .confirmationDialog("Disconnect from Spotify?", isPresented: $confirmingDisconnect) {
@@ -57,11 +63,46 @@ struct SpotifyDebugSection: View {
         try context.save()
         let duration = (clock.now - start).formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 1)))
         lastImport = "\(imported.count) tracks in \(duration)"
+        print("Spotify import: \(lastImport!)")
+    }
+
+    /// Calls each Web API endpoint of PROJECT.md §9 once and shows Spotify's answer (TODO 1.21).
+    /// `/tracks/{id}` uses the first liked song.
+    private func checkEndpoints() async throws {
+        let api = SpotifyProvider.live.api
+        var results: [(endpoint: String, result: String)] = []
+        func check(_ endpoint: String, _ path: String) async -> Data? {
+            let result: String
+            var body: Data?
+            do {
+                body = try await api.data(for: URL(string: path, relativeTo: SpotifyAPI.baseURL)!.absoluteURL)
+                result = "OK"
+            } catch {
+                result = "\(error)"
+            }
+            results.append((endpoint, result))
+            print("Spotify check: \(endpoint): \(result)")
+            return body
+        }
+
+        _ = await check("GET /me", "me")
+        let liked = await check("GET /me/tracks", "me/tracks?limit=1")
+        _ = await check("GET /me/top/tracks", "me/top/tracks?limit=1")
+        _ = await check("GET /me/player/recently-played", "me/player/recently-played?limit=1")
+        let firstLiked = liked.flatMap { try? SpotifyAPI.decoder().decode(SpotifyPage<SpotifySavedItem>.self, from: $0) }?
+            .items.first?.track?.id
+        if let firstLiked {
+            _ = await check("GET /tracks/{id}", "tracks/\(firstLiked)")
+        } else {
+            results.append(("GET /tracks/{id}", "not checked: no liked song"))
+        }
+        endpointResults = results
     }
 
     /// TODO 1.26.
     private func disconnect(deletingLibrary: Bool) {
         lastImport = nil
+        endpointResults = []
         run { try SpotifyProvider.live.signOut(deletingLibraryFrom: deletingLibrary ? context : nil) }
     }
 
