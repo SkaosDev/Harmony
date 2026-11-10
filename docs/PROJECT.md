@@ -420,11 +420,39 @@ suggéré automatiquement (modèle trop faible sur le stress).
   lecture et file. Supprimé : `GET /tracks` (plusieurs titres d'un coup). Sauvegarder un titre :
   `PUT /me/library` avec des URI. `GET /me` ne renvoie plus e-mail ni pays. `GET /search` : 10
   résultats max par page.
-- **Scopes probables** : `user-library-read`, `user-library-modify`, `user-top-read`,
-  `user-read-recently-played`, `app-remote-control` (à confirmer au premier test).
-- **Authentification** : flux *Authorization Code with PKCE* (pas de secret dans l'app).
-  Option sûre : le faire nous-mêmes avec `ASWebAuthenticationSession`, puis donner le jeton à
-  App Remote. Le SDK semble aussi gérer PKCE sans serveur, mais ce n'est **pas confirmé** → tester en M1.
+- **Scopes demandés** (TODO 1.22, tous accordés au test du 10 nov.) — un par usage :
+
+  | Scope | Pour | Testé |
+  |---|---|---|
+  | `user-library-read` | `GET /me/tracks` (titres aimés) | oui (1.21) |
+  | `user-top-read` | `GET /me/top/tracks` | oui (1.21) |
+  | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
+  | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | pas encore |
+  | `app-remote-control` | App Remote (lecture, TODO 3.10) | pas encore |
+
+  `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
+  `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
+- **Authentification** : flux *Authorization Code with PKCE* (pas de secret dans l'app), fait
+  nous-mêmes avec `ASWebAuthenticationSession` (`Services/Music/Spotify/`), redirection
+  `harmony://callback` ; **marche sur un vrai iPhone** (TODO 1.18, 10 nov.). Jetons dans le
+  Keychain (`AfterFirstUnlockThisDeviceOnly`), rafraîchis 1 min avant expiration ou après un 401.
+  Reste à confirmer en 3.10 : App Remote accepte ce jeton.
+- **Endpoints testés avec un vrai compte** (TODO 1.21, 10 nov., iPhone 16, compte de Clément,
+  écran Debug › Check endpoints) :
+
+  | Endpoint | Résultat |
+  |---|---|
+  | `GET /me` | OK |
+  | `GET /me/tracks` | OK |
+  | `GET /me/top/tracks` | OK |
+  | `GET /me/player/recently-played` | OK |
+  | `GET /tracks/{id}` | OK |
+
+- **Import** (TODO 1.23, 1.25, 1.27) : titres aimés par pages de 50, + 50 top tracks
+  (`medium_term`) + 50 dernières écoutes, fusionnés par ID Spotify (priorité aimé > top > récent).
+  Mesure du 10 nov. (iPhone 16, compte de Clément) : 937 titres aimés tous importés ;
+  **939 titres en 4,6 s** (enregistrement SwiftData compris), soit ~10 s attendues pour 2 000
+  (NFR3 : < 60 s). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
 - **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
   l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
