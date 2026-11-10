@@ -452,7 +452,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (`medium_term`) + 50 dernières écoutes, fusionnés par ID Spotify (priorité aimé > top > récent).
   Mesure du 10 nov. (iPhone 16, compte de Clément) : 937 titres aimés tous importés ;
   **939 titres en 4,6 s** (enregistrement SwiftData compris), soit ~10 s attendues pour 2 000
-  (NFR3 : < 60 s). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
+  (NFR3 : < 60 s). Pas de compte à 2 000 titres aimés sous la main : estimation acceptée pour
+  1.27 (le temps croît avec le nombre de pages de 50). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
 - **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
   l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).

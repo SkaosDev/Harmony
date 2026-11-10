@@ -80,7 +80,7 @@
 - [x] **1.24** Gestion du 429 (attendre `Retry-After`). — ✔ test avec une réponse simulée.
 - [x] **1.25** Ajouter top tracks et écoutes récentes (source = top/recent). — ✔ doublons fusionnés.
 - [x] **1.26** Déconnexion : supprimer les jetons (et la bibliothèque si l'utilisateur accepte). — ✔ Keychain vide après déconnexion.
-- [ ] **1.27** Mesurer le temps d'import de 2 000 titres (NFR3 : < 60 s). — ✔ temps noté dans PROJECT.md.
+- [x] **1.27** Mesurer le temps d'import de 2 000 titres (NFR3 : < 60 s). — ✔ temps noté dans PROJECT.md.
 
 ### 1.APP-e HealthKit (R/C)
 - [ ] **1.28** Demande d'autorisation pour FC, pas, HRV, sommeil, avec écran d'explication. — ✔ la feuille système s'affiche avec les 4 types.
