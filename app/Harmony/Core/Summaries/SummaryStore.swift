@@ -17,16 +17,18 @@ enum SummaryStore {
         var nights = 0
     }
 
-    private static var isUpdating = false
+    /// Stores being updated: one update at a time per store.
+    private static var updating: Set<ObjectIdentifier> = []
 
     /// Reads what the watch added since the last opening; from the oldest new sample on,
     /// reads the samples again and rewrites every hour and every night touched (a late watch
-    /// sync corrects older hours). Nothing new: nothing to do. Nil if an update is already running.
+    /// sync corrects older hours). Nothing new: nothing to do. Nil if this store is already
+    /// being updated.
     static func update(provider: any HealthProvider, context: ModelContext, now: Date = .now,
                        calendar: Calendar = .current) async throws -> Report? {
-        guard !isUpdating else { return nil }
-        isUpdating = true
-        defer { isUpdating = false }
+        let store = ObjectIdentifier(context.container)
+        guard updating.insert(store).inserted else { return nil }
+        defer { updating.remove(store) }
 
         var report = Report()
         let since = calendar.date(byAdding: .day, value: -historyDays, to: calendar.startOfDay(for: now))!
