@@ -294,6 +294,19 @@ indie, rock, electronic, pop, ambient).
    simple) : une seule ligne par clé normalisée (fonction de 1.40), celle qui a le plus de tags
    d'émotion (scores les plus fiables) ; à égalité, la première du fichier.
 
+**Construction (TODO 1.39)** — `ml/muse_build.py` lit 90 001 lignes, retire les ID Spotify
+dupliqués (889 ID, 1 863 lignes), puis garde une ligne par clé titre/artiste : 678 clés en double
+(1 410 lignes concernées ; 732 retirées). Aucune clé n'est vide. La table `songs` contient
+`spotify_id`, `title`, `artists`, `genre`, `energy`, `positivity`, `match_key` ; la clé normalisée
+est sa clé primaire indexée, avec un index sur `spotify_id`. 89 269 lignes sont gardées, dont
+59 679 avec ID et 82 685 avec genre. Scores centiles : énergie min/médiane/max =
+0,000011/0,499717/0,999000 ; positivité = 0,000011/0,500500/1,000000.
+Le fichier fait 14 155 776 octets après `VACUUM`, donc dépasse 10 Mo : la tâche reste décochée.
+Le stockage `WITHOUT ROWID` avec `match_key` comme clé primaire et une taille de page de 16 Kio
+a réduit le fichier de 15 532 032 octets (table avec rowid, page 4 Kio) à 14 155 776 octets,
+sans suffire. Une compression exigeant une extension SQLite ou une représentation qui modifie le
+schéma nécessite une décision d'équipe avant d'être retenue.
+
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Optionnel ; mêmes règles de confidentialité qu'EmoPhone.
