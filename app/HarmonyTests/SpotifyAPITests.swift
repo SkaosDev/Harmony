@@ -108,3 +108,70 @@ struct SpotifyTokenRefreshTests {
         #expect(server.requests.isEmpty)
     }
 }
+
+/// TODO 1.24: a 429 answer waits for `Retry-After`, then the request is sent again.
+@MainActor
+struct SpotifyRateLimitTests {
+    private let now = Date(timeIntervalSince1970: 1_790_000_000)
+    private let store = makeTestStore()
+    private let server = StubHTTP()
+
+    /// Records the waits instead of sleeping.
+    private final class Clock {
+        var waits: [Duration] = []
+        func sleep(_ duration: Duration) { waits.append(duration) }
+    }
+
+    private struct Me: Decodable, Equatable {
+        let id: String
+    }
+
+    private func makeAPI(clock: Clock) throws -> SpotifyAPI {
+        let auth = try makeSignedInAuth(server: server, store: store, now: now, expiresAt: now.addingTimeInterval(3600))
+        return SpotifyAPI(auth: auth, send: server.send, sleep: clock.sleep)
+    }
+
+    @Test func waitsForRetryAfterThenSendsAgain() async throws {
+        defer { try? store.delete() }
+        let clock = Clock()
+        server.on("/v1/me", status: 429, headers: ["Retry-After": "2"])
+        server.on("/v1/me", body: #"{"id":"user-1"}"#)
+
+        #expect(try await makeAPI(clock: clock).get("me") == Me(id: "user-1"))
+        #expect(clock.waits == [.seconds(2)])
+        #expect(server.requests.count == 2)
+    }
+
+    @Test func missingRetryAfterWaitsOneSecond() async throws {
+        defer { try? store.delete() }
+        let clock = Clock()
+        server.on("/v1/me", status: 429)
+        server.on("/v1/me", body: #"{"id":"user-1"}"#)
+
+        #expect(try await makeAPI(clock: clock).get("me") == Me(id: "user-1"))
+        #expect(clock.waits == [.seconds(1)])
+    }
+
+    @Test func longWaitIsAnErrorInsteadOfHanging() async throws {
+        defer { try? store.delete() }
+        let clock = Clock()
+        server.on("/v1/me", status: 429, headers: ["Retry-After": "3600"])
+
+        await #expect(throws: SpotifyError.rateLimited(retryAfter: 3600)) {
+            try await makeAPI(clock: clock).get("me", as: Me.self)
+        }
+        #expect(clock.waits.isEmpty)
+    }
+
+    @Test func givesUpAfterThreeRetries() async throws {
+        defer { try? store.delete() }
+        let clock = Clock()
+        for _ in 0..<4 { server.on("/v1/me", status: 429, headers: ["Retry-After": "1"]) }
+
+        await #expect(throws: SpotifyError.http(429)) {
+            try await makeAPI(clock: clock).get("me", as: Me.self)
+        }
+        #expect(clock.waits.count == 3)
+        #expect(server.requests.count == 4)
+    }
+}

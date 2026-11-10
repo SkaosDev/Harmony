@@ -7,4 +7,6 @@ enum SpotifyError: Error, Equatable {
     case loginFailed(String)
     /// Spotify answered with this HTTP status.
     case http(Int)
+    /// Too many requests, and Spotify asks to wait longer than `SpotifyAPI.longestWait` seconds.
+    case rateLimited(retryAfter: Int)
 }
