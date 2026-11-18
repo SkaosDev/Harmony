@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Documentation that makes Harmony reproducible</title>
+  <desc id="desc">A one-slide overview of Harmony's project guide, task list, reports, machine learning scripts, and data privacy rule.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101B2C"/><stop offset="1" stop-color="#17283B"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#42D6C5"/><stop offset="1" stop-color="#85E3BD"/></linearGradient>
+    <style>
+      .sans { font-family: Aptos, "Segoe UI", Arial, sans-serif; }
+      .muted { fill: #A9B9C9; }
+      .card { fill: #1C3045; stroke: #314A61; stroke-width: 1.5; }
+    </style>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <circle cx="1120" cy="-70" r="270" fill="#31BDAA" opacity=".07"/>
+  <circle cx="40" cy="700" r="230" fill="#7AA7FF" opacity=".06"/>
+  <rect x="64" y="54" width="7" height="75" rx="3.5" fill="url(#accent)"/>
+  <text class="sans" x="94" y="73" fill="#61DCC6" font-size="17" font-weight="700" letter-spacing="3">HARMONY · PROJECT PROGRESS</text>
+  <text class="sans" x="94" y="119" fill="#F5F8FC" font-size="39" font-weight="700">Documentation that makes</text>
+  <text class="sans" x="94" y="163" fill="#F5F8FC" font-size="39" font-weight="700">Harmony reproducible</text>
+  <text class="sans muted" x="96" y="198" font-size="18">A clear path from research evidence to an implementation plan</text>
+
+  <rect class="card" x="64" y="242" width="548" height="145" rx="18"/>
+  <rect x="64" y="242" width="7" height="145" rx="3.5" fill="#51D5C1"/>
+  <text class="sans" x="94" y="279" fill="#64DEC9" font-size="15" font-weight="700" letter-spacing="2">01 · PROJECT GUIDE</text>
+  <text class="sans" x="94" y="318" fill="#F5F8FC" font-size="24" font-weight="700">PROJECT.md</text>
+  <text class="sans muted" x="94" y="350" font-size="17">Goals · architecture · data decisions · model plan</text>
+
+  <rect class="card" x="668" y="242" width="548" height="145" rx="18"/>
+  <rect x="668" y="242" width="7" height="145" rx="3.5" fill="#89AFFF"/>
+  <text class="sans" x="698" y="279" fill="#A8C2FF" font-size="15" font-weight="700" letter-spacing="2">02 · DELIVERY PLAN</text>
+  <text class="sans" x="698" y="318" fill="#F5F8FC" font-size="24" font-weight="700">TODO.md</text>
+  <text class="sans muted" x="698" y="350" font-size="17">Ordered tasks · owners · milestones · checks</text>
+
+  <rect class="card" x="64" y="409" width="548" height="145" rx="18"/>
+  <rect x="64" y="409" width="7" height="145" rx="3.5" fill="#FFC979"/>
+  <text class="sans" x="94" y="446" fill="#FFD18A" font-size="15" font-weight="700" letter-spacing="2">03 · EVIDENCE &amp; RATIONALE</text>
+  <text class="sans" x="94" y="485" fill="#F5F8FC" font-size="24" font-weight="700">Project reports</text>
+  <text class="sans muted" x="94" y="517" font-size="17">Initial EmoPhone findings · technical choices</text>
+
+  <rect class="card" x="668" y="409" width="548" height="145" rx="18"/>
+  <rect x="668" y="409" width="7" height="145" rx="3.5" fill="#E89CEB"/>
+  <text class="sans" x="698" y="446" fill="#EAB0EC" font-size="15" font-weight="700" letter-spacing="2">04 · REPEATABLE WORK</text>
+  <text class="sans" x="698" y="485" fill="#F5F8FC" font-size="24" font-weight="700">ML scripts</text>
+  <text class="sans muted" x="698" y="517" font-size="17">Dataset exploration · MuSe preparation</text>
+
+  <rect x="64" y="584" width="1152" height="76" rx="16" fill="#173B42" stroke="#27645F" stroke-width="1.5"/>
+  <circle cx="101" cy="622" r="15" fill="#54D7BF" opacity=".18"/>
+  <path d="M94 622l5 5 10-11" fill="none" stroke="#65E1C9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="sans" x="132" y="617" fill="#70E0CA" font-size="14" font-weight="700" letter-spacing="1.6">PRIVACY BY DESIGN</text>
+  <text class="sans" x="132" y="642" fill="#E8F4F2" font-size="18">Restricted participant data stays local and out of Git.</text>
+  <text class="sans" x="1198" y="691" fill="#71869A" font-size="12" text-anchor="end">FIRESTARTER · HARMONY</text>
+</svg>
