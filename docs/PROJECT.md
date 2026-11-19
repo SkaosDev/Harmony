@@ -420,6 +420,23 @@ de la montre des 14 derniers jours, donc l'app peut la calculer à l'identique.
   réveil est dans les 14 jours précédant le jour de la réponse ; au moins **5 nuits connues**, sinon
   inconnu.
 
+**Tables v1 (TODO 2.5, 2.7, 19 nov. 2026)** — `python ml/build_features.py --data data/emophone
+--out data/features --check-v0` ; tables locales `data/features/v1_D1.csv`… (jamais sur Git),
+identifiant participant `vague + pcode` (ex. `D1_P050`).
+
+| Ligne de sortie | D-1 | D-2 | D-3 |
+|---|---:|---:|---:|
+| Lignes / participants | 10 259 / 92 | 21 042 / 99 | 21 838 / 106 |
+| Règles v0 : nuits comparées / écarts avec `explore_d1.py` | 1 653 / 0 | 3 006 / 0 | 3 144 / 0 |
+| Règles v1 : réponses dont la nuit change de statut | 139 (2 → inconnue, 137 → connue) | 192 (2, 190) | 240 (3, 237) |
+| Part de nuits connues, v0 → v1 | 0,660 → 0,674 | 0,410 → 0,419 | 0,784 → 0,794 |
+| Part inconnue : `z_hr_30` / `zb_hr_30` / `z_log_steps_30` | 0,428 / 0,451 / 0,427 | 0,511 / 0,522 / 0,511 | 0,243 / 0,258 / 0,242 |
+| Part inconnue : `z_sleep_min` / `hours_since_wake` | 0,608 / 0,326 | 0,695 / 0,581 | 0,377 / 0,206 |
+
+Les nuits changent surtout d'inconnue à connue : les créneaux de 15 min tolèrent de courts trous
+de FC. Beaucoup de z-scores sont inconnus parce qu'une référence demande 7 jours de données sur
+des vagues d'environ 4 semaines ; ils seront imputés par la médiane d'entraînement (TODO 2.8).
+
 ### 6.5 Résultats actuels (D-1, 92 participants, 10 259 réponses, 5 groupes par participant)
 
 | Cible et entrées | AUROC | Balanced acc. |

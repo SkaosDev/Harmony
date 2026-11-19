@@ -54,7 +54,8 @@ def resample_hr(ts, values):
     order = np.argsort(ts, kind="stable")
     ts, values = ts[order], np.asarray(values, dtype=float)[order]
     slice_ = ts // (RESAMPLE_MIN * MIN_MS)
-    first = np.r_[True, slice_[1:] != slice_[:-1]]
+    first = np.ones(len(ts), dtype=bool)
+    first[1:] = slice_[1:] != slice_[:-1]
     return ts[first], values[first]
 
 

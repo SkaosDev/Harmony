@@ -47,6 +47,14 @@ class ResampleTests(unittest.TestCase):    # 2.4
         np.testing.assert_array_equal(rts, [t0, t0 + 5 * MIN + 1000, t0 + 20 * MIN])
         np.testing.assert_array_equal(rv, [60.0, 70.0, 80.0])
 
+    def test_no_heart_rate_at_all(self):
+        empty = np.array([], dtype=np.int64)
+        self.assertEqual(len(F.resample_hr(empty, np.array([]))[0]), 0)
+        f = F.participant_features(np.array([kst(9, 14), kst(9, 9)]), empty, np.array([]),
+                                   empty, np.array([]), np.nan)
+        self.assertTrue(np.isnan(f["z_hr_30"]).all() and np.isnan(f["z_sleep_min"]).all())
+        np.testing.assert_array_equal(f["sleep_unknown"], [1, 1])
+
     def test_one_reading_is_enough_and_window_is_before_t(self):
         t = kst(0, 12)
         ts = np.array([t - 40 * MIN, t - 10 * MIN, t + 1])       # the last one is after t
