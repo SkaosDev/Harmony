@@ -110,7 +110,7 @@
 - [ ] **2.1** Écrire `ml/features.py` : une seule source de vérité pour les features v1 (ordre fixe). — ✔ fonctions pures, testées.
 - [ ] **2.2** Moyennes personnelles sur les 14 jours **précédents** (prêtes à 7 jours). — ✔ test : aucune donnée future utilisée.
 - [ ] **2.3** Référence calculée sur une grille régulière (toutes les 30 min, montre portée). — ✔ même définition écrite dans PROJECT.md §6.
-- [ ] **2.4** FC rééchantillonnée à 1 mesure / 5 min, seuil 1 mesure par fenêtre. — ✔ test unitaire.
+- [x] **2.4** FC rééchantillonnée à 1 mesure / 5 min, seuil 1 mesure par fenêtre. — ✔ test unitaire.
 - [ ] **2.5** Sommeil estimé + `hours_since_wake` + `sleep_unknown` (repris d'explore_d1). — ✔ résultats D-1 identiques à v0 pour cette partie.
 - [ ] **2.6** Échelles D-3 ramenées sur −3..+3 avant l'étiquette. — ✔ test.
 - [ ] **2.7** Construire la table v1 pour D-1, D-2, D-3 (fichier local dans `data/`, jamais sur Git). — ✔ nombre de lignes par vague affiché.

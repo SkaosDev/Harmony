@@ -38,5 +38,31 @@ class OrderAndTimeTests(unittest.TestCase):    # 2.1
         np.testing.assert_array_equal(z, [1.0, np.nan, np.nan, np.nan])
 
 
+class ResampleTests(unittest.TestCase):    # 2.4
+    def test_first_reading_of_each_5_minute_slice(self):
+        t0 = kst(0, 10)
+        ts = np.array([t0 + 4 * MIN, t0, t0 + 5 * MIN + 1000, t0 + 9 * MIN, t0 + 20 * MIN])
+        v = np.array([61.0, 60.0, 70.0, 71.0, 80.0])
+        rts, rv = F.resample_hr(ts, v)
+        np.testing.assert_array_equal(rts, [t0, t0 + 5 * MIN + 1000, t0 + 20 * MIN])
+        np.testing.assert_array_equal(rv, [60.0, 70.0, 80.0])
+
+    def test_one_reading_is_enough_and_window_is_before_t(self):
+        t = kst(0, 12)
+        ts = np.array([t - 40 * MIN, t - 10 * MIN, t + 1])       # the last one is after t
+        v = np.array([90.0, 60.0, 200.0])
+        q = F.window_values(ts, v, np.array([], dtype=np.int64), np.array([]), np.array([t]))
+        self.assertEqual(q["hr_15"][0], 60.0)
+        self.assertEqual(q["hr_30"][0], 60.0)
+        self.assertEqual(q["hr_60"][0], 75.0)
+
+    def test_no_reading_means_unknown(self):
+        t = kst(0, 12)
+        q = F.window_values(np.array([t - 50 * MIN]), np.array([70.0]),
+                            np.array([], dtype=np.int64), np.array([]), np.array([t]))
+        self.assertTrue(np.isnan(q["hr_15"][0]) and np.isnan(q["hr_30"][0]))
+        self.assertEqual(q["hr_60"][0], 70.0)
+
+
 if __name__ == "__main__":
     unittest.main()
