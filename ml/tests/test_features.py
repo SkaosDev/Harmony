@@ -239,5 +239,15 @@ class SleepTests(unittest.TestCase):    # 2.5
         return F.local_minute(kst(d, 0)) // 1440
 
 
+class LabelTests(unittest.TestCase):    # 2.6
+    def test_d3_stress_back_to_minus_3_plus_3(self):
+        np.testing.assert_array_equal(F.rescale_d3(np.array([0, 3, 6, np.nan])), [-3, 0, 3, np.nan])
+
+    def test_label_above_the_participant_mean(self):
+        values = np.array([-3.0, 0.0, 3.0, 1.0, 1.0, 2.0, np.nan])
+        who = np.array(["D3_P001"] * 3 + ["D3_P002"] * 4)
+        np.testing.assert_array_equal(F.label_high(values, who), [0, 0, 1, 0, 0, 1, 0])
+
+
 if __name__ == "__main__":
     unittest.main()

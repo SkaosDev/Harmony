@@ -112,7 +112,7 @@
 - [x] **2.3** Référence calculée sur une grille régulière (toutes les 30 min, montre portée). — ✔ même définition écrite dans PROJECT.md §6.
 - [x] **2.4** FC rééchantillonnée à 1 mesure / 5 min, seuil 1 mesure par fenêtre. — ✔ test unitaire.
 - [ ] **2.5** Sommeil estimé + `hours_since_wake` + `sleep_unknown` (repris d'explore_d1). — ✔ avec les règles v0 (couverture minute par minute, fenêtre entière), nuits D-1 identiques à v0 (0 écart) ; avec les règles v1, nombre de nuits qui changent de statut et part de nuits connues notés dans PROJECT.md §6.
-- [ ] **2.6** Échelles D-3 ramenées sur −3..+3 avant l'étiquette. — ✔ test.
+- [x] **2.6** Échelles D-3 ramenées sur −3..+3 avant l'étiquette. — ✔ test.
 - [ ] **2.7** Construire la table v1 pour D-1, D-2, D-3 (fichier local dans `data/`, jamais sur Git). — ✔ nombre de lignes par vague affiché.
 
 ### 2.ML-b Entraînement et évaluation (L)

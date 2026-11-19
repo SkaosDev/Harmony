@@ -228,3 +228,15 @@ def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold):
         out["sleep_unknown"][i] = int(np.isnan(sleep))
     out["sleep_unknown"] = out["sleep_unknown"].astype(int)
     return {name: out[name] for name in FEATURES}
+
+
+def rescale_d3(values):
+    """D-3 notes stress on 0..+6: bring it back to -3..+3 like D-1 and D-2."""
+    return np.asarray(values, dtype=float) - 3
+
+
+def label_high(values, participant):
+    """1 when the answer is above the participant's own mean (§6.2), else 0."""
+    values = pd.Series(np.asarray(values, dtype=float))
+    mean = values.groupby(np.asarray(participant)).transform("mean")
+    return (values > mean).astype(int).to_numpy()
