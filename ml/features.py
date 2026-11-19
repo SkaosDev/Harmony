@@ -13,6 +13,10 @@ WINDOWS = (15, 30, 60)    # minutes before t
 RESAMPLE_MIN = 5          # heart rate kept: 1 reading / 5 min (Apple Watch rate, §6.4)
 REFERENCE_DAYS = 14       # personal references use the 14 days before t only
 READY_DAYS = 7            # ... and need values on at least 7 distinct local days
+GRID_STEP_MIN = 30        # reference grid: every 30 min ...
+GRID_HOURS = (8, 24)      # ... from 08:00 to 23:30, local time
+BLOCK_MIN = 180           # zb_hr_30 compares with the same 3-hour block
+QUANTITIES = ("hr_15", "hr_30", "hr_60", "log_steps_15", "log_steps_30", "log_steps_60")
 
 # The model input, in this fixed order (exported to the app with the model).
 FEATURES = (
@@ -56,18 +60,37 @@ def _in_window(ts, t, minutes):
 def window_values(hr_ts, hr_v, st_ts, st_v, t):
     """Window quantities at every instant t, for the answers and for the reference grid.
 
-    hr_ts/hr_v: resampled heart rate, sorted. hr_w: mean heart rate in (t - w, t], unknown
-    (NaN) without any reading.
+    hr_ts/hr_v: resampled heart rate, sorted; st_ts/st_v: step counts, sorted.
+    - hr_w: mean heart rate in (t - w, t], unknown (NaN) without any reading.
+    - log_steps_w: log(1 + steps in (t - w, t]); 0 when the watch is worn (a heart rate in
+      the window) without steps; unknown when there is neither heart rate nor steps.
     """
     t = np.asarray(t, dtype=np.int64)
     hr_sum = np.r_[0.0, np.cumsum(hr_v)]
+    st_sum = np.r_[0.0, np.cumsum(st_v)]
     out = {}
     for w in WINDOWS:
         lo, hi = _in_window(hr_ts, t, w)
         n = hi - lo
         with np.errstate(invalid="ignore", divide="ignore"):
             out[f"hr_{w}"] = np.where(n > 0, (hr_sum[hi] - hr_sum[lo]) / n, np.nan)
+        s_lo, s_hi = _in_window(st_ts, t, w)
+        known = (n > 0) | (s_hi > s_lo)
+        out[f"log_steps_{w}"] = np.where(known, np.log1p(st_sum[s_hi] - st_sum[s_lo]), np.nan)
     return out
+
+
+def grid_points(start, end):
+    """Reference grid instants in [start, end): 08:00, 08:30 ... 23:30 local time."""
+    days = np.arange(local_minute(start) // 1440, local_minute(end) // 1440 + 1)
+    offsets = np.arange(GRID_HOURS[0] * 60, GRID_HOURS[1] * 60, GRID_STEP_MIN)
+    g = ((days[:, None] * 1440 + offsets[None, :]) * MIN_MS - KST_MS).ravel()
+    return g[(g >= start) & (g < end)]
+
+
+def block(t):
+    """3-hour block of the local time of day (0 = 00:00-03:00 ... 7 = 21:00-24:00)."""
+    return (local_minute(t) % 1440) // BLOCK_MIN
 
 
 def reference(values, days, min_days=READY_DAYS):
@@ -94,3 +117,33 @@ def zscore(x, mean, std):
     x, mean, std = (np.asarray(a, dtype=float) for a in (x, mean, std))
     with np.errstate(invalid="ignore", divide="ignore"):
         return np.where(std > 0, (x - mean) / std, np.nan)
+
+
+def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v):
+    """The v1 features of one participant at each answer time (ms UTC).
+
+    hr_ts/hr_v: raw heart rate; st_ts/st_v: step counts. Returns {feature name: array}.
+    """
+    answer_t = np.asarray(answer_t, dtype=np.int64)
+    st_ts = np.asarray(st_ts, dtype=np.int64)
+    order = np.argsort(st_ts, kind="stable")
+    st_ts, st_v = st_ts[order], np.asarray(st_v, dtype=float)[order]
+    hr5_ts, hr5_v = resample_hr(hr_ts, hr_v)
+
+    grid_t = grid_points(answer_t.min() - REFERENCE_DAYS * DAY_MS, answer_t.max())
+    grid_days, grid_block = local_minute(grid_t) // 1440, block(grid_t)
+    grid = window_values(hr5_ts, hr5_v, st_ts, st_v, grid_t)
+    now = window_values(hr5_ts, hr5_v, st_ts, st_v, answer_t)
+
+    out = time_features(answer_t)
+    for q in QUANTITIES:
+        out["z_" + q] = np.full(len(answer_t), np.nan)
+    out["zb_hr_30"] = np.full(len(answer_t), np.nan)
+    for i, (t, b) in enumerate(zip(answer_t, block(answer_t))):
+        for q in QUANTITIES:
+            out["z_" + q][i] = zscore(now[q][i], *past_reference(t, grid_t, grid[q], grid_days))
+        _, std = past_reference(t, grid_t, grid["hr_30"], grid_days)
+        same_block = np.where(grid_block == b, grid["hr_30"], np.nan)
+        block_mean, _ = past_reference(t, grid_t, same_block, grid_days)
+        out["zb_hr_30"][i] = zscore(now["hr_30"][i], block_mean, std)
+    return out

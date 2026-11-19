@@ -88,5 +88,45 @@ class ReferenceTests(unittest.TestCase):    # 2.2
         self.assertAlmostEqual(expected[0], 66.5)
 
 
+class GridTests(unittest.TestCase):    # 2.3
+    def test_grid_every_30_min_from_8_to_23_30_local(self):
+        g = F.grid_points(kst(0, 0), kst(1, 0))
+        self.assertEqual(len(g), 32)
+        self.assertEqual((g[0], g[-1]), (kst(0, 8), kst(0, 23, 30)))
+        np.testing.assert_array_equal(np.diff(g), 30 * MIN)
+
+    def test_steps_known_when_worn_or_counted(self):
+        t = kst(0, 12)
+        hr_ts = np.array([t - 5 * MIN])
+        st_ts = np.array([t - 50 * MIN, t - 20 * MIN])   # sorted
+        q = F.window_values(hr_ts, np.array([60.0]), st_ts, np.array([9.0, 30.0]), np.array([t]))
+        self.assertEqual(q["log_steps_15"][0], 0.0)                 # worn, no steps
+        self.assertAlmostEqual(q["log_steps_30"][0], math.log1p(30))
+        self.assertAlmostEqual(q["log_steps_60"][0], math.log1p(39))
+        q = F.window_values(np.array([], dtype=np.int64), np.array([]), st_ts,
+                            np.array([9.0, 30.0]), np.array([t]))
+        self.assertTrue(np.isnan(q["log_steps_15"][0]))           # not worn, no steps
+        self.assertAlmostEqual(q["log_steps_30"][0], math.log1p(30))   # steps counted
+
+    def test_features_use_the_grid_reference(self):
+        rng = np.random.default_rng(0)
+        hr_ts = np.arange(kst(0, 0), kst(21, 0), 5 * MIN)         # worn all the time
+        hr_v = 60 + 10 * rng.random(len(hr_ts))
+        answers = np.array([kst(20, 3), kst(20, 14), kst(3, 14)])   # 03:00, 14:00, day 3
+        f = F.participant_features(answers, hr_ts, hr_v, np.array([], dtype=np.int64), np.array([]))
+        g = F.grid_points(kst(6, 14), kst(20, 14))
+        gq = F.window_values(hr_ts, hr_v, np.array([], dtype=np.int64), np.array([]), g)
+        x = F.window_values(hr_ts, hr_v, np.array([], dtype=np.int64), np.array([]),
+                            answers[1:2])["hr_30"][0]
+        mean, std = gq["hr_30"].mean(), gq["hr_30"].std(ddof=1)
+        in_block = (F.local_minute(g) % 1440) // 180 == 4                 # 12:00-15:00
+        self.assertAlmostEqual(f["z_hr_30"][1], (x - mean) / std)
+        self.assertAlmostEqual(f["zb_hr_30"][1], (x - gq["hr_30"][in_block].mean()) / std)
+        self.assertTrue(np.isnan(f["zb_hr_30"][0]))     # 03:00: no grid point in its block
+        self.assertFalse(np.isnan(f["z_hr_30"][0]))
+        self.assertTrue(np.isnan(f["z_hr_30"][2]))      # day 3: fewer than 7 days of data
+        self.assertTrue(np.isnan(f["z_log_steps_15"][1]))   # always 0 steps: std 0 -> unknown
+
+
 if __name__ == "__main__":
     unittest.main()

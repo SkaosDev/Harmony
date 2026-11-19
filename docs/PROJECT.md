@@ -377,6 +377,32 @@ Proposition de vecteur v1 (ordre fixe, à confirmer par Lucas) :
 `hour_sin, hour_cos, weekend, z_hr_15, z_hr_30, z_hr_60, zb_hr_30, z_log_steps_15,
 z_log_steps_30, z_log_steps_60, z_sleep_min, hours_since_wake, sleep_unknown` (13 entrées).
 
+### Features v1 (TODO 2.1–2.7)
+Code : `ml/features.py` (constante `FEATURES`, ordre ci-dessus) ; table : `ml/build_features.py`.
+Horodatages en ms UTC, heure locale = Corée (UTC+9). Chaque définition n'utilise que FC et pas
+de la montre des 14 derniers jours, donc l'app peut la calculer à l'identique.
+
+- **Heure** : `hour_sin`, `hour_cos` = sin/cos(2π · (heure + minutes/60) / 24) ; `weekend` = 1 le
+  samedi et le dimanche.
+- **Fenêtre** : une valeur à l'instant t utilise les données de `(t − w, t]`, w = 15, 30 ou 60 min.
+- **FC rééchantillonnée** : première FC de chaque tranche de 5 min de l'horloge.
+  `hr_w` = moyenne de ces FC dans la fenêtre ; valable dès 1 mesure, sinon inconnue.
+  `hr_std_30` n'existe plus.
+- **Pas** : `log_steps_w` = log(1 + pas de la fenêtre). Fenêtre sans pas mais avec ≥ 1 FC
+  rééchantillonnée (montre portée) → 0 ; ni FC ni pas → inconnue.
+- **Grille de référence** : points toutes les 30 min de 08:00 à 23:30 (32 par jour). À chaque point g
+  on calcule les mêmes quantités `hr_15/30/60`, `log_steps_15/30/60` qu'à une réponse ; un point
+  inconnu (montre non portée) n'entre pas dans la référence.
+- **Référence personnelle** à t : moyenne et écart-type (n − 1) des valeurs de grille aux points
+  `g ∈ [t − 14 j, t)` ; aucune donnée à ou après t. Prête seulement si ces valeurs viennent d'au
+  moins **7 jours locaux distincts** ; sinon inconnue.
+- **z-scores** : `z_hr_w` = (hr_w − moyenne) / écart-type, de même pour `z_log_steps_w`. Inconnu si
+  la valeur ou la référence est inconnue, ou si l'écart-type vaut 0.
+- **`zb_hr_30`** = (hr_30 − moyenne des points de grille du même bloc de 3 h (0–3 h, 3–6 h…)) /
+  écart-type de toute la grille `hr_30`. La moyenne de bloc suit la même règle des 7 jours. Une
+  réponse entre 00:00 et 05:59 n'a aucun point de grille dans son bloc → inconnue ; le bloc 06–09 h
+  ne contient que les points de 08:00 et 08:30.
+
 ### 6.5 Résultats actuels (D-1, 92 participants, 10 259 réponses, 5 groupes par participant)
 
 | Cible et entrées | AUROC | Balanced acc. |
