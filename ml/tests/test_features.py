@@ -64,5 +64,29 @@ class ResampleTests(unittest.TestCase):    # 2.4
         self.assertEqual(q["hr_60"][0], 70.0)
 
 
+class ReferenceTests(unittest.TestCase):    # 2.2
+    def test_ready_only_with_7_days_of_data(self):
+        days = np.repeat(np.arange(7), 2)
+        values = np.arange(14, dtype=float)
+        mean, std = F.reference(values, days)
+        self.assertAlmostEqual(mean, values.mean())
+        self.assertAlmostEqual(std, values.std(ddof=1))
+        values[days == 6] = np.nan                       # day 6 has no value: 6 days left
+        self.assertTrue(all(np.isnan(F.reference(values, days))))
+
+    def test_only_the_14_previous_days_are_used(self):
+        t = kst(20, 12)
+        grid_t = np.array([kst(d, 12) for d in range(30)])
+        days = np.arange(30)
+        values = np.full(30, 70.0)
+        values[6:20] = np.arange(14) + 60.0               # [t - 14 days, t): days 6..19
+        expected = F.past_reference(t, grid_t, values, days)
+        extreme = values.copy()
+        extreme[20:] = 1e6                               # at t and in the future
+        extreme[:6] = -1e6                               # more than 14 days before t
+        self.assertEqual(F.past_reference(t, grid_t, extreme, days), expected)
+        self.assertAlmostEqual(expected[0], 66.5)
+
+
 if __name__ == "__main__":
     unittest.main()

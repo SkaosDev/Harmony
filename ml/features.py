@@ -11,6 +11,8 @@ MIN_MS = 60_000
 DAY_MS = 1440 * MIN_MS
 WINDOWS = (15, 30, 60)    # minutes before t
 RESAMPLE_MIN = 5          # heart rate kept: 1 reading / 5 min (Apple Watch rate, §6.4)
+REFERENCE_DAYS = 14       # personal references use the 14 days before t only
+READY_DAYS = 7            # ... and need values on at least 7 distinct local days
 
 # The model input, in this fixed order (exported to the app with the model).
 FEATURES = (
@@ -66,6 +68,25 @@ def window_values(hr_ts, hr_v, st_ts, st_v, t):
         with np.errstate(invalid="ignore", divide="ignore"):
             out[f"hr_{w}"] = np.where(n > 0, (hr_sum[hi] - hr_sum[lo]) / n, np.nan)
     return out
+
+
+def reference(values, days, min_days=READY_DAYS):
+    """Personal mean and standard deviation (ddof=1) of the known values.
+
+    Unknown (NaN, NaN) unless the known values come from at least `min_days` distinct days.
+    """
+    values = np.asarray(values, dtype=float)
+    known = ~np.isnan(values)
+    if len(np.unique(np.asarray(days)[known])) < min_days:
+        return np.nan, np.nan
+    return values[known].mean(), values[known].std(ddof=1)
+
+
+def past_reference(t, grid_t, values, days, min_days=READY_DAYS):
+    """Reference at t from the grid points in [t - 14 days, t): nothing at or after t."""
+    lo = np.searchsorted(grid_t, t - REFERENCE_DAYS * DAY_MS, "left")
+    hi = np.searchsorted(grid_t, t, "left")
+    return reference(values[lo:hi], days[lo:hi], min_days)
 
 
 def zscore(x, mean, std):
