@@ -402,6 +402,23 @@ de la montre des 14 derniers jours, donc l'app peut la calculer à l'identique.
   écart-type de toute la grille `hr_30`. La moyenne de bloc suit la même règle des 7 jours. Une
   réponse entre 00:00 et 05:59 n'a aucun point de grille dans son bloc → inconnue ; le bloc 06–09 h
   ne contient que les points de 08:00 et 08:30.
+- **Sommeil (décision du 16 nov. 2026)** : EmoPhone n'a pas de sommeil mesuré, Python l'estime
+  (l'app lit celui de l'Apple Watch). Estimateur inchangé par rapport à v0 : une minute est
+  endormie si sa FC (moyenne de la minute) est présente, sans pas, et ≤ 1,05 × le 30e centile des FC
+  par minute du participant **sur toute sa vague**. Ce seuil calibre l'estimateur (il remplace
+  l'algorithme de la montre), ce n'est pas une référence personnelle : **exception assumée** à la
+  règle des 14 jours. La nuit = la plus longue suite de minutes endormies (trous ≤ 30 min fusionnés) ;
+  `sleep_min` = minutes endormies de ce bloc ; réveil = dernière minute endormie.
+- **Nuit inconnue (comme `HealthSummaries.night` dans l'app)** : fenêtre 21:00 la veille → 12:00 du
+  jour de la réponse. Pour une réponse avant 12:00, la fenêtre s'arrête aux minutes entières
+  avant la réponse (rien après). Couverture = part des créneaux de 15 min, comptés depuis 21:00,
+  contenant au moins une FC, sur la partie écoulée (le dernier créneau entamé compte). Nuit inconnue
+  si couverture < 60 % ou aucun bloc ≥ 2 h : jamais 0.
+- **`sleep_unknown`** = 1 si la nuit est inconnue, sinon 0. **`hours_since_wake`** = (minute de la
+  réponse − minute du réveil) / 60 ; inconnu si la nuit est inconnue.
+- **`z_sleep_min`** : référence = `sleep_min` des nuits **connues** (fenêtre entière) dont le jour de
+  réveil est dans les 14 jours précédant le jour de la réponse ; au moins **5 nuits connues**, sinon
+  inconnu.
 
 ### 6.5 Résultats actuels (D-1, 92 participants, 10 259 réponses, 5 groupes par participant)
 
@@ -592,7 +609,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   chevauchent) ; `sleepEnd` = fin du dernier. Couverture = part des créneaux de **15 min** contenant
   au moins une FC, sur la partie **écoulée** de la fenêtre (une file à 7 h connaît la nuit).
   Nuit **inconnue** si couverture < 60 % **ou** aucun intervalle asleep* (suivi du sommeil
-  désactivé) : jamais 0. Différent de v0 (bloc le plus long ≥ 2 h, §6.3) : à reprendre en 2.5 (Lucas).
+  désactivé) : jamais 0. Python garde le sommeil estimé de v0 (bloc le plus long ≥ 2 h) mais
+  applique cette même règle de nuit inconnue : décision du 16 nov. 2026, §6 « Features v1 ».
 - **Règle 60 % (TODO 1.34, 10 nov.)** : 3 nuits portées (8, 9, 10 nov., montre en charge quelques
   dizaines de minutes le soir) → couverture **87 %, 95 %, 95 %** avec des créneaux de 15 min, mais
   seulement 68 %, 68 %, 71 % avec des créneaux de 5 min (la montre mesure toutes les 4–5 min,

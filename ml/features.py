@@ -5,6 +5,7 @@ EmoPhone); local time is Korea (UTC+9). Every definition is written in docs/PROJ
 "Features v1"; the Swift app must compute exactly the same values.
 """
 import numpy as np
+import pandas as pd
 
 KST_MS = 9 * 3600 * 1000  # timestamps are UTC; Korea is UTC+9
 MIN_MS = 60_000
@@ -16,6 +17,12 @@ READY_DAYS = 7            # ... and need values on at least 7 distinct local day
 GRID_STEP_MIN = 30        # reference grid: every 30 min ...
 GRID_HOURS = (8, 24)      # ... from 08:00 to 23:30, local time
 BLOCK_MIN = 180           # zb_hr_30 compares with the same 3-hour block
+NIGHT = (-3 * 60, 12 * 60)  # night window: 21:00 the day before -> 12:00, minutes from midnight
+SLOT_MIN = 15             # watch worn in a slot = at least one heart rate in it (as in the app)
+WORN_SHARE = 0.6          # night unknown below 60 % of worn slots
+MIN_SLEEP_MIN = 120       # ... or without a sleep block of at least 2 h
+MAX_GAP_MIN = 30          # gaps of up to 30 min inside a sleep block are merged
+MIN_KNOWN_NIGHTS = 5      # z_sleep_min needs 5 known nights in the 14 previous days
 QUANTITIES = ("hr_15", "hr_30", "hr_60", "log_steps_15", "log_steps_30", "log_steps_60")
 
 # The model input, in this fixed order (exported to the app with the model).
@@ -119,10 +126,64 @@ def zscore(x, mean, std):
         return np.where(std > 0, (x - mean) / std, np.nan)
 
 
-def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v):
+def minute_hr(ts, values):
+    """Mean heart rate of each local minute (pandas Series indexed by local_minute)."""
+    return pd.Series(np.asarray(values, dtype=float)).groupby(local_minute(ts)).mean()
+
+
+def minute_steps(ts, values):
+    """Steps of each local minute (pandas Series indexed by local_minute)."""
+    return pd.Series(np.asarray(values, dtype=float)).groupby(local_minute(ts)).sum()
+
+
+def sleep_threshold(ts, values):
+    """30th percentile of the participant's per-minute heart rate over the whole wave.
+
+    It calibrates the sleep estimator (a stand-in for the watch's own sleep algorithm), not a
+    personal reference: the one accepted exception to the 14-day rule (PROJECT.md §6).
+    """
+    return minute_hr(ts, values).quantile(0.30)
+
+
+def night(minute_hr_, minute_steps_, threshold, wake_day, until=None, slot_min=SLOT_MIN):
+    """Estimated sleep of the night ending on `wake_day` (local days since 1970-01-01).
+
+    Window 21:00 the day before -> 12:00, cut to the whole minutes before `until` (ms UTC)
+    when given. A minute is asleep when its heart rate is known, it has no steps and its heart
+    rate is <= 1.05 x threshold. The night is the longest run of asleep minutes (gaps <= 30 min
+    merged). Coverage = share of `slot_min`-minute slots, counted from 21:00, holding a heart
+    rate, over the elapsed window (the last started slot counts). Returns (sleep_min, wake
+    minute, coverage); sleep is unknown (NaN, NaN) below 60 % or without a block >= 2 h.
+    slot_min=1 and until=None are the v0 rules (explore_d1.night_sleep).
+    """
+    d0 = wake_day * 1440
+    minutes = np.arange(d0 + NIGHT[0], d0 + NIGHT[1])
+    if until is not None:
+        minutes = minutes[minutes < local_minute(until)]
+    h = pd.to_numeric(minute_hr_.reindex(minutes), errors="coerce").to_numpy(dtype=float)
+    s = pd.to_numeric(minute_steps_.reindex(minutes), errors="coerce").fillna(0).to_numpy(dtype=float)
+    worn = ~np.isnan(h)
+    asleep = worn & (s == 0) & (np.nan_to_num(h, nan=999) <= threshold * 1.05)
+    slots = np.arange(len(minutes)) // slot_min
+    coverage = len(np.unique(slots[worn])) / -(-len(minutes) // slot_min) if len(minutes) else 0.0
+    best, start, last = (0, None, None), None, None
+    for i, a in enumerate(asleep):
+        if a:
+            if start is None or i - last > MAX_GAP_MIN:
+                start = i
+            last = i
+            if last - start + 1 > best[0]:
+                best = (last - start + 1, start, last)
+    if coverage >= WORN_SHARE and best[0] >= MIN_SLEEP_MIN:
+        return int(asleep[best[1]:best[2] + 1].sum()), int(minutes[best[2]]), coverage
+    return np.nan, np.nan, coverage
+
+
+def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold):
     """The v1 features of one participant at each answer time (ms UTC).
 
-    hr_ts/hr_v: raw heart rate; st_ts/st_v: step counts. Returns {feature name: array}.
+    hr_ts/hr_v: raw heart rate; st_ts/st_v: step counts; threshold: sleep_threshold() of the
+    participant. Returns {feature name: array}, keys = FEATURES.
     """
     answer_t = np.asarray(answer_t, dtype=np.int64)
     st_ts = np.asarray(st_ts, dtype=np.int64)
@@ -146,4 +207,24 @@ def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v):
         same_block = np.where(grid_block == b, grid["hr_30"], np.nan)
         block_mean, _ = past_reference(t, grid_t, same_block, grid_days)
         out["zb_hr_30"][i] = zscore(now["hr_30"][i], block_mean, std)
-    return out
+
+    # Sleep: last night, using only the data before the answer when it comes before 12:00.
+    mhr, mst = minute_hr(hr_ts, hr_v), minute_steps(st_ts, st_v)
+    minute = local_minute(answer_t)
+    day = minute // 1440
+    past_days = np.arange(day.min() - REFERENCE_DAYS, day.max() + 1)
+    full = np.array([night(mhr, mst, threshold, d)[:2] for d in past_days])
+    for name in ("z_sleep_min", "hours_since_wake", "sleep_unknown"):
+        out[name] = np.full(len(answer_t), np.nan)
+    for i, (t, d) in enumerate(zip(answer_t, day)):
+        if minute[i] % 1440 < NIGHT[1]:
+            sleep, wake, _ = night(mhr, mst, threshold, d, until=t)
+        else:
+            sleep, wake = full[d - past_days[0]]
+        previous = (past_days >= d - REFERENCE_DAYS) & (past_days < d)
+        mean, std = reference(full[previous, 0], past_days[previous], MIN_KNOWN_NIGHTS)
+        out["z_sleep_min"][i] = zscore(sleep, mean, std)
+        out["hours_since_wake"][i] = (minute[i] - wake) / 60 if minute[i] >= wake else np.nan
+        out["sleep_unknown"][i] = int(np.isnan(sleep))
+    out["sleep_unknown"] = out["sleep_unknown"].astype(int)
+    return {name: out[name] for name in FEATURES}
