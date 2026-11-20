@@ -525,6 +525,22 @@ d'écart-type) ; rien n'a été ajusté après ce test.
   les features et la probabilité attendues ; un test Swift doit retrouver les mêmes valeurs
   (tolérance 1e-6). C'est la meilleure protection contre les écarts Python ↔ Swift.
 
+**Fichiers produits (TODO 2.15–2.17, 20 nov. 2026)** — accord des auteurs d'EmoPhone obtenu (2.14b).
+- `python ml/export.py --model data/models/state_model.joblib [--coreml]` → dans
+  `app/Harmony/Resources/` : `model_params.json` (1,7 Ko : version, ordre des 13 features, médianes,
+  moyennes, écarts-types, coefficients, intercept) et `StateModel.mlmodel` (pipeline entier :
+  imputation par médiane de NaN, standardisation, régression logistique ; 13 entrées *double*, NaN =
+  inconnu ; sorties `arousal_high` et `classProbability` {0, 1}). Écart Core ML (CPU) / scikit-learn
+  sur 100 lignes de D-1 dont 50 avec valeurs inconnues : 1e-16 (< 1e-6).
+- `python ml/make_fixtures.py` → `ml/fixtures/state_cases.json` : 10 cas synthétiques (graine fixe)
+  avec séries FC/pas (minutes depuis `origin_ms`, UTC+9), features attendues (`null` = inconnu) et
+  probabilité. Cas : jour de semaine, week-end, matin avant 12 h, soirée, nuit, historique < 7 jours,
+  montre retirée 1 h, nuit inconnue, pas = 0 montre portée, FC constante (écart-type 0).
+- **Sommeil dans les fixtures** : l'app lit le sommeil Apple Watch et ne l'estime pas ; chaque cas
+  fournit donc les nuits estimées par Python (`nights`, `answer_night`). Le `FeatureBuilder` Swift
+  (2.19) prendra des résumés de nuit en entrée, pas la FC brute de la nuit — à confirmer en 2.19.
+- Changer `features.py` ou réentraîner = relancer ces trois commandes.
+
 ---
 
 ## 7. Scores des morceaux
@@ -689,12 +705,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - *Mise à jour ML, 20 nov. 2026* : D-1/D-2/D-3 analysées, features v1 écrites (TODO 2.1–2.7) ;
   entraînement et évaluation faits (TODO 2.8–2.11, `ml/train.py`, résultats §6.5) ; décision :
   modèle 4 entrées (§3, TODO 2.13) ; modèle final entraîné sur les trois vagues (TODO 2.14),
-  fichier local `data/models/state_model.joblib`, non versionné.
+  fichier local `data/models/state_model.joblib`, non versionné ; accord des auteurs d'EmoPhone pour
+  publier les coefficients (2.14b) ; export `model_params.json`, `StateModel.mlmodel` et fixtures
+  golden (2.15–2.17, §6.7).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- ML : test UC Irvine (TODO 2.12) sauté, dataset indisponible ; publication des coefficients en
-  attente de l'accord des auteurs d'EmoPhone (TODO 2.14b), donc ni export ni Core ML (2.15–2.16).
+- ML : test UC Irvine (TODO 2.12) sauté, dataset indisponible.
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 

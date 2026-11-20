@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))      # test_train, when run as ml.tests.*
 import export as E                                               # noqa: E402
 import train as T                                                # noqa: E402
 from test_train import synthetic_table                           # noqa: E402
