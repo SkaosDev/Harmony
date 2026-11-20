@@ -60,7 +60,8 @@
 <rect x="290" y="625" width="230" height="110" rx="14" fill="#ffffff" stroke="#6a1b9a" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="290" y="639" width="5" height="82" rx="2.5" fill="#6a1b9a"/>
 <text x="310" y="655" font-size="15.5" font-weight="700" fill="#14213d">Offline training</text>
-<text x="310" y="677" font-size="12.5" fill="#4a5470">EmoPhone → StateModel.mlmodel</text>
+<text x="310" y="677" font-size="12.5" fill="#4a5470">Trains on EmoPhone</text>
+<text x="310" y="694" font-size="12.5" fill="#4a5470">Exports the Core ML model</text>
 <text x="310" y="721" font-size="12" font-weight="600" fill="#6a1b9a">Python 3.12 · scikit-learn</text>
 <rect x="560" y="625" width="230" height="110" rx="14" fill="#ffffff" stroke="#1565c0" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="560" y="639" width="5" height="82" rx="2.5" fill="#1565c0"/>
