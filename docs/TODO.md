@@ -122,7 +122,7 @@
 - [x] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
 - [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement. — Sautée : dataset indisponible.
 - [x] **2.13** Décision en équipe : modèle 4 entrées, modèle heure+FC, ou mode heure seule. — ✔ décision écrite dans PROJECT.md §3.
-- [ ] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
+- [x] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
 
 ### 2.ML-c Export vers l'app (L/C)
 - [ ] **2.14b** Confirmer avec les auteurs d'EmoPhone que publier les coefficients du modèle (dans l'app et sur GitHub) est autorisé. — ✔ réponse écrite conservée.

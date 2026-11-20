@@ -2,6 +2,7 @@
 
 Usage:
     python ml/train.py --features data/features [--test-d3]
+    python ml/train.py --features data/features --final data/models/state_model.joblib
 
 Reads the local tables of ml/build_features.py (data/features/v1_D1.csv ...; data/ is ignored
 by Git) and prints aggregates only. The model is the one of docs/PROJECT.md §6.3: median
@@ -14,11 +15,16 @@ next to the "time only" baseline (TODO 2.9).
 
 --test-d3: single test on the held-out wave D-3 (TODO 2.11). Each variant is fitted once on all
 of D-1 + D-2 with the same fixed model (no setting is chosen on D-3) and scored on D-3.
+
+--final PATH: fits the chosen variant (FINAL, team decision TODO 2.13) on D-1 + D-2 + D-3 and
+saves the Pipeline (TODO 2.14). Keep PATH inside data/ (ignored by Git): the coefficients are
+not published until the EmoPhone authors agree (TODO 2.14b).
 """
 import argparse
 import warnings
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
@@ -40,6 +46,7 @@ VARIANTS = {
     "time + HR": FEATURES[:7],                     # ... z_hr_15/30/60, zb_hr_30
     "time + HR + steps + sleep": FEATURES,
 }
+FINAL = "time + HR + steps + sleep"                # TODO 2.13, PROJECT.md section 3
 
 # Newer SciPy warns about an lbfgs option sklearn 1.5.2 still passes; results are unchanged.
 warnings.filterwarnings("ignore", message="Unknown solver options: iprint")
@@ -88,7 +95,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--features", type=Path, required=True, help="folder of v1_D1.csv ...")
     ap.add_argument("--test-d3", action="store_true", help="single test on the held-out D-3")
+    ap.add_argument("--final", type=Path, help="fit FINAL on all waves, save it here (in data/)")
     args = ap.parse_args()
+    if args.final:
+        table = load(args.features, (*CV_WAVES, TEST_WAVE))
+        columns = list(VARIANTS[FINAL])
+        model = make_model().fit(table[columns].to_numpy(dtype=float), table[LABEL].to_numpy())
+        args.final.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump({"features": columns, "label": LABEL, "model": model}, args.final)
+        print(f"Final model ({FINAL}, {len(columns)} features) fitted on {len(table)} answers, "
+              f"{table.participant.nunique()} participants -> {args.final} "
+              f"({args.final.stat().st_size} bytes)")
+        return
     cv = load(args.features, CV_WAVES)
     splits = folds(cv.participant)
     print(f"Cross-validation on {' + '.join(CV_WAVES)}: {len(cv)} answers, "
