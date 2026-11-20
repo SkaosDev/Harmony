@@ -48,5 +48,12 @@ class FoldTests(unittest.TestCase):
         self.assertGreater(r[:, 0].mean(), 0.6)         # z_hr_15 carries the synthetic label
 
 
+class VariantTests(unittest.TestCase):
+    def test_variants_keep_the_feature_order(self):
+        self.assertEqual(T.VARIANTS["time only"], ("hour_sin", "hour_cos", "weekend"))
+        for columns in T.VARIANTS.values():
+            self.assertEqual(columns, T.FEATURES[:len(columns)])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,8 @@ imputation, standardization and logistic regression in one sklearn Pipeline, so 
 fits them on its training participants only. Label: arousal_high (§6.2).
 
 Cross-validation: 5 folds grouped by participant (wave + pcode) on D-1 + D-2; whole
-participants are kept apart, never a random split.
+participants are kept apart, never a random split. Every variant uses the same folds,
+next to the "time only" baseline (TODO 2.9).
 """
 import argparse
 import warnings
@@ -29,6 +30,11 @@ from features import FEATURES
 LABEL = "arousal_high"
 CV_WAVES = ("D1", "D2")
 N_FOLDS = 5
+# Model inputs compared, all taken from FEATURES in its fixed order.
+VARIANTS = {
+    "time only": FEATURES[:3],                     # hour_sin, hour_cos, weekend
+    "time + HR + steps + sleep": FEATURES,
+}
 
 # Newer SciPy warns about an lbfgs option sklearn 1.5.2 still passes; results are unchanged.
 warnings.filterwarnings("ignore", message="Unknown solver options: iprint")
@@ -73,9 +79,10 @@ def main():
     splits = folds(cv.participant)
     print(f"Cross-validation on {' + '.join(CV_WAVES)}: {len(cv)} answers, "
           f"{cv.participant.nunique()} participants, {N_FOLDS} folds by participant")
-    r = cross_validate(cv, FEATURES, splits)
-    print(f"  time + HR + steps + sleep: AUROC {r[:, 0].mean():.3f} +/- {r[:, 0].std():.3f}, "
-          f"balanced accuracy {r[:, 1].mean():.3f} +/- {r[:, 1].std():.3f}")
+    for name, columns in VARIANTS.items():
+        r = cross_validate(cv, columns, splits)                     # same folds for all
+        print(f"  {name:<26} AUROC {r[:, 0].mean():.3f} +/- {r[:, 0].std():.3f}, "
+              f"balanced accuracy {r[:, 1].mean():.3f} +/- {r[:, 1].std():.3f}")
 
 
 if __name__ == "__main__":
