@@ -686,10 +686,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Accès EmoPhone obtenu ; vague D-1 analysée ; résultats reproductibles (`ml/explore_d1.py`).
 - Choix techniques, coûts vérifiés, API Spotify de février 2026 vérifiée sur la documentation.
 - Dépôt GitHub créé (Harmony), lien et sujet dans le Google Sheet du cours.
+- *Mise à jour ML, 20 nov. 2026* : D-1/D-2/D-3 analysées, features v1 écrites (TODO 2.1–2.7) ;
+  entraînement et évaluation faits (TODO 2.8–2.11, `ml/train.py`, résultats §6.5) ; décision :
+  modèle 4 entrées (§3, TODO 2.13) ; modèle final entraîné sur les trois vagues (TODO 2.14),
+  fichier local `data/models/state_model.joblib`, non versionné.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- D-2 et D-3 pas encore analysées ; features v1 (§6.4) pas encore écrites.
+- ML : test UC Irvine (TODO 2.12) sauté, dataset indisponible ; publication des coefficients en
+  attente de l'accord des auteurs d'EmoPhone (TODO 2.14b), donc ni export ni Core ML (2.15–2.16).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 
