@@ -22,7 +22,8 @@
 <rect x="290" y="170" width="230" height="100" rx="14" fill="#ffffff" stroke="#2e7d32" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="290" y="184" width="5" height="72" rx="2.5" fill="#2e7d32"/>
 <text x="310" y="200" font-size="15.5" font-weight="700" fill="#14213d">Health summaries</text>
-<text x="310" y="222" font-size="12.5" fill="#4a5470">Hourly &amp; nightly, 14-day baselines</text>
+<text x="310" y="222" font-size="12.5" fill="#4a5470">Hourly &amp; nightly summaries</text>
+<text x="310" y="239" font-size="12.5" fill="#4a5470">14-day baselines</text>
 <text x="310" y="256" font-size="12" font-weight="600" fill="#2e7d32">HealthKit · SwiftData</text>
 <rect x="560" y="170" width="230" height="100" rx="14" fill="#ffffff" stroke="#2e7d32" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="560" y="184" width="5" height="72" rx="2.5" fill="#2e7d32"/>
