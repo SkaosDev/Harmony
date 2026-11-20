@@ -494,6 +494,21 @@ D-1/D-2 seules) ; causes possibles, non mesurées une à une : FC à 1 mesure / 
 z-scores FC inconnus (puis imputés) pour 43–51 % des réponses. Pas et sommeil ajoutent +0,009
 d'AUROC, moins que l'écart entre groupes, mais +0,024 de balanced accuracy.
 
+**Test unique sur D-3, vague tenue à part (TODO 2.11)** — 20 nov. 2026,
+`python ml/train.py --features data/features --test-d3`, lancé une seule fois, code figé avant.
+Chaque variante est ajustée sur tout D-1 + D-2 avec le même modèle fixe (aucun réglage), puis
+évaluée sur D-3 : 21 838 réponses, 106 participants (aucun en commun, identifiant `vague + pcode`).
+
+| Entrées | AUROC D-3 | Balanced accuracy D-3 |
+|---|---:|---:|
+| Heure seule (référence) | 0,534 | 0,511 |
+| Heure + FC | 0,570 | 0,537 |
+| Heure + FC + pas + sommeil | 0,576 | 0,541 |
+
+Même ordre qu'en validation croisée : les deux modèles battent l'heure seule ; pas + sommeil
+ajoutent +0,006 d'AUROC et +0,004 de balanced accuracy. Un seul chiffre par variante (pas
+d'écart-type) ; rien n'a été ajusté après ce test.
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.

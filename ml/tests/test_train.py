@@ -47,6 +47,14 @@ class FoldTests(unittest.TestCase):
         self.assertEqual(r.shape, (5, 2))
         self.assertGreater(r[:, 0].mean(), 0.6)         # z_hr_15 carries the synthetic label
 
+    def test_holdout_fits_on_train_only(self):
+        table = synthetic_table()
+        train, test = table.iloc[:600], table.iloc[600:].copy()
+        before = T.holdout(train, test, T.FEATURES)
+        test[T.LABEL] = 1 - test[T.LABEL]              # changing the test labels ...
+        after = T.holdout(train, test, T.FEATURES)
+        self.assertAlmostEqual(after[0], 1 - before[0])  # ... only flips the score, same model
+
 
 class VariantTests(unittest.TestCase):
     def test_variants_keep_the_feature_order(self):
