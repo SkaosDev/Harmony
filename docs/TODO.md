@@ -116,13 +116,13 @@
 - [x] **2.7** Construire la table v1 pour D-1, D-2, D-3 (fichier local dans `data/`, jamais sur Git). — ✔ nombre de lignes par vague affiché.
 
 ### 2.ML-b Entraînement et évaluation (L)
-- [ ] **2.8** `ml/train.py` : validation croisée 5 groupes par participant sur D-1 + D-2. — ✔ AUROC et balanced accuracy affichées.
-- [ ] **2.9** Référence « heure seule » calculée de la même façon. — ✔ affichée à côté.
-- [ ] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
-- [ ] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
-- [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement.
-- [ ] **2.13** Décision en équipe : modèle 4 entrées, modèle heure+FC, ou mode heure seule. — ✔ décision écrite dans PROJECT.md §3.
-- [ ] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
+- [x] **2.8** `ml/train.py` : validation croisée 5 groupes par participant sur D-1 + D-2. — ✔ AUROC et balanced accuracy affichées.
+- [x] **2.9** Référence « heure seule » calculée de la même façon. — ✔ affichée à côté.
+- [x] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
+- [x] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
+- [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement. — Sautée : dataset indisponible.
+- [x] **2.13** Décision en équipe : modèle 4 entrées, modèle heure+FC, ou mode heure seule. — ✔ décision écrite dans PROJECT.md §3.
+- [x] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
 
 ### 2.ML-c Export vers l'app (L/C)
 - [ ] **2.14b** Confirmer avec les auteurs d'EmoPhone que publier les coefficients du modèle (dans l'app et sur GitHub) est autorisé. — ✔ réponse écrite conservée.

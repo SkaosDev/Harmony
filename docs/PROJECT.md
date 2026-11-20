@@ -114,6 +114,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Modèle entraîné sur EmoPhone | 297 personnes, étiquettes « du moment », étudiants coréens |
 | Sortie = plus/moins activé que d'habitude, jamais une émotion | Honnêteté, pas de prétention médicale |
 | Entrées du modèle : heure, FC, pas, sommeil | Choix d'équipe. Sur D-1, pas et sommeil n'apportent pas de gain mesurable (voir §6.5) ; on les garde, et on repasse au modèle heure + FC si les vagues D-2/D-3 et le pilote ne montrent rien |
+| Modèle final : 4 entrées (13 features v1), entraîné sur D-1 + D-2 + D-3 (TODO 2.13, 20 nov. 2026) | Features v1 : bat l'heure seule et heure + FC en validation croisée D-1 + D-2 (AUROC 0,563 contre 0,535 et 0,554) et sur D-3 tenue à part (0,576 contre 0,534 et 0,570) ; gain de pas + sommeil petit mais de même sens sur les deux évaluations (§6.5). Repli heure + FC toujours possible si le pilote (sommeil Apple Watch mesuré, pas estimé) ne montre rien |
 | HRV lue mais hors modèle | Absente d'EmoPhone ; sert seulement à l'explication |
 | Météo retirée | Localisations EmoPhone anonymisées ; plafond mesuré à 0,53 AUROC pour tout effet partagé |
 | Évaluation par personnes entières tenues à part | Un split aléatoire donne des résultats trop optimistes |
@@ -477,6 +478,38 @@ Lecture : la FC porte l'information ; pas et sommeil n'ajoutent rien de mesurabl
 (écart < variation entre groupes ±0,015). 0,5 = hasard. Le stress est à peine prévisible → la
 situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiquement.
 
+**Features v1, validation croisée D-1 + D-2 (TODO 2.8–2.10)** — 20 nov. 2026, scikit-learn 1.5.2,
+`python ml/train.py --features data/features`. 31 301 réponses, 191 participants (`vague + pcode`),
+5 groupes par participant, mêmes groupes pour toutes les variantes ; modèle §6.3 (médiane,
+standardisation, régression logistique, ajustées dans chaque groupe d'entraînement). Arousal ;
+moyenne ± écart-type sur les 5 groupes.
+
+| Entrées | Nombre | AUROC | Balanced accuracy |
+|---|---:|---:|---:|
+| Heure seule (référence) | 3 | 0,535 ± 0,017 | 0,505 ± 0,008 |
+| Heure + FC | 7 | 0,554 ± 0,012 | 0,516 ± 0,009 |
+| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,010 | 0,540 ± 0,004 |
+
+Les deux modèles battent l'heure seule. En v1, heure + FC est plus bas qu'en v0 (0,576/0,570 sur
+D-1/D-2 seules) ; causes possibles, non mesurées une à une : FC à 1 mesure / 5 min, références sur les 14 jours précédents seulement, et
+z-scores FC inconnus (puis imputés) pour 43–51 % des réponses. Pas et sommeil ajoutent +0,009
+d'AUROC, moins que l'écart entre groupes, mais +0,024 de balanced accuracy.
+
+**Test unique sur D-3, vague tenue à part (TODO 2.11)** — 20 nov. 2026,
+`python ml/train.py --features data/features --test-d3`, lancé une seule fois, code figé avant.
+Chaque variante est ajustée sur tout D-1 + D-2 avec le même modèle fixe (aucun réglage), puis
+évaluée sur D-3 : 21 838 réponses, 106 participants (aucun en commun, identifiant `vague + pcode`).
+
+| Entrées | AUROC D-3 | Balanced accuracy D-3 |
+|---|---:|---:|
+| Heure seule (référence) | 0,534 | 0,511 |
+| Heure + FC | 0,570 | 0,537 |
+| Heure + FC + pas + sommeil | 0,576 | 0,541 |
+
+Même ordre qu'en validation croisée : les deux modèles battent l'heure seule ; pas + sommeil
+ajoutent +0,006 d'AUROC et +0,004 de balanced accuracy. Un seul chiffre par variante (pas
+d'écart-type) ; rien n'a été ajusté après ce test.
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.
@@ -653,10 +686,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Accès EmoPhone obtenu ; vague D-1 analysée ; résultats reproductibles (`ml/explore_d1.py`).
 - Choix techniques, coûts vérifiés, API Spotify de février 2026 vérifiée sur la documentation.
 - Dépôt GitHub créé (Harmony), lien et sujet dans le Google Sheet du cours.
+- *Mise à jour ML, 20 nov. 2026* : D-1/D-2/D-3 analysées, features v1 écrites (TODO 2.1–2.7) ;
+  entraînement et évaluation faits (TODO 2.8–2.11, `ml/train.py`, résultats §6.5) ; décision :
+  modèle 4 entrées (§3, TODO 2.13) ; modèle final entraîné sur les trois vagues (TODO 2.14),
+  fichier local `data/models/state_model.joblib`, non versionné.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- D-2 et D-3 pas encore analysées ; features v1 (§6.4) pas encore écrites.
+- ML : test UC Irvine (TODO 2.12) sauté, dataset indisponible ; publication des coefficients en
+  attente de l'accord des auteurs d'EmoPhone (TODO 2.14b), donc ni export ni Core ML (2.15–2.16).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 
