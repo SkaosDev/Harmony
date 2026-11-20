@@ -318,7 +318,7 @@ schéma nécessite une décision d'équipe avant d'être retenue.
 ### 5.4 Ce qui ne doit jamais aller sur Git
 Données brutes EmoPhone/UC Irvine, tables de features dérivées par participant, clés API,
 fichiers `.env`, `.dev.vars`, données de santé réelles d'un membre. Les **résultats agrégés** sont autorisés. Le **modèle entraîné** (quelques coefficients) est
-prévu dans l'app et sur GitHub : à confirmer avec les auteurs d'EmoPhone (TODO 2.14b).
+prévu dans l'app et sur GitHub : les auteurs d'EmoPhone ont confirmé par écrit que c'est autorisé (TODO 2.14b, novembre 2026 ; réponse conservée par l'équipe, hors dépôt).
 
 ---
 
