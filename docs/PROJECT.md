@@ -314,6 +314,9 @@ schéma nécessite une décision d'équipe avant d'être retenue.
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Optionnel ; mêmes règles de confidentialité qu'EmoPhone.
+- **Obtenu le 20 nov. 2026**, pas encore copié dans `data/uci/` (TODO 5.1). Travail prévu en
+  Phase 5 de la TODO (non prioritaire) : exploration, étiquette, features v1, test unique du modèle
+  final. Fichiers, colonnes, échelles et conditions d'usage : à documenter ici après 5.2 et 5.3.
 
 ### 5.4 Ce qui ne doit jamais aller sur Git
 Données brutes EmoPhone/UC Irvine, tables de features dérivées par participant, clés API,
@@ -512,7 +515,7 @@ d'écart-type) ; rien n'a été ajusté après ce test.
 
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
-2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.
+2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (Phase 5 de la TODO, non prioritaire).
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
 4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
@@ -693,7 +696,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- ML : test UC Irvine (TODO 2.12) sauté, dataset indisponible ; publication des coefficients en
+- ML : test UC Irvine (TODO 2.12) reporté en Phase 5 : dataset obtenu, pas encore copié ni exploré ; publication des coefficients en
   attente de l'accord des auteurs d'EmoPhone (TODO 2.14b), donc ni export ni Core ML (2.15–2.16).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
