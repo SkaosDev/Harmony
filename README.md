@@ -12,8 +12,8 @@ Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 
 ## Architecture
 
-Everything runs **on the iPhone**. The only cloud piece is a small Cloudflare Worker that
-holds the LLM key. Full details: `docs/PROJECT.md` §4 (and §6–§8 for model, scores, queue).
+Everything runs on the iPhone. The only cloud piece is a Cloudflare Worker that holds the LLM key.
+Details: `docs/PROJECT.md` §4.
 
 <p align="center">
   <img src="docs/architecture.svg" alt="Harmony architecture" width="100%">
@@ -23,10 +23,10 @@ holds the LLM key. Full details: `docs/PROJECT.md` §4 (and §6–§8 for model,
 
 | Where | What | Data it sees |
 |---|---|---|
-| iPhone | the whole app, the Core ML model, storage | health data, library, feedback — never sent elsewhere |
+| iPhone | the whole app, the Core ML model, storage | health data, library, feedback (never sent elsewhere) |
 | Cloudflare Worker | LLM proxy: keeps the key, checks the user, rate-limits | song titles and artists only |
 | Spotify | sign-in, library, playback | what Spotify already has |
-| Team PC/Mac | training, evaluation, MuSe table build | EmoPhone (local, never on Git) |
+| Offline (Python) | training, evaluation, MuSe table build | EmoPhone (local, never on Git) |
 
 ### App modules
 

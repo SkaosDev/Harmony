@@ -6,9 +6,8 @@
 </defs>
 <rect width="1120" height="790" rx="18" fill="url(#bg)"/>
 <text x="40" y="52" font-size="26" font-weight="700" fill="#14213d">Harmony · Architecture</text>
-<text x="40" y="76" font-size="14" fill="#5b6785">Everything runs on the iPhone. The cloud only ever sees song titles and artists.</text>
 <rect x="260" y="110" width="830" height="450" rx="22" fill="#eef8f0" stroke="#2e7d32" stroke-width="1.5"/>
-<text x="284" y="140" font-size="15" font-weight="700" fill="#1b5e20">iPhone — on-device</text>
+<text x="284" y="140" font-size="15" font-weight="700" fill="#1b5e20">iPhone, on-device</text>
 <text x="1066" y="140" font-size="12.5" text-anchor="end" fill="#2e7d32">Swift 6 · SwiftUI · SwiftData · iOS 18+</text>
 <rect x="30" y="170" width="180" height="100" rx="14" fill="#ffffff" stroke="#ef6c00" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="30" y="184" width="5" height="72" rx="2.5" fill="#ef6c00"/>
@@ -61,7 +60,6 @@
 <rect x="290" y="639" width="5" height="82" rx="2.5" fill="#6a1b9a"/>
 <text x="310" y="655" font-size="15.5" font-weight="700" fill="#14213d">Offline training</text>
 <text x="310" y="677" font-size="12.5" fill="#4a5470">EmoPhone → StateModel.mlmodel</text>
-<text x="310" y="694" font-size="12.5" fill="#4a5470">(team computers)</text>
 <text x="310" y="721" font-size="12" font-weight="600" fill="#6a1b9a">Python 3.12 · scikit-learn</text>
 <rect x="560" y="625" width="230" height="110" rx="14" fill="#ffffff" stroke="#1565c0" stroke-width="1.5" filter="url(#sh)"/>
 <rect x="560" y="639" width="5" height="82" rx="2.5" fill="#1565c0"/>
