@@ -116,7 +116,7 @@
 - [x] **2.7** Construire la table v1 pour D-1, D-2, D-3 (fichier local dans `data/`, jamais sur Git). — ✔ nombre de lignes par vague affiché.
 
 ### 2.ML-b Entraînement et évaluation (L)
-- [ ] **2.8** `ml/train.py` : validation croisée 5 groupes par participant sur D-1 + D-2. — ✔ AUROC et balanced accuracy affichées.
+- [x] **2.8** `ml/train.py` : validation croisée 5 groupes par participant sur D-1 + D-2. — ✔ AUROC et balanced accuracy affichées.
 - [ ] **2.9** Référence « heure seule » calculée de la même façon. — ✔ affichée à côté.
 - [ ] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
 - [ ] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
