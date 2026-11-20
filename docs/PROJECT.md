@@ -377,6 +377,66 @@ Proposition de vecteur v1 (ordre fixe, à confirmer par Lucas) :
 `hour_sin, hour_cos, weekend, z_hr_15, z_hr_30, z_hr_60, zb_hr_30, z_log_steps_15,
 z_log_steps_30, z_log_steps_60, z_sleep_min, hours_since_wake, sleep_unknown` (13 entrées).
 
+### Features v1 (TODO 2.1–2.7)
+Code : `ml/features.py` (constante `FEATURES`, ordre ci-dessus) ; table : `ml/build_features.py`.
+Horodatages en ms UTC, heure locale = Corée (UTC+9). Chaque définition n'utilise que FC et pas
+de la montre des 14 derniers jours, donc l'app peut la calculer à l'identique.
+
+- **Heure** : `hour_sin`, `hour_cos` = sin/cos(2π · (heure + minutes/60) / 24) ; `weekend` = 1 le
+  samedi et le dimanche.
+- **Fenêtre** : une valeur à l'instant t utilise les données de `(t − w, t]`, w = 15, 30 ou 60 min.
+- **FC rééchantillonnée** : première FC de chaque tranche de 5 min de l'horloge.
+  `hr_w` = moyenne de ces FC dans la fenêtre ; valable dès 1 mesure, sinon inconnue.
+  `hr_std_30` n'existe plus.
+- **Pas** : `log_steps_w` = log(1 + pas de la fenêtre). Fenêtre sans pas mais avec ≥ 1 FC
+  rééchantillonnée (montre portée) → 0 ; ni FC ni pas → inconnue.
+- **Grille de référence** : points toutes les 30 min de 08:00 à 23:30 (32 par jour). À chaque point g
+  on calcule les mêmes quantités `hr_15/30/60`, `log_steps_15/30/60` qu'à une réponse ; un point
+  inconnu (montre non portée) n'entre pas dans la référence.
+- **Référence personnelle** à t : moyenne et écart-type (n − 1) des valeurs de grille aux points
+  `g ∈ [t − 14 j, t)` ; aucune donnée à ou après t. Prête seulement si ces valeurs viennent d'au
+  moins **7 jours locaux distincts** ; sinon inconnue.
+- **z-scores** : `z_hr_w` = (hr_w − moyenne) / écart-type, de même pour `z_log_steps_w`. Inconnu si
+  la valeur ou la référence est inconnue, ou si l'écart-type vaut 0.
+- **`zb_hr_30`** = (hr_30 − moyenne des points de grille du même bloc de 3 h (0–3 h, 3–6 h…)) /
+  écart-type de toute la grille `hr_30`. La moyenne de bloc suit la même règle des 7 jours. Une
+  réponse entre 00:00 et 05:59 n'a aucun point de grille dans son bloc → inconnue ; le bloc 06–09 h
+  ne contient que les points de 08:00 et 08:30.
+- **Sommeil (décision du 16 nov. 2026)** : EmoPhone n'a pas de sommeil mesuré, Python l'estime
+  (l'app lit celui de l'Apple Watch). Estimateur inchangé par rapport à v0 : une minute est
+  endormie si sa FC (moyenne de la minute) est présente, sans pas, et ≤ 1,05 × le 30e centile des FC
+  par minute du participant **sur toute sa vague**. Ce seuil calibre l'estimateur (il remplace
+  l'algorithme de la montre), ce n'est pas une référence personnelle : **exception assumée** à la
+  règle des 14 jours. La nuit = la plus longue suite de minutes endormies (trous ≤ 30 min fusionnés) ;
+  `sleep_min` = minutes endormies de ce bloc ; réveil = dernière minute endormie.
+- **Nuit inconnue (comme `HealthSummaries.night` dans l'app)** : fenêtre 21:00 la veille → 12:00 du
+  jour de la réponse. Pour une réponse avant 12:00, la fenêtre s'arrête aux minutes entières
+  avant la réponse (rien après). Couverture = part des créneaux de 15 min, comptés depuis 21:00,
+  contenant au moins une FC, sur la partie écoulée (le dernier créneau entamé compte). Nuit inconnue
+  si couverture < 60 % ou aucun bloc ≥ 2 h : jamais 0.
+- **`sleep_unknown`** = 1 si la nuit est inconnue, sinon 0. **`hours_since_wake`** = (minute de la
+  réponse − minute du réveil) / 60 ; inconnu si la nuit est inconnue.
+- **`z_sleep_min`** : référence = `sleep_min` des nuits **connues** (fenêtre entière) dont le jour de
+  réveil est dans les 14 jours précédant le jour de la réponse ; au moins **5 nuits connues**, sinon
+  inconnu.
+
+**Tables v1 (TODO 2.5, 2.7, 19 nov. 2026)** — `python ml/build_features.py --data data/emophone
+--out data/features --check-v0` ; tables locales `data/features/v1_D1.csv`… (jamais sur Git),
+identifiant participant `vague + pcode` (ex. `D1_P050`).
+
+| Ligne de sortie | D-1 | D-2 | D-3 |
+|---|---:|---:|---:|
+| Lignes / participants | 10 259 / 92 | 21 042 / 99 | 21 838 / 106 |
+| Règles v0 : nuits comparées / écarts avec `explore_d1.py` | 1 653 / 0 | 3 006 / 0 | 3 144 / 0 |
+| Règles v1 : réponses dont la nuit change de statut | 139 (2 → inconnue, 137 → connue) | 192 (2, 190) | 240 (3, 237) |
+| Part de nuits connues, v0 → v1 | 0,660 → 0,674 | 0,410 → 0,419 | 0,784 → 0,794 |
+| Part inconnue : `z_hr_30` / `zb_hr_30` / `z_log_steps_30` | 0,428 / 0,451 / 0,427 | 0,511 / 0,522 / 0,511 | 0,243 / 0,258 / 0,242 |
+| Part inconnue : `z_sleep_min` / `hours_since_wake` | 0,608 / 0,326 | 0,695 / 0,581 | 0,377 / 0,206 |
+
+Les nuits changent surtout d'inconnue à connue : les créneaux de 15 min tolèrent de courts trous
+de FC. Beaucoup de z-scores sont inconnus parce qu'une référence demande 7 jours de données sur
+des vagues d'environ 4 semaines ; ils seront imputés par la médiane d'entraînement (TODO 2.8).
+
 ### 6.5 Résultats actuels (D-1, 92 participants, 10 259 réponses, 5 groupes par participant)
 
 | Cible et entrées | AUROC | Balanced acc. |
@@ -566,7 +626,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   chevauchent) ; `sleepEnd` = fin du dernier. Couverture = part des créneaux de **15 min** contenant
   au moins une FC, sur la partie **écoulée** de la fenêtre (une file à 7 h connaît la nuit).
   Nuit **inconnue** si couverture < 60 % **ou** aucun intervalle asleep* (suivi du sommeil
-  désactivé) : jamais 0. Différent de v0 (bloc le plus long ≥ 2 h, §6.3) : à reprendre en 2.5 (Lucas).
+  désactivé) : jamais 0. Python garde le sommeil estimé de v0 (bloc le plus long ≥ 2 h) mais
+  applique cette même règle de nuit inconnue : décision du 16 nov. 2026, §6 « Features v1 ».
 - **Règle 60 % (TODO 1.34, 10 nov.)** : 3 nuits portées (8, 9, 10 nov., montre en charge quelques
   dizaines de minutes le soir) → couverture **87 %, 95 %, 95 %** avec des créneaux de 15 min, mais
   seulement 68 %, 68 %, 71 % avec des créneaux de 5 min (la montre mesure toutes les 4–5 min,
