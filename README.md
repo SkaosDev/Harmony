@@ -6,7 +6,7 @@ sleep) compared with the person's own usual values.
 
 Repository: https://github.com/SkaosDev/Harmony
 
-Documentation (course report): [`docs/main.pdf`](docs/main.pdf) · [`docs/main.tex`](docs/main.tex)
+Documentation (course report): [`docs/main.pdf`](https://github.com/SkaosDev/Harmony/blob/main/docs/main.pdf) · [`docs/main.tex`](https://github.com/SkaosDev/Harmony/blob/main/docs/main.tex)
 
 Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 
