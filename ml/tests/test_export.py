@@ -48,5 +48,23 @@ class ParamsTests(unittest.TestCase):
             E.build_params(saved)
 
 
+try:
+    import coremltools                                           # noqa: F401
+    HAS_COREML = sys.platform == "darwin"                        # predict() only runs on macOS
+except ImportError:
+    HAS_COREML = False
+
+
+@unittest.skipUnless(HAS_COREML, "needs macOS and coremltools")
+class CoreMLTests(unittest.TestCase):
+    def test_core_ml_matches_sklearn(self):
+        import export_coreml as C
+        import pandas as pd
+        saved, x = saved_model()
+        rows = pd.DataFrame(x[:100], columns=list(T.FEATURES))
+        gap = C.max_gap(C.convert(saved), saved, rows)           # NaN rows included
+        self.assertLess(gap, 1e-6)
+
+
 if __name__ == "__main__":
     unittest.main()
