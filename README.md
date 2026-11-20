@@ -14,6 +14,73 @@ Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 2. `docs/TODO.md` — ordered checklist, from setup to the final report.
 3. `CLAUDE.md` — rules for Claude Code (general guidelines + project rules).
 
+## Architecture
+
+Everything runs **on the iPhone**. The only cloud piece is a small Cloudflare Worker that
+holds the LLM key. Full details: `docs/PROJECT.md` §4 (and §6–§8 for model, scores, queue).
+
+```
+                 ┌──────────────────────── iPhone (all local) ──────────────────────────┐
+ Apple Watch ──► │ HealthProvider ──► hourly/nightly summaries + baselines (SwiftData)  │
+                 │                                │                                     │
+ Spotify ◄─────► │ MusicProvider ──► tracks ──► SongScorer ──► song scores              │
+ (Web API + app) │                               │ (local MuSe table first)             │
+                 │                               └─► LLM via Worker ───────────────────►│─► Cloudflare Worker ─► LLM API
+                 │ FeatureBuilder ──► StateEstimator (Core ML) ──► state 0..1           │   (key, allowlist, limits)
+                 │ user taps a situation ──► QueueBuilder + Explainer ──► queue         │
+                 │ PlayerController (Spotify App Remote) ──► skip / like / "fit?" ──► FeedbackStore
+                 └──────────────────────────────────────────────────────────────────────┘
+ Team computers: Python training on EmoPhone ──► model_params.json + StateModel.mlmodel ──► shipped in the app
+```
+
+### Where things run
+
+| Where | What | Data it sees |
+|---|---|---|
+| iPhone | the whole app, the Core ML model, storage | health data, library, feedback — never sent elsewhere |
+| Cloudflare Worker | LLM proxy: keeps the key, checks the user, rate-limits | song titles and artists only |
+| Spotify | sign-in, library, playback | what Spotify already has |
+| Team PC/Mac | training, evaluation, MuSe table build | EmoPhone (local, never on Git) |
+
+### App modules
+
+The core (`SongScorer`, `FeatureBuilder`, `StateEstimator`, `QueueBuilder`) only knows the two
+protocols `MusicProvider` and `HealthProvider`, never Spotify or HealthKit directly. Each has a
+real implementation and a **demo** one (synthetic data), so the app runs entirely on the simulator.
+
+| Module | Role | Status |
+|---|---|---|
+| `MusicProvider` + Spotify / Demo | sign-in (PKCE), library import, lookup, playback, save | sign-in, import, demo done; playback to do |
+| `HealthProvider` + HealthKit / Demo | consents, anchored reads of heart rate, steps, HRV, sleep | done |
+| `SummaryStore` / `BaselineCalculator` | hourly and nightly summaries, 14-day personal baselines | summaries done; baselines to do |
+| `SongScorer` | energy / positivity per song: MuSe, then LLM via the Worker, cached | to do |
+| `FeatureBuilder` + `StateEstimator` | the 13 features of `PROJECT.md` §6, Core ML inference | model and fixtures ready; Swift to do |
+| `SituationSuggester` | which of the 4 situations to highlight | to do |
+| `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | to do |
+| `PlayerController` + `FeedbackStore` | playback, skip / like / "did it fit?" | to do |
+| `DataControl` | see, export, delete all data | to do |
+| Worker (`worker/`) | `POST /score`, Spotify-token auth, daily limit | to do |
+
+### Data flow in one sentence
+
+Watch data are reduced to hourly and nightly summaries (raw samples are dropped), compared with
+the person's own last 14 days, turned into 13 features, and fed to a small logistic model
+(Core ML) that gives a 0–1 "state"; with the chosen situation, it selects a short queue of songs
+the user already likes, scored by energy and positivity. There is no medical claim and no emotion
+is named to the user.
+
+### Python ↔ Swift contract
+
+`ml/features.py` is the single source of truth for the features. The model is exported with
+`ml/export.py` (`model_params.json`, `StateModel.mlmodel`) and 10 synthetic golden cases
+(`ml/fixtures/state_cases.json`) let the Swift tests check the same values to 1e-6. Changing a
+feature means retraining and regenerating these files.
+
+### Tech stack
+
+Swift 6, SwiftUI, SwiftData, HealthKit, Core ML (iOS 18+, Xcode 27.2) · Spotify Web API + iOS SDK
+App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudflare Worker (TypeScript).
+
 ## Repository layout
 
 | Folder | Content |
