@@ -15,60 +15,9 @@ Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 Everything runs **on the iPhone**. The only cloud piece is a small Cloudflare Worker that
 holds the LLM key. Full details: `docs/PROJECT.md` §4 (and §6–§8 for model, scores, queue).
 
-```mermaid
-flowchart LR
-    subgraph WATCH["⌚ Apple Watch"]
-        W["Heart rate · steps · HRV · sleep"]
-    end
-
-    subgraph PHONE["📱 iPhone — everything runs here"]
-        direction TB
-        HP["HealthProvider<br/>HealthKit / Demo"]
-        SUM[("Hourly + nightly summaries<br/>14-day baselines<br/><i>SwiftData</i>")]
-        FB["FeatureBuilder<br/>13 features"]
-        SE["StateEstimator<br/>Core ML · state 0..1"]
-        MP["MusicProvider<br/>Spotify / Demo"]
-        LIB[("Library<br/>tracks + song scores")]
-        SS["SongScorer<br/>MuSe table, then LLM"]
-        SIT(["User picks a situation<br/>wake-up · stress · low energy · wind-down"])
-        QB["QueueBuilder + Explainer<br/>short queue + plain-words reason"]
-        PL["PlayerController<br/>Spotify App Remote"]
-        FS[("FeedbackStore<br/>skip · like · did it fit?")]
-
-        HP --> SUM --> FB --> SE --> QB
-        MP --> LIB
-        LIB --> SS --> LIB
-        LIB --> QB
-        SIT --> QB
-        QB --> PL --> FS
-    end
-
-    subgraph CLOUD["☁️ Cloudflare Worker"]
-        WK["POST /score<br/>Spotify-token auth · daily limit<br/>holds the LLM key"]
-    end
-
-    subgraph TEAM["💻 Team computers (offline)"]
-        ML["Python training on EmoPhone<br/>ml/train.py · ml/export.py"]
-    end
-
-    SP["🎧 Spotify<br/>Web API + app"]
-    LLM["LLM API"]
-
-    W --> HP
-    SP <--> MP
-    SP <--> PL
-    SS -- "titles + artists only" --> WK --> LLM
-    ML -- "StateModel.mlmodel<br/>model_params.json" --> SE
-
-    classDef local fill:#e8f5e9,stroke:#2e7d32,color:#000;
-    classDef cloud fill:#e3f2fd,stroke:#1565c0,color:#000;
-    classDef ext fill:#fff3e0,stroke:#ef6c00,color:#000;
-    class HP,SUM,FB,SE,MP,LIB,SS,SIT,QB,PL,FS local;
-    class WK,LLM cloud;
-    class W,SP,ML ext;
-```
-
-*Health data never leave the phone. The Worker only ever receives song titles and artists.*
+<p align="center">
+  <img src="docs/architecture.svg" alt="Harmony architecture" width="100%">
+</p>
 
 ### Where things run
 
