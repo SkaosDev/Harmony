@@ -477,6 +477,23 @@ Lecture : la FC porte l'information ; pas et sommeil n'ajoutent rien de mesurabl
 (écart < variation entre groupes ±0,015). 0,5 = hasard. Le stress est à peine prévisible → la
 situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiquement.
 
+**Features v1, validation croisée D-1 + D-2 (TODO 2.8–2.10)** — 20 nov. 2026, scikit-learn 1.5.2,
+`python ml/train.py --features data/features`. 31 301 réponses, 191 participants (`vague + pcode`),
+5 groupes par participant, mêmes groupes pour toutes les variantes ; modèle §6.3 (médiane,
+standardisation, régression logistique, ajustées dans chaque groupe d'entraînement). Arousal ;
+moyenne ± écart-type sur les 5 groupes.
+
+| Entrées | Nombre | AUROC | Balanced accuracy |
+|---|---:|---:|---:|
+| Heure seule (référence) | 3 | 0,535 ± 0,017 | 0,505 ± 0,008 |
+| Heure + FC | 7 | 0,554 ± 0,012 | 0,516 ± 0,009 |
+| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,010 | 0,540 ± 0,004 |
+
+Les deux modèles battent l'heure seule. En v1, heure + FC est plus bas qu'en v0 (0,576/0,570 sur
+D-1/D-2 seules) ; causes possibles, non mesurées une à une : FC à 1 mesure / 5 min, références sur les 14 jours précédents seulement, et
+z-scores FC inconnus (puis imputés) pour 43–51 % des réponses. Pas et sommeil ajoutent +0,009
+d'AUROC, moins que l'écart entre groupes, mais +0,024 de balanced accuracy.
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine si le temps le permet.

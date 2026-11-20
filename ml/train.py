@@ -33,6 +33,7 @@ N_FOLDS = 5
 # Model inputs compared, all taken from FEATURES in its fixed order.
 VARIANTS = {
     "time only": FEATURES[:3],                     # hour_sin, hour_cos, weekend
+    "time + HR": FEATURES[:7],                     # ... z_hr_15/30/60, zb_hr_30
     "time + HR + steps + sleep": FEATURES,
 }
 

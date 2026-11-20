@@ -118,7 +118,7 @@
 ### 2.ML-b Entraînement et évaluation (L)
 - [x] **2.8** `ml/train.py` : validation croisée 5 groupes par participant sur D-1 + D-2. — ✔ AUROC et balanced accuracy affichées.
 - [x] **2.9** Référence « heure seule » calculée de la même façon. — ✔ affichée à côté.
-- [ ] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
+- [x] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
 - [ ] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
 - [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement.
 - [ ] **2.13** Décision en équipe : modèle 4 entrées, modèle heure+FC, ou mode heure seule. — ✔ décision écrite dans PROJECT.md §3.
