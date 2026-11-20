@@ -18,7 +18,7 @@ of D-1 + D-2 with the same fixed model (no setting is chosen on D-3) and scored 
 
 --final PATH: fits the chosen variant (FINAL, team decision TODO 2.13) on D-1 + D-2 + D-3 and
 saves the Pipeline (TODO 2.14). Keep PATH inside data/ (ignored by Git): the coefficients are
-not published until the EmoPhone authors agree (TODO 2.14b).
+published only because the EmoPhone authors agreed (TODO 2.14b); see ml/export.py.
 """
 import argparse
 import warnings

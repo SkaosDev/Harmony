@@ -87,7 +87,7 @@ Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs
 ## Hard rules
 - Never commit, print or paste EmoPhone / UC Irvine data. They live in `data/` (git-ignored) or
   outside the repo. Only scripts and aggregate results go to Git (the trained model too,
-  once TODO 2.14b is confirmed).
+  now that TODO 2.14b is confirmed).
 - No API key or secret in the app or in Git. The LLM key lives only in the Worker (`wrangler secret`).
 - Health data never leave the phone. The Worker only receives song titles and artists.
 - Never show a named emotion to the user; no medical claims.

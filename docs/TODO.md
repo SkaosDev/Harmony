@@ -125,10 +125,10 @@
 - [x] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
 
 ### 2.ML-c Export vers l'app (L/C)
-- [ ] **2.14b** Confirmer avec les auteurs d'EmoPhone que publier les coefficients du modèle (dans l'app et sur GitHub) est autorisé. — ✔ réponse écrite conservée.
-- [ ] **2.15** `ml/export.py` : `model_params.json` (ordre des features, médianes, moyennes, écarts-types, coefficients, version). — ✔ fichier < 5 Ko.
-- [ ] **2.16** Conversion Core ML (coremltools, sur le Mac). — ✔ `StateModel.mlmodel` donne les mêmes probabilités que scikit-learn (écart < 1e-6) sur 100 lignes.
-- [ ] **2.17** Fixtures golden : 10 séries **synthétiques** + features + probabilité attendues → `ml/fixtures/state_cases.json`. — ✔ fichier versionné, aucune donnée réelle.
+- [x] **2.14b** Confirmer avec les auteurs d'EmoPhone que publier les coefficients du modèle (dans l'app et sur GitHub) est autorisé. — ✔ réponse écrite conservée.
+- [x] **2.15** `ml/export.py` : `model_params.json` (ordre des features, médianes, moyennes, écarts-types, coefficients, version). — ✔ fichier < 5 Ko.
+- [x] **2.16** Conversion Core ML (coremltools, sur le Mac). — ✔ `StateModel.mlmodel` donne les mêmes probabilités que scikit-learn (écart < 1e-6) sur 100 lignes.
+- [x] **2.17** Fixtures golden : 10 séries **synthétiques** + features + probabilité attendues → `ml/fixtures/state_cases.json`. — ✔ fichier versionné, aucune donnée réelle.
 
 ### 2.APP-a Features et état dans l'app (C)
 - [ ] **2.18** `BaselineCalculator` Swift (14 jours, grille 30 min, prêt à 7 jours). — ✔ tests sur fixtures.
