@@ -62,7 +62,7 @@ The simulator needs nothing more. To run the app on a real iPhone you also need:
 | Python 3.12 (not 3.14: the pinned scikit-learn 1.5.2 does not install on it) | `python --version` |
 | Virtual environment + dependencies (commands below) | `python -c "import sklearn; print(sklearn.__version__)"` prints `1.5.2` |
 | EmoPhone waves copied to `data/emophone/D1`, `D2`, `D3` (ask the team; never commit them) | `git status` does not list them |
-| UC Irvine copied to `data/uci/` (later, low priority: TODO 5.1) | `git status` does not list it |
+| UC Irvine copied to `data/uci/` (optional, ideally before Phase 4: TODO 5.1) | `git status` does not list it |
 
 ```sh
 # Windows (PowerShell). If activation is blocked:

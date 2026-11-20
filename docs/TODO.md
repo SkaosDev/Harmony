@@ -222,7 +222,8 @@
 
 ## Phase 5 — UC Irvine (plus tard, non prioritaire)
 
-> Hors jalons M1–M4 : ne commencer qu'après le pilote ou s'il reste du temps. Ne bloque rien.
+> Hors jalons M1–M4, à faire si possible **avant la Phase 4** (après M3, avant le pilote) pour que
+> l'éventuel nouveau modèle soit celui du pilote ; sinon plus tard. Ne bloque aucune autre tâche.
 > Objectif : refaire avec UC Irvine (Labbaf et al., Dryad doi:10.7280/D1WH6T, 21 étudiants,
 > Samsung + Oura) ce qui a été fait avec EmoPhone. Mêmes règles de confidentialité (jamais sur Git,
 > aucun contenu collé dans un chat : scripts qui affichent des agrégats seulement). Réalise la tâche 2.12.
@@ -235,7 +236,9 @@
 - [ ] **5.5** Construire la table de features v1 pour UC Irvine avec `ml/features.py` (adapter seulement le chargement). — ✔ fichier local dans `data/features/`, nombre de lignes affiché, identifiant `uci + pcode`.
 - [ ] **5.6** Test unique du modèle final déjà entraîné (2.14), sans réentraînement ni réglage, comparé à « heure seule » et « heure + FC ». — ✔ AUROC et balanced accuracy notées dans PROJECT.md §6.5 (équivalent de 2.11).
 - [ ] **5.7** (Optionnel) Validation croisée par participant sur UC Irvine seul. — ✔ résultat noté ou abandon explicite.
-- [ ] **5.8** Mettre à jour PROJECT.md (§5.3, §6.5, §6.6, §12) et le rapport si les résultats y sont utilisés. — ✔ chiffres cohérents partout.
+- [ ] **5.8** Décision en équipe : UC Irvine donne-t-il de meilleurs résultats qu'EmoPhone ? Critère écrit **avant** de regarder : mêmes métriques (AUROC, balanced accuracy) battent le modèle EmoPhone sur les mêmes données de test, en tenant compte des limites (21 participants, autres appareils, sommeil Oura mesuré et non estimé). — ✔ décision et critère écrits dans PROJECT.md §3.
+- [ ] **5.9** Si oui : utiliser et implémenter UC Irvine (réentraîner avec ou sur UC Irvine, mettre à jour §6, refaire export/Core ML/fixtures 2.15–2.17 et les tests Swift 2.18–2.21 si l'app est déjà écrite). — ✔ nouveau modèle évalué sans fuite (participants séparés), fixtures golden régénérées, tests passent. Si non : abandon explicite noté.
+- [ ] **5.10** Mettre à jour PROJECT.md (§5.3, §6.5, §6.6, §12) et le rapport si les résultats y sont utilisés. — ✔ chiffres cohérents partout.
 
 ---
 

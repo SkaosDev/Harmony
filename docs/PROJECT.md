@@ -315,7 +315,7 @@ schéma nécessite une décision d'équipe avant d'être retenue.
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Optionnel ; mêmes règles de confidentialité qu'EmoPhone.
 - **Obtenu le 20 nov. 2026**, pas encore copié dans `data/uci/` (TODO 5.1). Travail prévu en
-  Phase 5 de la TODO (non prioritaire) : exploration, étiquette, features v1, test unique du modèle
+  Phase 5 de la TODO (si possible avant la Phase 4) : exploration, étiquette, features v1, test unique du modèle
   final. Fichiers, colonnes, échelles et conditions d'usage : à documenter ici après 5.2 et 5.3.
 
 ### 5.4 Ce qui ne doit jamais aller sur Git
@@ -515,7 +515,9 @@ d'écart-type) ; rien n'a été ajusté après ce test.
 
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
-2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (Phase 5 de la TODO, non prioritaire).
+2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (Phase 5 de la TODO, si possible avant la Phase 4). Si UC Irvine donne de meilleurs résultats
+qu'EmoPhone selon un critère écrit à l'avance, on l'utilise et on l'implémente (TODO 5.8–5.9) ;
+sinon abandon noté.
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
 4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
