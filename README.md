@@ -8,30 +8,65 @@ Repository: https://github.com/SkaosDev/Harmony
 
 Members: Clément Royer, Cyprien Vanden Abeele, Lucas Miskulin, Riad Mekideche.
 
-## Start here
-
-1. `docs/PROJECT.md` — full context: idea, decisions, architecture, data, model, where we are.
-2. `docs/TODO.md` — ordered checklist, from setup to the final report.
-3. `CLAUDE.md` — rules for Claude Code (general guidelines + project rules).
-
 ## Architecture
 
 Everything runs **on the iPhone**. The only cloud piece is a small Cloudflare Worker that
 holds the LLM key. Full details: `docs/PROJECT.md` §4 (and §6–§8 for model, scores, queue).
 
+```mermaid
+flowchart LR
+    subgraph WATCH["⌚ Apple Watch"]
+        W["Heart rate · steps · HRV · sleep"]
+    end
+
+    subgraph PHONE["📱 iPhone — everything runs here"]
+        direction TB
+        HP["HealthProvider<br/>HealthKit / Demo"]
+        SUM[("Hourly + nightly summaries<br/>14-day baselines<br/><i>SwiftData</i>")]
+        FB["FeatureBuilder<br/>13 features"]
+        SE["StateEstimator<br/>Core ML · state 0..1"]
+        MP["MusicProvider<br/>Spotify / Demo"]
+        LIB[("Library<br/>tracks + song scores")]
+        SS["SongScorer<br/>MuSe table, then LLM"]
+        SIT(["User picks a situation<br/>wake-up · stress · low energy · wind-down"])
+        QB["QueueBuilder + Explainer<br/>short queue + plain-words reason"]
+        PL["PlayerController<br/>Spotify App Remote"]
+        FS[("FeedbackStore<br/>skip · like · did it fit?")]
+
+        HP --> SUM --> FB --> SE --> QB
+        MP --> LIB
+        LIB --> SS --> LIB
+        LIB --> QB
+        SIT --> QB
+        QB --> PL --> FS
+    end
+
+    subgraph CLOUD["☁️ Cloudflare Worker"]
+        WK["POST /score<br/>Spotify-token auth · daily limit<br/>holds the LLM key"]
+    end
+
+    subgraph TEAM["💻 Team computers (offline)"]
+        ML["Python training on EmoPhone<br/>ml/train.py · ml/export.py"]
+    end
+
+    SP["🎧 Spotify<br/>Web API + app"]
+    LLM["LLM API"]
+
+    W --> HP
+    SP <--> MP
+    SP <--> PL
+    SS -- "titles + artists only" --> WK --> LLM
+    ML -- "StateModel.mlmodel<br/>model_params.json" --> SE
+
+    classDef local fill:#e8f5e9,stroke:#2e7d32,color:#000;
+    classDef cloud fill:#e3f2fd,stroke:#1565c0,color:#000;
+    classDef ext fill:#fff3e0,stroke:#ef6c00,color:#000;
+    class HP,SUM,FB,SE,MP,LIB,SS,SIT,QB,PL,FS local;
+    class WK,LLM cloud;
+    class W,SP,ML ext;
 ```
-                 ┌──────────────────────── iPhone (all local) ──────────────────────────┐
- Apple Watch ──► │ HealthProvider ──► hourly/nightly summaries + baselines (SwiftData)  │
-                 │                                │                                     │
- Spotify ◄─────► │ MusicProvider ──► tracks ──► SongScorer ──► song scores              │
- (Web API + app) │                               │ (local MuSe table first)             │
-                 │                               └─► LLM via Worker ───────────────────►│─► Cloudflare Worker ─► LLM API
-                 │ FeatureBuilder ──► StateEstimator (Core ML) ──► state 0..1           │   (key, allowlist, limits)
-                 │ user taps a situation ──► QueueBuilder + Explainer ──► queue         │
-                 │ PlayerController (Spotify App Remote) ──► skip / like / "fit?" ──► FeedbackStore
-                 └──────────────────────────────────────────────────────────────────────┘
- Team computers: Python training on EmoPhone ──► model_params.json + StateModel.mlmodel ──► shipped in the app
-```
+
+*Health data never leave the phone. The Worker only ever receives song titles and artists.*
 
 ### Where things run
 
@@ -80,6 +115,12 @@ feature means retraining and regenerating these files.
 
 Swift 6, SwiftUI, SwiftData, HealthKit, Core ML (iOS 18+, Xcode 27.2) · Spotify Web API + iOS SDK
 App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudflare Worker (TypeScript).
+
+## Start here
+
+1. `docs/PROJECT.md` — full context: idea, decisions, architecture, data, model, where we are.
+2. `docs/TODO.md` — ordered checklist, from setup to the final report.
+3. `CLAUDE.md` — rules for Claude Code (general guidelines + project rules).
 
 ## Repository layout
 
