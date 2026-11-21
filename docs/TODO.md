@@ -120,7 +120,7 @@
 - [x] **2.9** Référence « heure seule » calculée de la même façon. — ✔ affichée à côté.
 - [x] **2.10** Comparer : heure+FC vs heure+FC+pas+sommeil. — ✔ tableau dans PROJECT.md §6.5.
 - [x] **2.11** Test unique sur D-3 (vague tenue à part). — ✔ résultat noté, sans réglage après coup.
-- [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement. — Reportée : dataset obtenu le 20 nov. 2026, voir Phase 5 (5.1–5.6).
+- [ ] **2.12** (Optionnel) Test sur UC Irvine. — ✔ résultat noté ou tâche abandonnée explicitement. — Fait en Phase 5 (5.6).
 - [x] **2.13** Décision en équipe : modèle 4 entrées, modèle heure+FC, ou mode heure seule. — ✔ décision écrite dans PROJECT.md §3.
 - [x] **2.14** Entraîner le modèle final sur D-1 + D-2 + D-3. — ✔ fichier modèle produit.
 
@@ -229,15 +229,15 @@
 > aucun contenu collé dans un chat : scripts qui affichent des agrégats seulement). Réalise la tâche 2.12.
 
 ### 5.ML UC Irvine
-- [ ] **5.1** Copier le dataset dans `data/uci/` (dossier prévu par `data/README.md`). — ✔ dossier présent, absent de `git status` ; `git ls-files data/` n'affiche que `data/README.md`.
-- [ ] **5.2** Explorer la structure : fichiers, colonnes, échelles, fuseau horaire, participants, appareils, fréquence de la FC, sommeil Oura mesuré. — ✔ agrégats seulement, notés dans PROJECT.md §5.3 (équivalent de 1.35–1.37).
-- [ ] **5.3** Vérifier la licence et les conditions d'usage Dryad. — ✔ conditions notées dans PROJECT.md §5.3.
-- [ ] **5.4** Définir l'étiquette « arousal haut » à partir des variables d'humeur d'UC Irvine, **s'il existe une variable équivalente**. — ✔ règle écrite dans PROJECT.md §6.2 ; sinon arrêt et question à l'équipe (le contrat §6 ne change pas sans réentraînement).
-- [ ] **5.5** Construire la table de features v1 pour UC Irvine avec `ml/features.py` (adapter seulement le chargement). — ✔ fichier local dans `data/features/`, nombre de lignes affiché, identifiant `uci + pcode`.
+- [x] **5.1** Copier le dataset dans `data/uci/` (dossier prévu par `data/README.md`). — ✔ dossier présent, absent de `git status` ; `git ls-files data/` n'affiche que `data/README.md`.
+- [x] **5.2** Explorer la structure : fichiers, colonnes, échelles, fuseau horaire, participants, appareils, fréquence de la FC, sommeil Oura mesuré. — ✔ agrégats seulement, notés dans PROJECT.md §5.3 (équivalent de 1.35–1.37).
+- [x] **5.3** Vérifier la licence et les conditions d'usage Dryad. — ✔ conditions notées dans PROJECT.md §5.3.
+- [x] **5.4** Définir l'étiquette « arousal haut » à partir des variables d'humeur d'UC Irvine, **s'il existe une variable équivalente**. — ✔ règle écrite dans PROJECT.md §6.2 ; sinon arrêt et question à l'équipe (le contrat §6 ne change pas sans réentraînement).
+- [x] **5.5** Construire la table de features v1 pour UC Irvine avec `ml/features.py` (adapter seulement le chargement). — ✔ fichier local `data/features/v1_UCI.csv`, 3 949 lignes / 24 participants affichés, identifiant `UCI_par_N`.
 - [ ] **5.6** Test unique du modèle final déjà entraîné (2.14), sans réentraînement ni réglage, comparé à « heure seule » et « heure + FC ». — ✔ AUROC et balanced accuracy notées dans PROJECT.md §6.5 (équivalent de 2.11).
 - [ ] **5.7** (Optionnel) Validation croisée par participant sur UC Irvine seul. — ✔ résultat noté ou abandon explicite.
 - [ ] **5.8** Décision en équipe : UC Irvine donne-t-il de meilleurs résultats qu'EmoPhone ? Critère écrit **avant** de regarder : mêmes métriques (AUROC, balanced accuracy) battent le modèle EmoPhone sur les mêmes données de test, en tenant compte des limites (21 participants, autres appareils, sommeil Oura mesuré et non estimé). — ✔ décision et critère écrits dans PROJECT.md §3.
-- [ ] **5.9** Si oui : utiliser et implémenter UC Irvine (réentraîner avec ou sur UC Irvine, mettre à jour §6, refaire export/Core ML/fixtures 2.15–2.17 et les tests Swift 2.18–2.21 si l'app est déjà écrite). — ✔ nouveau modèle évalué sans fuite (participants séparés), fixtures golden régénérées, tests passent. Si non : abandon explicite noté.
+- [ ] **5.9** Si oui : utiliser et implémenter UC Irvine (réentraîner avec ou sur UC Irvine, mettre à jour §6, refaire export/Core ML/fixtures 2.15–2.17 et les tests Swift 2.18–2.21 si l'app est déjà écrite). — ✔ nouveau modèle évalué sans fuite (participants séparés), fixtures golden régénérées, tests passent. Si non : abandon explicite noté. — Reportée (21 nov. 2026) : décision 5.8 notée dans PROJECT.md §3, intégration à l'app plus tard.
 - [ ] **5.10** Mettre à jour PROJECT.md (§5.3, §6.5, §6.6, §12) et le rapport si les résultats y sont utilisés. — ✔ chiffres cohérents partout.
 
 ---
