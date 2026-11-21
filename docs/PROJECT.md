@@ -123,6 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
+| Proposition de décision 5.8 (21 nov. 2026) | Le critère est satisfait : UC Irvine propose une AUROC moyenne supérieure de 0,044 au modèle EmoPhone fixe, une balanced accuracy supérieure de 0,030, et son AUROC dépasse « heure seule » de 0,028. Proposition : retenir UC Irvine comme modèle candidat, à valider en réunion d'équipe. Limites : 21 étudiants annoncés mais 24 IDs exploitables non expliqués, autres appareils, sommeil Oura mesuré contre sommeil estimé à l'entraînement, humeur quotidienne plutôt que du moment, activation PANAS qui n'est pas l'arousal EmoPhone. Intégration à l'app reportée (TODO 5.9). |
 
 ---
 
@@ -568,11 +569,48 @@ Même ordre qu'en validation croisée : les deux modèles battent l'heure seule 
 ajoutent +0,006 d'AUROC et +0,004 de balanced accuracy. Un seul chiffre par variante (pas
 d'écart-type) ; rien n'a été ajusté après ce test.
 
+**UC Irvine, test unique du modèle final (TODO 5.6)** — 21 nov. 2026,
+`.venv/Scripts/python.exe ml/uci_eval.py`, Python 3.12.10, scikit-learn 1.5.2. 3 949 réponses,
+24 IDs participants ; modèle final EmoPhone fixe depuis `model_params.json`. Les deux références
+sont ajustées sur D-1 + D-2 + D-3.
+
+| Modèle testé une fois sur UC Irvine | AUROC | Balanced accuracy |
+|---|---:|---:|
+| EmoPhone final fixe, 13 features | 0,496 | 0,499 |
+| Heure seule, entraînée sur EmoPhone | 0,504 | 0,500 |
+| Heure + FC, entraîné sur EmoPhone | 0,509 | 0,500 |
+
+**UC Irvine, validation croisée (TODO 5.7)** — même commande et version, 3 949 réponses,
+24 IDs, 5 groupes par participant ; moyenne ± écart-type entre groupes.
+
+| Entrées, modèle entraîné dans les groupes UC Irvine | Nombre | AUROC | Balanced accuracy |
+|---|---:|---:|---:|
+| Heure seule | 3 | 0,510 ± 0,027 | 0,510 ± 0,023 |
+| Heure + FC | 7 | 0,503 ± 0,015 | 0,500 ± 0,017 |
+| Heure + FC + pas + sommeil | 13 | 0,538 ± 0,018 | 0,530 ± 0,014 |
+
+**EmoPhone contre UC Irvine, mêmes groupes (TODO 5.8)** — modèle EmoPhone fixe évalué sur chacun
+des mêmes 5 groupes tests que le modèle UC Irvine entraîné dans les 4 autres groupes ;
+3 949 réponses, 24 IDs, 21 nov. 2026, scikit-learn 1.5.2.
+
+| Modèle sur les mêmes groupes tests | AUROC moyenne ± écart-type | Balanced accuracy moyenne ± écart-type |
+|---|---:|---:|
+| EmoPhone fixe (`model_params.json`) | 0,494 ± 0,017 | 0,500 ± 0,012 |
+| UC Irvine, 13 features | 0,538 ± 0,018 | 0,530 ± 0,014 |
+
+Écarts UC Irvine moins EmoPhone : +0,044 d'AUROC et +0,030 de balanced accuracy ; le modèle
+13 features dépasse aussi l'heure seule UC Irvine de +0,028 d'AUROC. Les trois conditions du
+critère §3 sont satisfaites : verdict du critère « remplacer EmoPhone », sous réserve de la
+validation en réunion d'équipe. Information hors critère : modèle 13 features ajusté sur les
+3 949 réponses UC Irvine et testé sur EmoPhone D-3 (21 838 réponses, 106 participants) : AUROC
+0,528, balanced accuracy 0,505.
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
-2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine. Pour UC Irvine, le critère
-écrit avant les résultats est en §3 ; il compare les mêmes 5 groupes par participant. La tâche
-5.9 est reportée : l'évaluation ne déclenche pas d'intégration dans l'app.
+2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (TODO 5.6–5.8). Le critère
+   écrit avant les résultats (§3) est satisfait sur les mêmes 5 groupes ; proposition de retenir
+   UC Irvine à valider en réunion. La tâche 5.9 est reportée : l'évaluation ne déclenche pas
+   d'intégration dans l'app.
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
 4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
@@ -768,11 +806,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
   fichier local `data/models/state_model.joblib`, non versionné ; accord des auteurs d'EmoPhone pour
   publier les coefficients (2.14b) ; export `model_params.json`, `StateModel.mlmodel` et fixtures
   golden (2.15–2.17, §6.7).
+- *Mise à jour ML UC Irvine, 21 nov. 2026* : exploration agrégée, étiquette d'activation,
+  table v1 et évaluation figée avant résultats (TODO 5.1–5.8, `ml/uci_explore.py`,
+  `ml/uci_build_features.py`, `ml/uci_eval.py`). Le critère propose UC Irvine comme modèle
+  candidat (§3, §6.5), à valider en équipe ; l'intégration à l'app est reportée (5.9).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- ML : test UC Irvine (TODO 2.12) reporté en Phase 5 : dataset obtenu, pas encore copié ni exploré ; publication des coefficients en
-  attente de l'accord des auteurs d'EmoPhone (TODO 2.14b), donc ni export ni Core ML (2.15–2.16).
+- ML/app : l'évaluation UC Irvine est faite ; l'intégration du modèle à l'app reste reportée
+  jusqu'à validation en réunion (TODO 5.9).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 
