@@ -314,10 +314,57 @@ schéma nécessite une décision d'équipe avant d'être retenue.
 
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
-  Optionnel ; mêmes règles de confidentialité qu'EmoPhone.
-- **Obtenu le 20 nov. 2026**, pas encore copié dans `data/uci/` (TODO 5.1). Travail prévu en
-  Phase 5 de la TODO (si possible avant la Phase 4) : exploration, étiquette, features v1, test unique du modèle
-  final. Fichiers, colonnes, échelles et conditions d'usage : à documenter ici après 5.2 et 5.3.
+  Les données brutes et les tables dérivées restent locales dans `data/`, même si le dépôt est CC0.
+- Copie présente dans `data/uci/ifh_affect/` : 24 répertoires `par_N`. Agrégats du 21 nov. 2026,
+  `python ml/uci_explore.py` : 24 participants avec `ema/daily.csv`, Samsung PPG et pédomètre ;
+  23 avec `oura/sleep.csv` (24 avec `oura/heart_rate.csv`). EMA : 3 949 réponses, médiane 180 par
+  participant, du 20 janv. 2020 au 20 mai 2022 UTC. Les 3 949 réponses ont les six items
+  d'activation requis. L'article/README annonce 21 étudiants, mais les fichiers exploitables
+  apparaissent dans 24 IDs `par_N` ; l'écart n'est pas expliqué. Les groupes d'évaluation utilisent
+  ces 24 IDs distincts.
+- EMA retenue : `ema/daily.csv`, `submission_timestamp` (epoch ms UTC) et six PANAS
+  `Active, Alert, Excited, Enthusiastic, Jittery, Nervous`, échelle 0–100 ; les 14 autres PANAS,
+  les deux inquiétudes, `start_timestamp` et les champs libres ne sont pas des features. La question
+  porte sur l'humeur ressentie « today », une fois par jour. `ema/weekly.csv` est ignoré.
+- FC retenue : Samsung `samsung/ppg.csv`, colonnes `timestamp, hr` (ms UTC, battements/minute),
+  valeurs conservées seulement dans [30, 220] ; environ 8,3 % sont hors de cette plage. Intervalle
+  médian échantillonné entre timestamps : 25,5 s. La FC Oura `oura/heart_rate.csv`
+  (`timestamp, heart_rate, heart_rmssd`, ms UTC, battements/minute et ms) ne couvre que le sommeil ;
+  elle est fusionnée à la série Samsung, puis ramenée à une moyenne par minute. L'option Samsung
+  `hrv_1min.csv` (`hrv_meannn`, ms) est ignorée. Les mesures Oura de FC restent une seule série de
+  FC pour représenter la montre portée.
+- Sont aussi ignorés : `samsung/hrv_5min.csv`, `awake_times.csv`, `imu.csv`, `pressure.csv`,
+  `oura/activity.csv`, `activity_level.csv`, `readiness.csv` et `sleep_hypnogram.csv`. Le RMSSD Oura
+  ne rentre pas dans les features.
+- Couverture agrégée : part moyenne des dates locales de chaque participant ayant au moins une
+  mesure dans la plage 08–24 h / 00–06 h : PPG 0,975 / 0,650 ; HRV 1 min 0,528 / 0,351 ; FC Oura
+  0,313 / 0,511. C'est la présence d'au moins un point par date dans la plage, pas une fraction
+  des minutes couvertes. Les fichiers Oura contiennent 3 997 périodes ; une période existe pour
+  3 061 des 3 559 nuits avec une réponse EMA (0,860).
+- Pas : `samsung/pedometer.csv`, `timestamp` (ms UTC) et `num_total_steps` (cumul depuis le
+  redémarrage) ; les différences négatives sont traitées comme un redémarrage. Sommeil mesuré de
+  contrôle seulement : `oura/sleep.csv`, `date` (veille du réveil), `total` (secondes) ; le
+  hypnogramme et les autres champs Oura ne servent pas aux features. Le sommeil des features reste
+  estimé par `features.sleep_threshold` et `features.participant_features`, comme à l'entraînement.
+- Fuseau adopté : `America/Los_Angeles`, décalage calculé à chaque horodatage et heure d'été
+  comprise, puis conversion vers les coordonnées attendues par `features.py` (UTC−9 h). Le pic
+  d'EMA locale est 20 h (692 soumissions), puis 0–2 h ; la FC PPG moyenne échantillonnée est
+  92,3 bpm entre 00–06 h contre 93,6 bpm entre 08–24 h, un creux nocturne faible ; la présence
+  relative de FC Oura est plus forte la nuit que le jour. Ces indices agrégés sont cohérents avec
+  la Californie du Sud, mais la preuve par FC est faible, le fuseau n'est pas indiqué dans le
+  README et reste une hypothèse. Les EMA et capteurs passent en
+  coordonnées LA pour le calcul des features ; la colonne de sortie `t` garde l'epoch UTC d'origine.
+- Licence : la [politique de réutilisation Dryad](https://dev.datadryad.org/help/guides/reuse)
+  indique CC0 pour ses jeux de données ; la page du DOI `10.7280/D1WH6T` n'a pas pu être ouverte directement. `daily_feeling` n'est fourni que sur
+  demande pour protéger la vie privée ; il n'est jamais lu. Rien de `data/` n'est ajouté à Git.
+- Table UC Irvine v1 (TODO 5.5), 21 nov. 2026, `.venv/Scripts/python.exe -u
+  ml/uci_build_features.py`, Python 3.12.10 : 3 949 lignes / 24 participants. Nuits connues :
+  0,192 ; valeurs inconnues : `z_hr_30` 0,799, `zb_hr_30` 0,889, `z_log_steps_30` 0,293,
+  `z_sleep_min` 0,883, `hours_since_wake` 0,808. Contrôle sur 1 074 nuits avec mesure Oura :
+  écart médian estimé moins mesuré −344,5 min ; corrélation −0,001.
+- Une première table locale a été écartée avant évaluation : les capteurs étaient convertis en
+  heure LA, mais pas l'instant EMA passé aux features. La conversion EMA est corrigée dans le
+  chargeur ; la table et le cache utilisés ensuite ont été reconstruits en Python 3.12.
 
 ### 5.4 Ce qui ne doit jamais aller sur Git
 Données brutes EmoPhone/UC Irvine, tables de features dérivées par participant, clés API,
@@ -338,6 +385,13 @@ Il définit la version **v0** des features.
 ### 6.2 Étiquette
 Pour chaque réponse d'humeur : `arousal_high = 1` si `arousal` > moyenne d'arousal **de ce
 participant**, sinon 0. (Pour D-3, ramener d'abord les échelles 0..6 sur −3..+3.)
+
+**UC Irvine (TODO 5.4, 21 nov. 2026)** : pas d'item arousal. Score d'activation = moyenne des
+six items `Active, Alert, Excited, Enthusiastic, Jittery, Nervous` (0–100), réponse gardée
+seulement si les six sont présents ; `arousal_high` suit la même règle de moyenne personnelle via
+`features.label_high`. L'instant t est `submission_timestamp`. Limite : cette humeur porte sur la
+journée et est notée une fois par jour, contrairement à l'humeur du moment d'EmoPhone ; les
+features restent calculées à l'instant de soumission. Aucun label de stress n'est construit.
 
 ### 6.3 Features v0 (ce qui a produit les résultats)
 
@@ -516,9 +570,9 @@ d'écart-type) ; rien n'a été ajusté après ce test.
 
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
-2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (Phase 5 de la TODO, si possible avant la Phase 4). Si UC Irvine donne de meilleurs résultats
-qu'EmoPhone selon un critère écrit à l'avance, on l'utilise et on l'implémente (TODO 5.8–5.9) ;
-sinon abandon noté.
+2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine. Pour UC Irvine, le critère
+écrit avant les résultats est en §3 ; il compare les mêmes 5 groupes par participant. La tâche
+5.9 est reportée : l'évaluation ne déclenche pas d'intégration dans l'app.
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
 4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
