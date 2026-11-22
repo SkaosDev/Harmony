@@ -123,7 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
-| Proposition de décision 5.8 (21 nov. 2026) | Le critère est satisfait : UC Irvine propose une AUROC moyenne supérieure de 0,044 au modèle EmoPhone fixe, une balanced accuracy supérieure de 0,030, et son AUROC dépasse « heure seule » de 0,028. Proposition : retenir UC Irvine comme modèle candidat, à valider en réunion d'équipe. Limites : 21 étudiants annoncés mais 24 IDs exploitables non expliqués, autres appareils, sommeil Oura mesuré contre sommeil estimé à l'entraînement, humeur quotidienne plutôt que du moment, activation PANAS qui n'est pas l'arousal EmoPhone. Intégration à l'app reportée (TODO 5.9). |
+| Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
 
@@ -366,6 +366,13 @@ schéma nécessite une décision d'équipe avant d'être retenue.
 - Une première table locale a été écartée avant évaluation : les capteurs étaient convertis en
   heure LA, mais pas l'instant EMA passé aux features. La conversion EMA est corrigée dans le
   chargeur ; la table et le cache utilisés ensuite ont été reconstruits en Python 3.12.
+- Doublons entre IDs (TODO 5.9, 22 nov. 2026), `uci_explore.duplicate_ids()` (lancé aussi à la
+  fin de `python ml/uci_explore.py`), comptes seulement : 0 paire d'IDs avec un fichier identique
+  pour `ema/daily.csv` (24 fichiers), `oura/sleep.csv` (23), `oura/heart_rate.csv` (24) et
+  `samsung/pedometer.csv` (24) ; 0 paire d'IDs partageant un instant de soumission EMA. Rien ne
+  montre qu'une même personne apparaisse sous deux IDs (pas de fuite entre groupes) ; l'écart
+  21 étudiants / 24 IDs reste inexpliqué. Note pour une reprise éventuelle : les 3 997 périodes
+  Oura ont un `bedtime_end_timestamp`, donc un sommeil et un réveil mesurés seraient utilisables.
 
 ### 5.4 Ce qui ne doit jamais aller sur Git
 Données brutes EmoPhone/UC Irvine, tables de features dérivées par participant, clés API,
@@ -605,12 +612,28 @@ validation en réunion d'équipe. Information hors critère : modèle 13 feature
 3 949 réponses UC Irvine et testé sur EmoPhone D-3 (21 838 réponses, 106 participants) : AUROC
 0,528, balanced accuracy 0,505.
 
+**Lecture dans les deux sens (TODO 5.9, 22 nov. 2026)** — aucun nouveau calcul : chiffres repris
+des tableaux ci-dessus (2.11, 5.8 et la ligne hors critère). Modèle 13 features, AUROC.
+
+| Données de test | Modèle EmoPhone | Modèle UC Irvine |
+|---|---:|---:|
+| UC Irvine, mêmes 5 groupes | 0,494 (fixe, D-1 + D-2 + D-3) | 0,538 (4 autres groupes UCI) |
+| EmoPhone D-3, tenue à part | 0,576 (D-1 + D-2) | 0,528 (toutes les réponses UCI) |
+
+Chaque modèle ne gagne que sur ses propres données ; testé sur l'autre jeu de données, aucun ne
+dépasse 0,53. Le critère §3 ne regardait que la ligne UC Irvine. EmoPhone a la meilleure AUROC
+sur ses propres données (0,563 en validation croisée, 0,576 sur D-3, contre 0,538 pour UCI) et
+ressemble plus aux utilisateurs de l'app ; sur UC Irvine, la FC n'ajoute rien (0,503 contre 0,510)
+et le sommeil estimé n'est pas corrélé au sommeil Oura (§5.3). Décision : modèle EmoPhone gardé
+(§3) ; l'Apple Watch et les étudiants de Hanyang restent une troisième population, que seul le
+pilote mesurera (§13).
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (TODO 5.6–5.8). Le critère
-   écrit avant les résultats (§3) est satisfait sur les mêmes 5 groupes ; proposition de retenir
-   UC Irvine à valider en réunion. La tâche 5.9 est reportée : l'évaluation ne déclenche pas
-   d'intégration dans l'app.
+   écrit avant les résultats (§3) est satisfait sur les mêmes 5 groupes, mais lu dans les deux
+   sens chaque modèle ne gagne que sur ses données (§6.5) : le modèle EmoPhone est gardé et
+   UC Irvine n'est pas intégré à l'app (TODO 5.9, abandon explicite, 22 nov. 2026).
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
 4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
@@ -810,11 +833,14 @@ suggéré automatiquement (modèle trop faible sur le stress).
   table v1 et évaluation figée avant résultats (TODO 5.1–5.8, `ml/uci_explore.py`,
   `ml/uci_build_features.py`, `ml/uci_eval.py`). Le critère propose UC Irvine comme modèle
   candidat (§3, §6.5), à valider en équipe ; l'intégration à l'app est reportée (5.9).
+- *Décision UC Irvine, 22 nov. 2026* : lu dans les deux sens, chaque modèle ne gagne que sur ses
+  propres données (§6.5) ; modèle EmoPhone gardé, TODO 5.9 close par abandon explicite (§3).
+  Aucun doublon entre les 24 IDs UC Irvine (§5.3). Le modèle et les fixtures déjà livrés
+  (`model_params.json`, `StateModel.mlmodel`, `ml/fixtures/state_cases.json`) servent pour 2.APP-a.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- ML/app : l'évaluation UC Irvine est faite ; l'intégration du modèle à l'app reste reportée
-  jusqu'à validation en réunion (TODO 5.9).
+- ML/app : le modèle EmoPhone n'est pas encore branché dans l'app (TODO 2.18–2.22).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 
@@ -829,6 +855,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
 | Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurer dès que l'import marche |
 | Gain réel de pas + sommeil | Modèle plus complexe sans gain | Tester sur D-2/D-3 et au pilote ; repli heure + FC |
+| Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Comparer files « corps » et « heure seule » au pilote (4.4, 4.7) ; mode heure seule si aucun gain |
 | Coût Claude Pro (160 $) annoncé dans le rapport | Doit correspondre à la réalité | Confirmer qui s'abonne |
 
 ---
