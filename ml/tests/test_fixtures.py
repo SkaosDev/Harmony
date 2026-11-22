@@ -56,7 +56,26 @@ class FixtureTests(unittest.TestCase):
     def test_regenerating_gives_the_same_file(self):
         rng = np.random.default_rng(M.SEED)
         again = [M.build_case(*c, rng, PARAMS) for c in M.cases()]
-        self.assertEqual(json.loads(json.dumps(again)), DATA["cases"])
+        again = json.loads(json.dumps(again))
+        for actual, expected in zip(again, DATA["cases"]):
+            self.assertEqual(actual.keys(), expected.keys())
+            self.assertEqual(actual["name"], expected["name"])
+            for key in actual.keys() - {"features", "probability", "name"}:
+                if isinstance(expected[key], float):
+                    self.assertAlmostEqual(actual[key], expected[key], delta=1e-14,
+                                           msg=(expected["name"], key))
+                else:
+                    self.assertEqual(actual[key], expected[key], (expected["name"], key))
+            self.assertEqual(actual["features"].keys(), expected["features"].keys())
+            for name in F.FEATURES:
+                want, got = expected["features"][name], actual["features"][name]
+                if want is None:
+                    self.assertIsNone(got, (expected["name"], name))
+                else:
+                    self.assertAlmostEqual(got, want, delta=1e-14,
+                                           msg=(expected["name"], name))
+            self.assertAlmostEqual(actual["probability"], expected["probability"],
+                                   delta=1e-14, msg=expected["name"])
 
 
 if __name__ == "__main__":

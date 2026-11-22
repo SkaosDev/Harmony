@@ -11,6 +11,9 @@ Python code for the state model and the song scores.
 | `export.py`, `export_coreml.py` | Export of the final model to the app (TODO 2.15–2.16): `python ml/export.py --model data/models/state_model.joblib [--coreml]` writes `app/Harmony/Resources/model_params.json` (< 5 KB) and, with `--coreml` (macOS, coremltools 8), `StateModel.mlmodel`, checked against scikit-learn on 100 rows (gap < 1e-6). `export.predict` is the reference the Swift code must match. Tests: `ml/tests/test_export.py`. |
 | `make_fixtures.py` | Golden fixtures for the Swift tests (TODO 2.17): `python ml/make_fixtures.py` → `ml/fixtures/state_cases.json`, 10 synthetic cases (fixed seed) with series, expected features and probability. Tests: `ml/tests/test_fixtures.py`. |
 | `explore_waves.py` | Compares aggregate ESM and sensor structure across EmoPhone waves D-1, D-2 and D-3 (TODO 1.35): `python ml/explore_waves.py --data data/emophone`. |
+| `uci_explore.py` | Explores UC Irvine with aggregate outputs only (TODO 5.2): `python ml/uci_explore.py`; streams Samsung PPG and reports dataset coverage. |
+| `uci_build_features.py` | Builds resumable UC Irvine v1 features in `data/features/v1_UCI.csv` with per-participant cache in `data/uci_cache/` (TODO 5.4–5.5); reuses `features.py` unchanged. |
+| `uci_eval.py` | Runs the frozen UC Irvine one-shot, grouped validation and comparison protocol (TODO 5.6–5.8): `python ml/uci_eval.py`; aggregate metrics only. |
 | `make_demo_data.py` | Writes the app's synthetic demo data (`app/Harmony/Resources/demo/`): 14 days of watch data and 50 scored songs, from a fixed seed (no real person, no real song). Standard library only: `python ml/make_demo_data.py`. |
 | `muse_download.py` | Downloads MuSe v3 (`muse_v3.csv`, Kaggle, CC BY 4.0) into `data/muse/`, checks its size against Kaggle and its SHA-256 against the recorded one (same file for everyone), then prints the columns and value ranges (aggregates only). Standard library only: `python ml/muse_download.py`. Results and decisions: `docs/PROJECT.md` §5.2. |
 | `normalize.py` | Normalizes song titles and artists for MuSe lookup (TODO 1.40); shared cases: `ml/fixtures/normalize_cases.json`. |
@@ -23,7 +26,7 @@ Run:
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r ml/requirements.txt
 python ml/explore_d1.py --data /path/to/dataverse_files/D1
-python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures -v
+python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures ml.tests.test_uci -v
 python ml/build_features.py --data data/emophone --out data/features
 python ml/train.py --features data/features
 ```
