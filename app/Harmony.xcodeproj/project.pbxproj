@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1000000000000000000001E /* state_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* state_cases.json */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A1000000000000000000000E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -19,6 +23,7 @@
 /* Begin PBXFileReference section */
 		A10000000000000000000003 /* Harmony.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Harmony.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000004 /* HarmonyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HarmonyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000000000000000001D /* state_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = state_cases.json; path = ../ml/fixtures/state_cases.json; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -73,6 +78,7 @@
 			children = (
 				A10000000000000000000005 /* Harmony */,
 				A10000000000000000000006 /* HarmonyTests */,
+				A1000000000000000000001D /* state_cases.json */,
 				A1000000000000000000000C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -185,6 +191,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000000000000000000001E /* state_cases.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
