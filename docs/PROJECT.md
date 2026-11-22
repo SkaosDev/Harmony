@@ -856,7 +856,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   `StateEstimator` (Core ML sur CPU + mode heure seule, modèle `time_only` exporté, §6.7),
   `CurrentState` (lit FC, pas et sommeil des 14 derniers jours, en mémoire seulement) et section
   « State » de l'écran Debug. Tests golden : 13 features × 10 cas, probabilités et probabilités
-  heure seule à moins de 1e-6 de Python, sur simulateur et sur iPhone.
+  heure seule à moins de 1e-6 de Python, sur simulateur et sur iPhone. Sur iPhone avec les vraies
+  données Santé (dimanche après-midi, montre portée) : mode « Body », 13 features connues, calcul
+  en 0,13–0,15 s.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).

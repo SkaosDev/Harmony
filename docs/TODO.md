@@ -135,7 +135,7 @@
 - [x] **2.19** `FeatureBuilder` Swift (13 features v1, ordre de `model_params.json`). — ✔ test golden : écart < 1e-6 sur les 10 cas.
 - [x] **2.20** `StateEstimator` (Core ML + imputation/standardisation). — ✔ test golden sur la probabilité.
 - [x] **2.21** Mode « heure seule » (`prior(heure)`) si pas de référence ou pas de FC sur 30 min. — ✔ test avec données vides.
-- [ ] **2.22** Écran Debug : features et état actuels. — ✔ valeurs visibles sur un vrai iPhone.
+- [x] **2.22** Écran Debug : features et état actuels. — ✔ valeurs visibles sur un vrai iPhone.
 
 ### 2.CLOUD Worker (C)
 - [ ] **2.23** Créer `worker/` (TypeScript, wrangler). — ✔ `wrangler dev` répond sur `/health`.
