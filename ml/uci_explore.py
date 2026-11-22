@@ -1,4 +1,6 @@
 """Aggregate-only exploration of the UC Irvine dataset (TODO 5.2)."""
+import hashlib
+from itertools import combinations
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -6,6 +8,20 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1] / "data/uci/ifh_affect"
 PEOPLE = sorted(ROOT.glob("par_*"), key=lambda p: int(p.name[4:]))
 ITEMS = ["Active", "Alert", "Excited", "Enthusiastic", "Jittery", "Nervous"]
+DUPLICATE_FILES = ("ema/daily.csv", "oura/sleep.csv", "oura/heart_rate.csv", "samsung/pedometer.csv")
+
+def duplicate_ids():
+    """Counts only: participant IDs with identical files or shared EMA instants (TODO 5.9)."""
+    for rel in DUPLICATE_FILES:
+        digest = {p.name: hashlib.md5((p / rel).read_bytes()).hexdigest()
+                  for p in PEOPLE if (p / rel).exists()}
+        same = sum(digest[a] == digest[b] for a, b in combinations(digest, 2))
+        print(rel, "files", len(digest), "identical ID pairs", same)
+    instants = {p.name: set(pd.read_csv(p / "ema/daily.csv", usecols=["submission_timestamp"])
+                            .submission_timestamp.dropna().astype("int64"))
+                for p in PEOPLE if (p / "ema/daily.csv").exists()}
+    shared = sum(bool(instants[a] & instants[b]) for a, b in combinations(instants, 2))
+    print("ID pairs sharing an EMA submission instant", shared)
 
 def main():
     counts = {k: [] for k in ("ema", "hr", "steps", "sleep")}
@@ -77,5 +93,6 @@ def main():
     print("Oura sleep periods",oura_periods,"EMA participant-nights with period",matched_nights,"of",candidate_nights,"share",matched_nights/max(1,candidate_nights))
     for source in cover:
         print(source,"day coverage mean",np.mean(cover[source]["day"]) if cover[source]["day"] else 0,"night coverage mean",np.mean(cover[source]["night"]) if cover[source]["night"] else 0)
+    duplicate_ids()
 
 if __name__ == "__main__": main()
