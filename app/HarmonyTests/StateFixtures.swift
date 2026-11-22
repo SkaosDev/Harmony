@@ -85,6 +85,15 @@ struct StateFixtures: Decodable {
             return previous + [today]
         }
 
+        /// One asleep interval per known night, ending at its wake-up and lasting its sleep minutes:
+        /// read by `HealthSummaries.night`, it gives back the fixture nights.
+        @MainActor var sleepSamples: [HealthSample] {
+            nightSummaries.compactMap { night in
+                guard let minutes = night.sleepMinutes, let end = night.sleepEnd else { return nil }
+                return HealthSample(start: end.addingTimeInterval(-minutes * 60), end: end, value: 1)
+            }
+        }
+
         /// Expected value of one feature, nil when unknown.
         func expected(_ name: String) -> Double? { features[name] ?? nil }
 

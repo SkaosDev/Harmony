@@ -26,6 +26,7 @@ struct DebugView: View {
                 LabeledContent("Song scores", value: scores.count, format: .number)
             }
             HealthDebugSection()
+            StateDebugSection()
             if demoMode {
                 Section("Demo health samples, last 14 days") {
                     ForEach(Self.signals, id: \.self) { signal in
