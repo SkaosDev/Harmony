@@ -660,6 +660,13 @@ pilote mesurera (§13).
 - **Sommeil dans les fixtures** : l'app lit le sommeil Apple Watch et ne l'estime pas ; chaque cas
   fournit donc les nuits estimées par Python (`nights`, `answer_night`). Le `FeatureBuilder` Swift
   (2.19) prendra des résumés de nuit en entrée, pas la FC brute de la nuit — à confirmer en 2.19.
+- **Modèle « heure seule » (TODO 2.21, 22 nov. 2026)** : `train.py --final` ajuste aussi la
+  variante heure seule (`hour_sin, hour_cos, weekend`, même modèle §6.3) sur les mêmes 53 139
+  réponses D-1 + D-2 + D-3 ; `model_params.json` passe en version 2 avec un bloc `time_only` au
+  même schéma (2,2 Ko). Le modèle 13 features est identique à la version 1 (mêmes valeurs, donc
+  `StateModel.mlmodel` inchangé). C'est `prior(heure)` du rapport : l'app l'utilise sans
+  référence ou sans FC sur 30 min, et le pilote (4.4) le compare au modèle complet. Les
+  fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
 ---

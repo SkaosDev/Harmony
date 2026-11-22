@@ -17,8 +17,10 @@ next to the "time only" baseline (TODO 2.9).
 of D-1 + D-2 with the same fixed model (no setting is chosen on D-3) and scored on D-3.
 
 --final PATH: fits the chosen variant (FINAL, team decision TODO 2.13) on D-1 + D-2 + D-3 and
-saves the Pipeline (TODO 2.14). Keep PATH inside data/ (ignored by Git): the coefficients are
-published only because the EmoPhone authors agreed (TODO 2.14b); see ml/export.py.
+saves the Pipeline (TODO 2.14), with the "time only" variant fitted on the same rows: the app
+falls back on it without a reference or a heart rate (TODO 2.21). Keep PATH inside data/ (ignored
+by Git): the coefficients are published only because the EmoPhone authors agreed (TODO 2.14b);
+see ml/export.py.
 """
 import argparse
 import warnings
@@ -91,6 +93,15 @@ def load(folder, waves):
     return pd.concat([pd.read_csv(folder / f"v1_{w}.csv") for w in waves], ignore_index=True)
 
 
+def fit_final(table):
+    """FINAL and "time only", each fitted on every row of `table` (what --final saves)."""
+    def fit(columns):
+        return make_model().fit(table[list(columns)].to_numpy(dtype=float), table[LABEL].to_numpy())
+    return {"features": list(VARIANTS[FINAL]), "label": LABEL, "model": fit(VARIANTS[FINAL]),
+            "time_only_features": list(VARIANTS["time only"]),
+            "time_only": fit(VARIANTS["time only"])}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--features", type=Path, required=True, help="folder of v1_D1.csv ...")
@@ -99,13 +110,12 @@ def main():
     args = ap.parse_args()
     if args.final:
         table = load(args.features, (*CV_WAVES, TEST_WAVE))
-        columns = list(VARIANTS[FINAL])
-        model = make_model().fit(table[columns].to_numpy(dtype=float), table[LABEL].to_numpy())
+        saved = fit_final(table)
         args.final.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump({"features": columns, "label": LABEL, "model": model}, args.final)
-        print(f"Final model ({FINAL}, {len(columns)} features) fitted on {len(table)} answers, "
-              f"{table.participant.nunique()} participants -> {args.final} "
-              f"({args.final.stat().st_size} bytes)")
+        joblib.dump(saved, args.final)
+        print(f"Final model ({FINAL}, {len(saved['features'])} features) and time only fitted "
+              f"on {len(table)} answers, {table.participant.nunique()} participants -> "
+              f"{args.final} ({args.final.stat().st_size} bytes)")
         return
     cv = load(args.features, CV_WAVES)
     splits = folds(cv.participant)

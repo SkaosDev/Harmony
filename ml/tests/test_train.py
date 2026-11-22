@@ -63,5 +63,16 @@ class VariantTests(unittest.TestCase):
             self.assertEqual(columns, T.FEATURES[:len(columns)])
 
 
+class FinalTests(unittest.TestCase):
+    def test_final_also_fits_the_time_only_model(self):
+        table = synthetic_table()
+        saved = T.fit_final(table)
+        self.assertEqual(saved["features"], list(T.FEATURES))
+        self.assertEqual(saved["time_only_features"], list(T.VARIANTS["time only"]))
+        x = table[saved["time_only_features"]].to_numpy(dtype=float)
+        alone = T.make_model().fit(x, table[T.LABEL])          # same fit as the variant alone
+        np.testing.assert_allclose(saved["time_only"].predict_proba(x), alone.predict_proba(x))
+
+
 if __name__ == "__main__":
     unittest.main()
