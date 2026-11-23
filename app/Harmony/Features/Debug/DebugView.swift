@@ -9,6 +9,7 @@ struct DebugView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Query private var tracks: [Track]
     @Query private var scores: [SongScore]
+    @Environment(LibrarySync.self) private var library
     /// Demo samples of the last 14 days, per signal; empty outside demo mode.
     @State private var demoSamples: [HealthSignal: Int] = [:]
 
@@ -24,6 +25,11 @@ struct DebugView: View {
             Section("Store") {
                 LabeledContent("Tracks", value: tracks.count, format: .number)
                 LabeledContent("Song scores", value: scores.count, format: .number)
+                // TODO 3.16: replays the onboarding and the import, scores kept (no Worker quota spent).
+                Button("Restart onboarding") {
+                    library.forget()
+                    UserDefaults.standard.set(false, forKey: RootView.onboardedKey)
+                }
             }
             HealthDebugSection()
             StateDebugSection()

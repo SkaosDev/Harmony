@@ -27,6 +27,12 @@ final class LibrarySync {
         importedAt = defaults.object(forKey: Self.importDateKey) as? Date
     }
 
+    /// Forgets the import date: the next launch imports again (onboarding restart, deletion).
+    func forget() {
+        defaults.removeObject(forKey: Self.importDateKey)
+        importedAt = nil
+    }
+
     /// 0…1.
     var fraction: Double {
         total == 0 ? 0 : Double(done) / Double(total)
