@@ -38,8 +38,14 @@ struct CurrentState {
             return try await compute(provider: provider, estimator: estimator, now: now, calendar: calendar)
         } catch {
             print("Health data not read, time of day only: \(error)")
-            return try await compute(provider: NoWatchData(), estimator: estimator, now: now, calendar: calendar)
+            return try await timeOnly(estimator: estimator, now: now, calendar: calendar)
         }
+    }
+
+    /// The time-of-day estimate, whatever the watch gives: the state of a pilot time-only day
+    /// (TODO 4.4).
+    static func timeOnly(estimator: StateEstimator, now: Date = .now, calendar: Calendar = .current) async throws -> CurrentState {
+        try await compute(provider: NoWatchData(), estimator: estimator, now: now, calendar: calendar)
     }
 }
 

@@ -24,7 +24,8 @@ struct DataControlTests {
         context.insert(SongScore(spotifyId: "a", energy: 0.4, positivity: 0.6, origin: .muse))
         context.insert(HourSummary(hourStart: now, meanHR: 70, hrCount: 12, sdnnHRV: 40, steps: 300))
         context.insert(NightSummary(date: now, sleepMinutes: 420, sleepEnd: now, wornFraction: 1))
-        let queue = QueueRecord(createdAt: now, situation: .wakeUp, startEnergy: 0.3, kind: .body, reason: "Morning.",
+        let queue = QueueRecord(createdAt: now, situation: .wakeUp, startEnergy: 0.3, kind: .body, stateMode: .timeOnly,
+                                reason: "Morning.",
                                 items: [QueueItem(position: 0, spotifyId: "a", targetEnergy: 0.3, isSuggestion: false)])
         context.insert(queue)
         context.insert(FeedbackEvent(queueId: queue.id, spotifyId: "a", event: .like, seconds: nil, time: now))
@@ -52,6 +53,7 @@ struct DataControlTests {
         }
         let queue = try #require((json["queues"] as? [[String: Any]])?.first)
         #expect((queue["items"] as? [Any])?.count == 1)
+        #expect(queue["kind"] as? String == "body" && queue["stateMode"] as? String == "timeOnly")
         #expect(json["exportedAt"] as? String == "2026-09-21T14:13:20Z")
     }
 

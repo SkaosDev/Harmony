@@ -45,10 +45,29 @@ struct QueueMakerTests {
         #expect(items.map(\.spotifyId) == queue.entries.map(\.song.spotifyId))
         #expect(items.map(\.targetEnergy) == QueueTargets.targets(e0: 0.8, situation: .windDown))
         #expect(record.kind == .body && record.reason == queue.reason && record.startEnergy == 0.8)
+        #expect(record.stateMode == .body)
 
         // Songs of the queue just played are left out of the next one.
         let next = try await maker.prepare(.windDown, state: state(0.8))
         #expect(Set(next.entries.map(\.song.spotifyId)).isDisjoint(with: items.map(\.spotifyId)))
+    }
+
+    /// TODO 4.4: the queue keeps the kind drawn for the day and the estimate it really used.
+    @Test func recordsThePilotKindAndTheEstimateUsed() async throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        try addLibrary(context, count: 40)
+        let maker = QueueMaker(context: context, catalog: nil, music: LookUpOnlyProvider())
+
+        // A body day without recent heart rate: drawn body, started from the time of day.
+        let fallback = try await maker.prepare(.wakeUp, state: state(0.3, mode: .timeOnly))
+        let fallbackRecord = try maker.record(fallback, at: now)
+        #expect(fallbackRecord.kind == .body && fallbackRecord.stateMode == .timeOnly)
+
+        let timeOnly = try await maker.prepare(.lowEnergy, state: state(0.3, mode: .timeOnly), kind: .timeOnly)
+        #expect(timeOnly.kind == .timeOnly && timeOnly.stateMode == .timeOnly)
+        let timeOnlyRecord = try maker.record(timeOnly, at: now)
+        #expect(timeOnlyRecord.kind == .timeOnly && timeOnlyRecord.stateMode == .timeOnly)
     }
 
     @Test func museOnlyQueueUsesCheckedSuggestions() async throws {

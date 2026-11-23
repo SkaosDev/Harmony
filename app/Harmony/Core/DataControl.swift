@@ -48,7 +48,8 @@ enum DataControl {
             },
             queues: try context.fetch(FetchDescriptor<QueueRecord>(sortBy: [SortDescriptor(\.createdAt)])).map { queue in
                 .init(id: queue.id, createdAt: queue.createdAt, situation: queue.situation.rawValue,
-                      startEnergy: queue.startEnergy, kind: queue.kind.rawValue, reason: queue.reason,
+                      startEnergy: queue.startEnergy, kind: queue.kind.rawValue, stateMode: queue.stateMode?.rawValue,
+                      reason: queue.reason,
                       items: queue.items.sorted { $0.position < $1.position }.map {
                           .init(position: $0.position, spotifyId: $0.spotifyId, targetEnergy: $0.targetEnergy,
                                 isSuggestion: $0.isSuggestion)
@@ -103,7 +104,8 @@ enum DataControl {
             let position: Int, spotifyId: String, targetEnergy: Double, isSuggestion: Bool
         }
         struct QueueRow: Encodable {
-            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, kind: String, reason: String
+            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, kind: String, stateMode: String?
+            let reason: String
             let items: [ItemRow]
         }
         struct FeedbackRow: Encodable {
