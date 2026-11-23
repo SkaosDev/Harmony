@@ -1356,6 +1356,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   par Cyprien (3.20).
 
 **Pas encore fait**
+- Écran Library (`V2-Bibliotheque`, TODO 3.19b : l'onglet est vide) et habillage de l'app
+  (icône, écran de lancement, portrait seulement, TODO 3.19c).
 - Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes

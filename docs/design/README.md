@@ -34,7 +34,7 @@ rayons, textes, icônes.
 | `V2-File.dc.html` | 4.2 Up next | 3.18 |
 | `V2-Feedback.dc.html` | 4.3 Did it fit? | 3.15 |
 | `V2-LectureImpossible.dc.html` | 4.5 Can't play | 3.13, 3.18 |
-| `V2-Bibliotheque.dc.html` | 5.1 My library | **pas encore de tâche** (onglet Library créé en 1.6) |
+| `V2-Bibliotheque.dc.html` | 5.1 My library | 3.19b (onglet Library créé en 1.6) |
 | `V2-Reglages.dc.html` | 6.1 Settings | 3.19 |
 | `V2-CompteSpotify.dc.html` | 6.2 Spotify account | 1.26, 3.19 |
 | `V2-Sante.dc.html` | 6.3 Health & consents | 3.19 |
