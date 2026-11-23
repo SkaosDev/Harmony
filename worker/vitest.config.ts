@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [
     cloudflareTest({
       wrangler: { configPath: "./wrangler.jsonc" },
-      miniflare: { bindings: { ALLOWED_SPOTIFY_IDS: "alice, bob" } },
+      miniflare: { bindings: { ALLOWED_SPOTIFY_IDS: "alice, bob", ANTHROPIC_API_KEY: "test-key" } },
     }),
   ],
   test: { setupFiles: ["./test/setup.ts"] },

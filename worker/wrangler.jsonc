@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-23",
   "compatibility_flags": ["nodejs_compat"],
-  "secrets": { "required": ["ALLOWED_SPOTIFY_IDS"] },
+  "secrets": { "required": ["ANTHROPIC_API_KEY", "ALLOWED_SPOTIFY_IDS"] },
   "observability": {
     "enabled": true,
     "traces": { "enabled": true }

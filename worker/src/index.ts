@@ -1,3 +1,5 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { scoreSongs } from "./llm";
 import { isAllowed, spotifyUserId } from "./spotify";
 import { parseSongs, readBody } from "./validate";
 
@@ -32,7 +34,14 @@ async function score(request: Request, env: Env): Promise<Response> {
   }
   if (!userId) return json({ error: "invalid Spotify token" }, 401);
   if (!isAllowed(userId, env.ALLOWED_SPOTIFY_IDS)) return json({ error: "user not allowed" }, 403);
-  return json({ error: "not implemented" }, 501);
+
+  try {
+    return json({ scores: await scoreSongs(songs, env.ANTHROPIC_API_KEY) });
+  } catch (error) {
+    const status = error instanceof Anthropic.APIError ? error.status : undefined;
+    console.error(JSON.stringify({ message: "LLM call failed", status, error: String(error) }));
+    return json({ error: "LLM unavailable" }, 502);
+  }
 }
 
 function json(body: unknown, status = 200, headers: HeadersInit = {}): Response {

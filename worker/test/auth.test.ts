@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isAllowed } from "../src/spotify";
 import { call, scoreRequest, songs } from "./helpers";
-import { network, spotifyMe } from "./network";
+import { anthropicAnswer, network, spotifyMe } from "./network";
 
 describe("POST /score authentication", () => {
   it("returns 401 without a Bearer token", async () => {
@@ -24,9 +24,8 @@ describe("POST /score authentication", () => {
   });
 
   it("lets an allowed user through", async () => {
-    network.use(spotifyMe("bob"));
-    const status = (await call(scoreRequest({ songs: songs(1) }))).status;
-    expect([401, 403]).not.toContain(status);
+    network.use(spotifyMe("bob"), anthropicAnswer('{"s":[[0,50,50]]}'));
+    expect((await call(scoreRequest({ songs: songs(1) }))).status).toBe(200);
   });
 });
 
