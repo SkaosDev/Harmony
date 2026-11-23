@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 /// The real music provider: the user's Spotify account (PROJECT.md §4.3, §9).
-/// Library through the Web API (TODO 1.23+); playback through App Remote (TODO 3.10+).
+/// Library and likes through the Web API (TODO 1.23+, 3.14); playback through App Remote (TODO 3.10+).
 struct SpotifyProvider: MusicProvider {
     /// The app's provider, on the signed-in account.
     static let live = SpotifyProvider(auth: .shared, api: SpotifyAPI(auth: .shared))
@@ -66,7 +66,10 @@ struct SpotifyProvider: MusicProvider {
         try await SpotifyRemote.shared.start(spotifyIds: spotifyIds)
     }
 
+    /// `PUT /me/library` with the song's URI (scope `user-library-modify`, TODO 3.14): since
+    /// February 2026 it replaces `PUT /me/tracks` (PROJECT.md §9).
     func save(spotifyId: String) async throws {
-        throw SpotifyError.notImplemented
+        let uri = SpotifyRemote.uri(spotifyId).addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
+        try await api.put("me/library?uris=\(uri)")
     }
 }

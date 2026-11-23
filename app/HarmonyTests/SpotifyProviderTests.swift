@@ -162,4 +162,23 @@ struct SpotifyProviderTests {
         server.on("/v1/tracks/wrong", status: status, body: #"{"error":{"status":\#(status),"message":"error"}}"#)
         #expect(try await makeProvider().lookUp(spotifyId: "wrong") == nil)
     }
+
+    /// TODO 3.14: a like saves the song with `PUT /me/library` and its URI.
+    @Test func likeSavesTheSongToTheLibrary() async throws {
+        defer { try? store.delete() }
+        server.on("/v1/me/library")
+
+        try await makeProvider().save(spotifyId: "4iV5W9uYEdYUVa79Axb7Rh")
+
+        let request = try #require(server.requests.last)
+        #expect(request.httpMethod == "PUT")
+        #expect(StubHTTP.query(request.url!) == ["uris": "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"])
+        #expect(request.url!.absoluteString.contains("uris=spotify%3Atrack%3A4iV5W9uYEdYUVa79Axb7Rh"))
+    }
+
+    @Test func refusedLikeIsAnError() async throws {
+        defer { try? store.delete() }
+        server.on("/v1/me/library", status: 403)
+        await #expect(throws: SpotifyError.http(403)) { try await makeProvider().save(spotifyId: "x") }
+    }
 }

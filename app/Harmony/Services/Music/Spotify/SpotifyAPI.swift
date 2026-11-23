@@ -32,14 +32,20 @@ final class SpotifyAPI {
         return try Self.decoder().decode(T.self, from: body)
     }
 
-    /// Body of a successful `GET`; any other status is a `SpotifyError.http`.
+    /// `PUT` a path under `/v1/` with its query and no body (e.g. `me/library?uris=…`).
+    func put(_ path: String) async throws {
+        _ = try await data(for: URL(string: path, relativeTo: Self.baseURL)!.absoluteURL, method: "PUT")
+    }
+
+    /// Body of a successful request; any other status is a `SpotifyError.http`.
     /// A token Spotify refuses (401, e.g. revoked early) is refreshed once and the request sent again.
     /// Too many requests (429): waits `Retry-After` seconds and sends it again (TODO 1.24).
-    func data(for url: URL) async throws -> Data {
+    func data(for url: URL, method: String = "GET") async throws -> Data {
         var refreshed = false
         var rateLimitRetries = 0
         while true {
             var request = URLRequest(url: url)
+            request.httpMethod = method
             request.setValue("Bearer \(try await auth.validAccessToken())", forHTTPHeaderField: "Authorization")
             let (data, response) = try await send(request)
             switch response.statusCode {
