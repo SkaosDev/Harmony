@@ -29,7 +29,7 @@ The `Harmony` scheme is shared (`xcshareddata/`), so it exists for every team me
 | `Harmony/Features/` | SwiftUI screens, one folder per feature |
 | `Harmony/Core/` | models (SwiftData) and pure logic: features, state, queue, scoring |
 | `Harmony/Services/` | Spotify, HealthKit, demo providers, Worker client |
-| `Harmony/Resources/` | asset catalog, then `muse.sqlite`, Core ML model, demo data |
+| `Harmony/Resources/` | asset catalog, `muse.sqlite` (see below), Core ML model, demo data |
 | `Harmony/Info.plist` | URL scheme `harmony`, `spotify` query scheme, HealthKit text, config keys |
 | `Harmony/Harmony.entitlements` | HealthKit |
 | `Harmony/Harmony.xcconfig` | base build settings; includes `Config.xcconfig` if present |
@@ -39,3 +39,9 @@ The `Harmony` scheme is shared (`xcshareddata/`), so it exists for every team me
 without editing `project.pbxproj`. Files that must **not** be copied into the app (`Info.plist`,
 `.xcconfig`, `.gitkeep`) are listed as exceptions in `project.pbxproj` (Xcode › file inspector ›
 Target Membership). Delete a folder's `.gitkeep` (and its exception) once the folder has real files.
+
+## MuSe table
+
+`Harmony/Resources/muse.sqlite` holds song scores from **MuSe** (Akiki & Burghardt 2021,
+doi:10.5334/johd.33, CC BY 4.0), reduced by `ml/muse_build.py` (`PROJECT.md` §5.2). Rebuild it with
+`python ml/muse_build.py --out app/Harmony/Resources/muse.sqlite` after `python ml/muse_download.py`.

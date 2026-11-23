@@ -314,6 +314,48 @@ a réduit le fichier de 15 532 032 octets (table avec rowid, page 4 Kio) à 14 1
 sans suffire. Une compression exigeant une extension SQLite ou une représentation qui modifie le
 schéma nécessite une décision d'équipe avant d'être retenue.
 
+**Dans l'app (TODO 2.32, 23 nov. 2026)** — décision : la table est **versionnée** dans
+`app/Harmony/Resources/muse.sqlite` (14 155 776 octets, licence CC BY 4.0, crédit dans `README.md`
+et `app/README.md`), pour que tout clone construise l'app avec MuSe ; `data/` reste ignoré. Pour la
+régénérer : `python ml/muse_build.py --out app/Harmony/Resources/muse.sqlite` (même contenu que la
+copie de `data/muse/`, vérifié par empreinte des lignes). Lecture seule avec SQLite
+(`Core/Scoring/MuseCatalog.swift`) : d'abord `spotify_id` (jamais un ID vide), puis `match_key`
+calculée par `Core/Scoring/SongKey.swift`, portage Swift de `ml/normalize.py`. Vérifié : mêmes clés
+que Python sur les 31 cas partagés, sur les 89 269 lignes MuSe et sur chaque point de code Unicode
+(titre `a<c>b`). Le *case folding* de Foundation diffère de `casefold` de Python sur 181 points de
+code (cherokee, variantes cyrilliques U+1C80–U+1C88) : corrigé dans `SongKey`.
+**Apostrophes (décision du 23 nov. 2026)** : la clé (Python comme Swift) change l'apostrophe droite
+`'` en espace mais l'apostrophe typographique `’` en `'`, donc « Don’t » ne retrouvait pas « Don't »
+(MuSe : 6 595 titres avec `'`, 62 avec `’`). Règle : l'app cherche **les deux graphies, la droite
+d'abord** (celle de la plupart des morceaux MuSe), puis la typographique
+(`MuseCatalog.titleKeys`) ; si MuSe a le même morceau sous les deux graphies, la droite gagne. La
+clé de `ml/normalize.py` et la table ne changent pas : les changer modifierait 85 clés et
+fusionnerait 13 lignes, dont 2 dans le vivier des 48 morceaux de référence du prompt v3, et
+rendrait les tirages des essais LLM (§7) non reproductibles.
+
+**Couverture MuSe d'une vraie bibliothèque (TODO 2.35, 23 nov. 2026)** — iPhone 16, compte
+Spotify de Clément, écran Debug › Song scores, après un import complet (2 045 titres : aimés + 50 top
++ 50 récents) :
+
+| | Titres | Part |
+|---|---|---|
+| MuSe par ID Spotify | 102 | 5,0 % |
+| MuSe par titre + premier artiste | 131 | 6,4 % |
+| **MuSe, total** | **233** | **11,4 %** |
+| LLM (Worker) | 1 812 | 88,6 % |
+| Neutre / non noté | 0 / 0 | 0 % |
+
+Premier scoring en **158 s** (MuSe < 1 s, puis ~37 requêtes de 50 au Worker, ~4,3 s chacune, à la
+suite), aucune erreur. La couverture est faible : MuSe vient de tags Last.fm (surtout des morceaux
+occidentaux anciens), donc l'essentiel des scores de l'app viendra du LLM (§7, décision finale). Les
+scores sont gardés : les ouvertures suivantes n'envoient que les nouveaux titres. Conséquences :
+le premier scoring doit tourner en arrière-plan pendant l'onboarding (3.16) ; avec 50 requêtes par
+jour (§7.1), soit 2 500 titres pour le LLM, une bibliothèque de plus de ~2 800 titres (à 88,6 % hors
+MuSe) finit d'être notée le lendemain. Mesure
+faite sur une seule bibliothèque (décision du 23 nov.), avant la recherche des deux graphies
+d'apostrophe (ci-dessus) : son effet sur cette bibliothèque n'est pas mesuré, et les titres déjà
+notés par le LLM gardent leur score (cache).
+
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Les données brutes et les tables dérivées restent locales dans `data/`, même si le dépôt est CC0.
@@ -690,7 +732,8 @@ pilote mesurera (§13).
    les espaces. Ne pas décomposer les écritures non latines. Si le titre devient vide, reprendre
    le titre normalisé avant suppression des marqueurs featuring/version. Le premier artiste est
    la partie avant le premier marqueur featuring ; ne pas couper sur `&`, `and` ou `,`.
-2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste.
+2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste (dans
+   l'app, apostrophe droite d'abord, puis typographique : §5.2).
 3. Sinon, envoyer par lots de 50 (titre + artistes seulement) au **Worker**, qui appelle le LLM
    et renvoie `{energy, positivity}` entre 0 et 1 en JSON. Réponse invalide → 0,5 / 0,5, origine
    « neutre » (`SongScore.origin = neutral`), utilisé en dernier.
@@ -885,6 +928,16 @@ l'accord monte avec le nombre de tags (essai 3 : 0,39–0,44 sur les morceaux à
   un résultat validé. Le retour « ça collait ? » et les sauts (`FeedbackStore`) restent le moyen de
   juger ces scores en usage.
 
+**Dans l'app (TODO 2.34)** — `Core/Scoring/SongScorer.swift` : pour chaque morceau de la
+bibliothèque sans `SongScore`, MuSe (`origin = muse`), sinon Worker par lots de 50 (`llm`, ou
+`neutral` 0,5/0,5 si `null`), sinon `neutral` (titre vide, aucun artiste, lot refusé en 400). Un
+morceau qui a un score n'est plus jamais cherché ni envoyé (test). Le store est enregistré après
+MuSe puis après chaque lot : si une requête échoue (403, 429, 502, réseau), les lots déjà notés
+restent et les morceaux restants partent à la prochaine fois, sans être mis à neutre. En mode démo
+(ou sans URL de Worker), les morceaux absents de MuSe attendent. Lancement pour l'instant depuis
+l'écran Debug (section « Song scores » : origines, couverture MuSe, 10 derniers morceaux) ;
+l'onboarding (3.16) l'appellera après l'import.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
@@ -912,6 +965,12 @@ Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (
   prompt v2, toujours 50 paires valides ; 5,4 s avec le prompt v3 (48 références, format objets). Ça tient dans l'offre gratuite (10 ms de CPU
   par requête, l'attente réseau ne compte pas). Un faux jeton → 401 venant du vrai Spotify.
 - Offre gratuite Cloudflare : 100 000 requêtes/jour, largement suffisant.
+- **Client dans l'app** (TODO 2.33) : `Services/WorkerClient.swift`, URL lue dans `Info.plist`
+  (`WorkerURL`, venue de `Config.xcconfig`) ; une requête = 1 à 50 morceaux, jeton Spotify du
+  Keychain (rafraîchi une fois si le Worker répond 401). Titre et artistes coupés aux limites
+  ci-dessus (unités UTF-16, comme `length` en JavaScript) ; morceau sans titre ou sans artiste
+  jamais envoyé. Paire hors de 0–1 → `null`. 400 = lot refusé (renvoyer n'aiderait pas) ;
+  403, 429, 502 et réponse mal formée = rien n'est mis en cache, on réessaiera.
 
 ---
 
@@ -978,6 +1037,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   **939 titres en 4,6 s** (enregistrement SwiftData compris), soit ~10 s attendues pour 2 000
   (NFR3 : < 60 s). Pas de compte à 2 000 titres aimés sous la main : estimation acceptée pour
   1.27 (le temps croît avec le nombre de pages de 50). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
+  Mesure du 23 nov. (même iPhone et même compte, bibliothèque plus grande) : **2 045 titres en
+  14,3 s**, ce qui confirme l'estimation.
 - **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
   l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
@@ -1074,6 +1135,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
   0,258 et 0,316 sur le test → décision confirmée à nouveau ; pistes de prompt épuisées (§7).
   Décision finale d'équipe : le LLM est utilisé malgré la règle non atteinte (référence MuSe trop
   peu taguée) ; 2.33/2.34 restent comme prévu (MuSe → Worker → neutre).
+- *Scores des morceaux dans l'app, 23 nov. 2026 (TODO 2.32–2.35)* : `muse.sqlite` versionné dans
+  `Resources/`, recherche par ID puis titre + premier artiste (`SongKey`, mêmes clés que Python sur
+  toutes les lignes MuSe), `WorkerClient`, `SongScorer` (MuSe → Worker → neutre, cache
+  `SongScore`), section « Song scores » de l'écran Debug. Sur la bibliothèque de Clément
+  (2 045 titres) : 11,4 % trouvés dans MuSe, 88,6 % notés par le LLM, premier scoring en 158 s (§5.2).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
@@ -1089,7 +1155,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 | Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Vérifier TestFlight vs. installation Xcode (UDID) avant M3 |
 | Spotify PKCE/App Remote | Bloque M1 | Prototype d'auth dès la première semaine |
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
-| Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurer dès que l'import marche |
+| Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurée (2.35) : 11,4 % sur 2 045 titres, 88,6 % notés par le LLM ; premier scoring 158 s → à lancer en arrière-plan à l'onboarding (3.16) |
 | Gain réel de pas + sommeil | Modèle plus complexe sans gain | Tester sur D-2/D-3 et au pilote ; repli heure + FC |
 | Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Comparer files « corps » et « heure seule » au pilote (4.4, 4.7) ; mode heure seule si aucun gain |
 | Coût Claude Pro (160 $) annoncé dans le rapport | Doit correspondre à la réalité | Confirmer qui s'abonne |
