@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 /// The real music provider: the user's Spotify account (PROJECT.md §4.3, §9).
-/// Library through the Web API (TODO 1.23+); playback through App Remote later (TODO 3.10+).
+/// Library and likes through the Web API (TODO 1.23+, 3.14); playback through App Remote (TODO 3.10+).
 struct SpotifyProvider: MusicProvider {
     /// The app's provider, on the signed-in account.
     static let live = SpotifyProvider(auth: .shared, api: SpotifyAPI(auth: .shared))
@@ -29,7 +29,12 @@ struct SpotifyProvider: MusicProvider {
     /// (TODO 1.25). One `Track` per song: a song in several lists keeps the first of
     /// saved, top, recent. `addedAt` is the like date, the import date (top) or the last play.
     func importLibrary() async throws -> [Track] {
-        let saved = try await savedTracks()
+        try await importLibrary { _, _ in }
+    }
+
+    /// The progress counts the liked songs, page by page; the last two lists come after.
+    func importLibrary(progress: @escaping (_ done: Int, _ total: Int) -> Void) async throws -> [Track] {
+        let saved = try await savedTracks(progress: progress)
         let top = try await api.get("me/top/tracks?limit=50&time_range=medium_term", as: SpotifyPage<SpotifyTrack>.self)
             .items.compactMap { $0.makeTrack(source: .top, addedAt: now()) }
         // Newest first, so a song played twice keeps its last play.
@@ -40,12 +45,15 @@ struct SpotifyProvider: MusicProvider {
     }
 
     /// Every liked song, 50 per page (Spotify's maximum), following each page's `next` (TODO 1.23).
-    func savedTracks() async throws -> [Track] {
+    func savedTracks(progress: (_ done: Int, _ total: Int) -> Void = { _, _ in }) async throws -> [Track] {
         var tracks: [Track] = []
+        var read = 0
         var next: String? = "me/tracks?limit=50"
         while let url = next {
             let page = try await api.get(url, as: SpotifyPage<SpotifySavedItem>.self)
             tracks += page.items.compactMap { $0.track?.makeTrack(source: .saved, addedAt: $0.addedAt) }
+            read += page.items.count
+            progress(read, max(page.total ?? read, read))
             next = page.next
         }
         return tracks
@@ -61,11 +69,15 @@ struct SpotifyProvider: MusicProvider {
         }
     }
 
+    /// Through App Remote, in the Spotify app (TODO 3.11).
     func play(spotifyIds: [String]) async throws {
-        throw SpotifyError.notImplemented
+        try await SpotifyRemote.shared.start(spotifyIds: spotifyIds)
     }
 
+    /// `PUT /me/library` with the song's URI (scope `user-library-modify`, TODO 3.14): since
+    /// February 2026 it replaces `PUT /me/tracks` (PROJECT.md §9).
     func save(spotifyId: String) async throws {
-        throw SpotifyError.notImplemented
+        let uri = SpotifyRemote.uri(spotifyId).addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
+        try await api.put("me/library?uris=\(uri)")
     }
 }

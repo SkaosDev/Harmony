@@ -10,6 +10,20 @@ enum Theme {
     static let blue = Color(hex: 0x509BF5)
     static let stress = Color(hex: 0xE8115B)
     static let wakeUp = Color(hex: 0xE8A21A)
+    /// Answer tiles (`V2-Feedback`), surfaces.
+    static let tile = Color(hex: 0x282828)
+    /// Border of the outline buttons.
+    static let outline = Color(hex: 0x727272)
+    /// Cards (`V2-Onb5-Import`…).
+    static let card = Color(hex: 0x181818)
+    /// Empty part of the progress bars.
+    static let track = Color(hex: 0x4D4D4D)
+    /// Destructive buttons.
+    static let destructive = Color(hex: 0xE91429)
+    /// Lines between the rows of a card (`V2-CompteSpotify`, `V2-MesDonnees`).
+    static let divider = Color(hex: 0x333333)
+    /// Background of "Now playing" (`V2-Lecture`).
+    static let player = Color(hex: 0x191414)
 
     /// Helvetica Neue, as in the design. Weights 700 and 800 both map to Bold
     /// (the heaviest weight of Helvetica Neue on iOS).

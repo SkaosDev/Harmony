@@ -1096,6 +1096,39 @@ Suggestion de situation (FR5) : Wake-up dans les 2 h après la fin du sommeil ; 
 21 h ; Low energy entre 13 h et 17 h si état < 0,4 ; sinon aucune suggestion. Stress jamais
 suggéré automatiquement (modèle trop faible sur le stress).
 
+**Règles précisées à l'implémentation (TODO 3.1–3.8, 23 nov. 2026 ; `app/Harmony/Core/Queue/`)** :
+- **Sens de la file** (décision du 23 nov., 4 situations) : Wake-up et Low energy ne font jamais
+  baisser l'énergie, Stress et Wind-down ne la font jamais monter. Si `e0` est déjà au-delà du but,
+  le but devient `e0` et la file reste plate (3 morceaux à `e0`).
+- **Cibles** : `m` fois `e0`, puis `n − m` cibles régulières, la dernière exactement au but (« Goal »).
+- **Coût** = |énergie − cible| + 0,2 + 0,3 + 0,1 (pénalités ci-dessus ; « artiste » = premier artiste
+  normalisé). Un morceau n'apparaît qu'une fois par file. Les scores `neutral` ne servent que si
+  aucun morceau MuSe/LLM n'est éligible (« utilisé en dernier », §7). Égalité : plus petit ID.
+- **Exclusions** : morceaux d'une file lancée dans les 72 h ; morceaux passés (< 30 s) 2 fois dans
+  des files de la même situation ; une suggestion passée une fois n'est plus jamais suggérée (rapport).
+- **Repli MuSe** : déclenché si aucun morceau MuSe/LLM éligible n'est à moins de 0,15 de la cible
+  et qu'il y a moins de 2 suggestions. Candidats : morceaux MuSe avec ID, hors bibliothèque, non
+  exclus, d'un artiste de la bibliothèque, sinon d'un de ses genres ; on garde ceux dont le coût est
+  plus bas que celui du meilleur morceau de la bibliothèque, et on en vérifie au plus 3 par place
+  (`GET /tracks/{id}` : même titre et même premier artiste, clés MuSe `SongKey`) ; sinon le morceau
+  de la bibliothèque. Bibliothèque épuisée → file plus courte.
+- **« Use suggested tracks »** (Home vide, décision du 23 nov.) : file de morceaux MuSe seuls, tous
+  vérifiés, pour la situation suggérée ; la limite de 2 suggestions ne s'applique qu'aux files de
+  la bibliothèque.
+- **Raison** (`Explainer`, phrases en anglais) : contexte puis plan, ex. « Short night, morning: calm
+  songs first, then more energy. ». Contexte : nuit courte/longue (`z_sleep_min` ≤ −1 / ≥ 1),
+  moment de la journée (5–12 h morning, 12–17 h afternoon, 17–21 h evening, sinon night), FC
+  plus haute/basse que d'habitude (`z_hr_30` ≥ 1 / ≤ −1), HRV plus haute/basse que d'habitude
+  (décision du 23 nov., FR3 : dernière HRV horaire des 6 dernières heures contre les HRV horaires
+  des 14 jours précédents, prête à 7 jours, z ≥ 1 / ≤ −1). File en mode heure seule : moment de la
+  journée seulement (rien n'est dit sur des données que la file n'a pas utilisées). Plan : niveau de
+  départ (calm < 0,35, energetic > 0,65, sinon medium), puis « (a little) more energy » ou
+  « (a little) calmer » (« a little » si l'écart au but ≤ 0,3), ou « all the way » si la file est plate.
+  Un test balaie toutes les combinaisons contre une liste de mots interdits (émotions, stress, mots
+  médicaux) ; « calm » reste permis car il décrit la musique (design).
+- **Suggestion** : Wind-down de 21:00 à 04:59 ; Wake-up prioritaire (inconnu si la nuit l'est) ;
+  `e0` brut jusqu'à 6.11.
+
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
   probabilité brute, tassée entre ≈ 0,36 et 0,55 ; avec ≥ 5 check-ins énergie étiquetés dans les
@@ -1127,8 +1160,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-library-read` | `GET /me/tracks` (titres aimés) | oui (1.21) |
   | `user-top-read` | `GET /me/top/tracks` | oui (1.21) |
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
-  | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | pas encore |
-  | `app-remote-control` | App Remote (lecture, TODO 3.10) | pas encore |
+  | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
+  | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
+  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items` ; l'ancienne sort par `DELETE /me/library`) | oui (23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1136,7 +1170,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   nous-mêmes avec `ASWebAuthenticationSession` (`Services/Music/Spotify/`), redirection
   `harmony://callback` ; **marche sur un vrai iPhone** (TODO 1.18, 10 nov.). Jetons dans le
   Keychain (`AfterFirstUnlockThisDeviceOnly`), rafraîchis 1 min avant expiration ou après un 401.
-  Reste à confirmer en 3.10 : App Remote accepte ce jeton.
+  App Remote accepte ce jeton (TODO 3.10, 23 nov.), mais seulement quand l'app Spotify est déjà
+  réveillée (voir **Lecture** ci-dessous).
 - **Endpoints testés avec un vrai compte** (TODO 1.21, 10 nov., iPhone 16, compte de Clément,
   écran Debug › Check endpoints) :
 
@@ -1156,8 +1191,49 @@ suggéré automatiquement (modèle trop faible sur le stress).
   1.27 (le temps croît avec le nombre de pages de 50). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
   Mesure du 23 nov. (même iPhone et même compte, bibliothèque plus grande) : **2 045 titres en
   14,3 s**, ce qui confirme l'estimation.
-- **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
-  l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
+- **Lecture** : App Remote (SDK iOS 5.0.1, `Services/Music/Spotify/SpotifyRemote.swift`) pilote
+  l'app Spotify. Test du 23 nov. (TODO 3.10, iPhone 16, compte Premium de Clément) :
+  - `connect()` avec le jeton Web API, Spotify ouvert et en train de jouer mais pas réveillé par le
+    SDK : refus immédiat (`com.spotify.app-remote.transport -2000`, POSIX 61 « Connection refused ») ;
+  - `authorizeAndPlayURI(premier morceau)` : Spotify s'ouvre, joue, revient sur `harmony://callback`
+    avec un jeton → connexion OK ;
+  - ensuite, Harmony relancé et Spotify toujours ouvert : `connect()` avec le jeton Web API → OK.
+
+  D'où la règle de l'app : on essaie d'abord le jeton Web API ; si la connexion est refusée, on
+  réveille Spotify sur la file.
+  **File = playlist « Harmony »** (décision de Clément du 23 nov., `SpotifyPlaylist.swift`) :
+  ni App Remote ni le Web API ne savent vider la file « À suivre » de Spotify, et le test sur
+  iPhone du 23 nov. a montré que chaque file lancée y restait, devant les suivantes (7 files
+  lancées : les morceaux des anciennes passaient avant ceux de la nouvelle, l'écran restait sur le
+  premier titre, le morceau retiré passait quand même, « Did it fit? » n'arrivait jamais). Désormais
+  chaque file est une **nouvelle** playlist privée « Harmony » ; la précédente sort de la
+  bibliothèque (`DELETE /me/library?uris=spotify:playlist:…`). Une seule playlist réécrite à chaque
+  file a été essayée d'abord (même jour) : au changement de file, l'app Spotify rejouait parfois
+  l'ancien contenu de la playlist, d'où un morceau d'avant, une pochette qui ne correspondait pas et
+  des redémarrages ; une playlist neuve, Spotify doit la charger. App Remote coupe ensuite
+  l'aléatoire et la répétition et joue la playlist ; si aucun état ne montre le premier morceau dans
+  les 5 s, `play` repart, 3 fois max à 1 s d'écart. « Remove this song » retire le morceau de la playlist (marche aussi téléphone
+  verrouillé) ; s'il démarre quand même, l'app le passe. Après le dernier morceau, la lecture
+  automatique de Spotify enchaîne : le premier morceau hors file termine la file (« Did it fit? »).
+  Restes de l'ancienne méthode, gardés pour mémoire, ajouts à la file (`enqueueTrackUri`), tests du 23 nov. :
+  - envoyé avant que le `play` ait pris effet, un ajout est refusé (`error.request_execution_failed`,
+    -3000), perdu ou doublé → on attend un état reçu **après** le `play` qui montre le premier
+    morceau à son début (< 5 s ; 5 s d'attente max) ;
+  - un ajout envoyé juste après un autre peut être perdu alors que Spotify répond OK → les ajouts
+    partent à 1 s d'écart ; un ajout refusé est réessayé jusqu'à 3 fois, à 1 s d'écart.
+
+  Les morceaux que l'utilisateur ajoute lui-même à « À suivre » passent toujours avant la playlist
+  (comportement de Spotify). La connexion tombe
+  quand Harmony passe en arrière-plan : on se déconnecte et on se reconnecte au retour (TODO 3.12).
+  Événements vérifiés sur l'iPhone le 23 nov. (écran Debug › Last queue) : la file apparaît dans
+  Spotify, like (`PUT /me/library`, le titre arrive dans les Titres likés), skip avant 30 s,
+  pause après un passage en arrière-plan, « Did it fit? » sur Next au dernier morceau.
+  Repli testé le 23 nov., app Spotify fermée (TODO 3.13) : Spotify se réveille, joue le premier
+  morceau, revient dans Harmony, et la file complète arrive dans « À suivre ». Pendant la lecture,
+  le lien vers Spotify (NFR6) ouvre seulement l'app (`spotify:`), car ouvrir `spotify:track:ID`
+  relance le morceau au début.
+  Si rien ne marche, l'écran « Can't play this » ouvre le morceau dans l'app Spotify
+  (`spotify:track:ID`) ou, sans l'app, sur `https://open.spotify.com/track/ID` (TODO 3.13).
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
 
 ## 10. HealthKit — ce qu'il faut savoir
@@ -1215,7 +1291,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 
 ---
 
-## 12. Où on en est (5 novembre 2026)
+## 12. Où on en est (23 novembre 2026)
 
 **Fait**
 - Rendu A ; rendu B rédigé (7 pages, `docs/main.tex`, PDF, version Markdown).
@@ -1269,11 +1345,18 @@ suggéré automatiquement (modèle trop faible sur le stress).
   pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
   Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
   **Rien n'est implémenté.**
+- *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
+  choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
+  règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
+  chaque file, like, skip, fin, « Did it fit? », repli « Open Spotify » (§9) ; écrans du design :
+  onboarding avec import et scores en arrière-plan, Home, lecteur, « Up next », « Can't play this »,
+  Réglages (compte Spotify, santé et consentements, export JSON, suppression totale FR13, à propos).
+  Ajouts et écarts voulus par Clément : mini-lecteur, pochettes dans « Up next », grilles et listes
+  sous le titre au lieu d'être centrées. Tout vérifié sur l'iPhone 16 de Clément ; textes validés
+  par Cyprien (3.20).
 
 **Pas encore fait**
-- Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- Table MuSe pas encore construite ; prompt LLM pas encore testé.
-- Aucun appel Spotify testé avec un vrai compte.
+- Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes
 

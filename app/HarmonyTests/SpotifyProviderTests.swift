@@ -16,9 +16,10 @@ func savedItemJSON(_ track: String, addedAt: String = "2026-11-01T10:20:30Z") ->
     #"{"added_at":"\#(addedAt)","track":\#(track)}"#
 }
 
-func pageJSON(_ items: [String], next: String? = nil) -> String {
+func pageJSON(_ items: [String], next: String? = nil, total: Int? = nil) -> String {
     let nextField = next.map { #""\#($0)""# } ?? "null"
-    return #"{"items":[\#(items.joined(separator: ","))],"next":\#(nextField),"limit":50}"#
+    let totalField = total.map { #","total":\#($0)"# } ?? ""
+    return #"{"items":[\#(items.joined(separator: ","))],"next":\#(nextField),"limit":50\#(totalField)}"#
 }
 
 @MainActor
@@ -92,6 +93,19 @@ struct SpotifyProviderTests {
         #expect(server.requests.allSatisfy { StubHTTP.query($0.url!)["limit"] == "50" })
     }
 
+    /// TODO 3.16: "1,240 of 2,000 songs" on the import screen.
+    @Test func importReportsItsProgressPageByPage() async throws {
+        defer { try? store.delete() }
+        func items(_ range: Range<Int>) -> [String] { range.map { savedItemJSON(trackJSON(id: "id\($0)")) } }
+        server.on("/v1/me/tracks", body: pageJSON(items(0..<50), next: "https://api.spotify.com/v1/me/tracks?offset=50&limit=50", total: 57))
+        server.on("/v1/me/tracks", body: pageJSON(items(50..<57), total: 57))
+
+        var steps: [String] = []
+        _ = try await makeProvider().savedTracks { steps.append("\($0)/\($1)") }
+
+        #expect(steps == ["50/57", "57/57"])
+    }
+
     @Test func readsTheSongFields() async throws {
         defer { try? store.delete() }
         server.on("/v1/me/tracks", body: pageJSON([
@@ -161,5 +175,24 @@ struct SpotifyProviderTests {
         defer { try? store.delete() }
         server.on("/v1/tracks/wrong", status: status, body: #"{"error":{"status":\#(status),"message":"error"}}"#)
         #expect(try await makeProvider().lookUp(spotifyId: "wrong") == nil)
+    }
+
+    /// TODO 3.14: a like saves the song with `PUT /me/library` and its URI.
+    @Test func likeSavesTheSongToTheLibrary() async throws {
+        defer { try? store.delete() }
+        server.on("/v1/me/library")
+
+        try await makeProvider().save(spotifyId: "4iV5W9uYEdYUVa79Axb7Rh")
+
+        let request = try #require(server.requests.last)
+        #expect(request.httpMethod == "PUT")
+        #expect(StubHTTP.query(request.url!) == ["uris": "spotify:track:4iV5W9uYEdYUVa79Axb7Rh"])
+        #expect(request.url!.absoluteString.contains("uris=spotify%3Atrack%3A4iV5W9uYEdYUVa79Axb7Rh"))
+    }
+
+    @Test func refusedLikeIsAnError() async throws {
+        defer { try? store.delete() }
+        server.on("/v1/me/library", status: 403)
+        await #expect(throws: SpotifyError.http(403)) { try await makeProvider().save(spotifyId: "x") }
     }
 }

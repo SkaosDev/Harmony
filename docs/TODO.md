@@ -164,30 +164,30 @@
 ## Phase 3 — File, lecture, feedback (→ M3, 6 déc.)
 
 ### 3.APP-a Logique (C) — fonctions pures, tests d'abord
-- [ ] **3.1** `Situation` (4 cas, énergie cible, préférence positive). — ✔ test.
-- [ ] **3.2** Calcul des cibles (n, m, répartition e0 → g). — ✔ tests : wind-down ne finit jamais plus énergique qu'il ne commence.
-- [ ] **3.3** Choix du morceau le plus proche avec pénalités. — ✔ tests sur une petite bibliothèque.
-- [ ] **3.4** Exclusions (joué < 3 jours, passé 2 fois dans la situation). — ✔ tests.
-- [ ] **3.5** Repli MuSe (≤ 2 suggestions, artiste ou genre partagé). — ✔ test : jamais plus de 2.
-- [ ] **3.6** Vérification de l'ID Spotify d'une suggestion via `GET /tracks/{id}`. — ✔ ID faux → suggestion écartée.
-- [ ] **3.7** `Explainer` : phrases fixes, aucun mot d'émotion. — ✔ test qui cherche une liste de mots interdits.
-- [ ] **3.8** `SituationSuggester` (règles PROJECT.md §8, jamais Stress automatiquement). — ✔ tests à heures fixes.
+- [x] **3.1** `Situation` (4 cas, énergie cible, préférence positive). — ✔ test.
+- [x] **3.2** Calcul des cibles (n, m, répartition e0 → g). — ✔ tests : wind-down ne finit jamais plus énergique qu'il ne commence.
+- [x] **3.3** Choix du morceau le plus proche avec pénalités. — ✔ tests sur une petite bibliothèque.
+- [x] **3.4** Exclusions (joué < 3 jours, passé 2 fois dans la situation). — ✔ tests.
+- [x] **3.5** Repli MuSe (≤ 2 suggestions, artiste ou genre partagé). — ✔ test : jamais plus de 2.
+- [x] **3.6** Vérification de l'ID Spotify d'une suggestion via `GET /tracks/{id}`. — ✔ ID faux → suggestion écartée.
+- [x] **3.7** `Explainer` : phrases fixes, aucun mot d'émotion. — ✔ test qui cherche une liste de mots interdits.
+- [x] **3.8** `SituationSuggester` (règles PROJECT.md §8, jamais Stress automatiquement). — ✔ tests à heures fixes.
 
 ### 3.APP-b Lecture et feedback (R)
-- [ ] **3.9** Intégrer le SDK Spotify iOS 5.0.1 (Swift Package Manager). — ✔ compile.
-- [ ] **3.10** App Remote : connexion avec le jeton obtenu en 1.18. — ✔ connexion sur un vrai iPhone.
-- [ ] **3.11** Jouer le 1er morceau, mettre les suivants en file. — ✔ la file apparaît dans Spotify.
-- [ ] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
-- [ ] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
-- [ ] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
-- [ ] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
+- [x] **3.9** Intégrer le SDK Spotify iOS 5.0.1 (Swift Package Manager). — ✔ compile.
+- [x] **3.10** App Remote : connexion avec le jeton obtenu en 1.18. — ✔ connexion sur un vrai iPhone.
+- [x] **3.11** Jouer le 1er morceau, mettre les suivants en file. — ✔ la file apparaît dans Spotify.
+- [x] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
+- [x] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
+- [x] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
+- [x] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
 
 ### 3.APP-c Écrans (R, textes Cy) — à l'identique de `docs/design/` (voir son README)
-- [ ] **3.16** Onboarding : connexion Spotify, explications santé, import (design : `V2-Main`, `V2-Onb1` à `V2-Onb5`). — ✔ parcours complet sur iPhone neuf.
-- [ ] **3.17** Accueil : 4 grands boutons, suggestion mise en avant (design : `V2-Accueil`, `V2-AccueilVide`). — ✔ ≤ 2 taps entre lancement et musique (NFR5).
-- [ ] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like (design : `V2-Lecture`, `V2-File`, `V2-LectureImpossible`). — ✔ conforme NFR6.
-- [ ] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation (design : `V2-Reglages`, `V2-CompteSpotify`, `V2-Sante`, `V2-MesDonnees`, `V2-APropos`). — ✔ après suppression, toutes les tables sont vides (FR13).
-- [ ] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR.
+- [x] **3.16** Onboarding : connexion Spotify, explications santé, import (design : `V2-Main`, `V2-Onb1` à `V2-Onb5`). — ✔ parcours complet sur iPhone neuf. *(23 nov. : parcours complet sur l'iPhone 16 via Debug › Restart onboarding, scores gardés ; réinstallation évitée, décision de Clément : elle coûterait une journée de quota du Worker.)*
+- [x] **3.17** Accueil : 4 grands boutons, suggestion mise en avant (design : `V2-Accueil`, `V2-AccueilVide`). — ✔ ≤ 2 taps entre lancement et musique (NFR5). *(23 nov., iPhone 16 : ouverture de l'app puis tap sur une tuile → Spotify joue. Écart au design voulu par Clément : la grille sous le titre au lieu d'être centrée.)*
+- [x] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like (design : `V2-Lecture`, `V2-File`, `V2-LectureImpossible`). — ✔ conforme NFR6. *(23 nov., iPhone 16 : pochette Spotify non recadrée, logo vert officiel, « Play on Spotify », skip/like/remove, « Did it fit? », changement de file. Ajouts voulus par Clément : mini-lecteur au-dessus des onglets, pochettes dans « Up next », liste sous l'en-tête ; la file est jouée comme playlist « Harmony », voir PROJECT.md §9.)*
+- [x] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation (design : `V2-Reglages`, `V2-CompteSpotify`, `V2-Sante`, `V2-MesDonnees`, `V2-APropos`). — ✔ après suppression, toutes les tables sont vides (FR13). *(23 nov. : test `DataControlTests` (les 8 tables vides, jetons et clés effacés) + sur l'iPhone 16, export JSON et « Delete everything » → retour à l'onboarding. Écarts : liste des Réglages sous le titre, barre d'onglets visible dans les sous-pages.)*
+- [x] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR. *(23 nov. : textes validés par Cyprien.)*
 
 ### 3.QA
 - [ ] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone.

@@ -29,8 +29,8 @@ nonisolated final class MuseCatalog {
             sqlite3_close(db)
             throw OpenError.sqlite(message)
         }
-        byId = try prepare("SELECT energy, positivity FROM songs WHERE spotify_id = ? LIMIT 1")
-        byKey = try prepare("SELECT energy, positivity FROM songs WHERE match_key = ?")
+        byId = try prepare("SELECT energy, positivity, genre FROM songs WHERE spotify_id = ? LIMIT 1")
+        byKey = try prepare("SELECT energy, positivity, genre FROM songs WHERE match_key = ?")
     }
 
     deinit {
@@ -48,15 +48,77 @@ nonisolated final class MuseCatalog {
     /// PROJECT.md §7: first the Spotify ID, then title + first artist (normalized with `SongKey`).
     /// Rows whose ID was shared by several MuSe songs have no ID (§5.2): title + artist only.
     func lookUp(spotifyId: String, title: String, artists: [String]) -> Match? {
-        if !spotifyId.isEmpty, let (energy, positivity) = scores(byId, spotifyId) {
-            return Match(energy: energy, positivity: positivity, foundBy: .spotifyId)
+        row(spotifyId: spotifyId, title: title, artists: artists)?.match
+    }
+
+    /// The MuSe genre of a song found as in `lookUp`; nil if not found or without genre.
+    /// The genres of the library songs drive the MuSe suggestions (PROJECT.md §8).
+    func genre(spotifyId: String, title: String, artists: [String]) -> String? {
+        guard let genre = row(spotifyId: spotifyId, title: title, artists: artists)?.genre, !genre.isEmpty else { return nil }
+        return genre
+    }
+
+    private func row(spotifyId: String, title: String, artists: [String]) -> (match: Match, genre: String)? {
+        if !spotifyId.isEmpty, let (energy, positivity, genre) = scores(byId, spotifyId) {
+            return (Match(energy: energy, positivity: positivity, foundBy: .spotifyId), genre)
         }
         for key in Self.titleKeys(title: title, artist: artists.first ?? "") {
-            if let (energy, positivity) = scores(byKey, key) {
-                return Match(energy: energy, positivity: positivity, foundBy: .titleAndArtist)
+            if let (energy, positivity, genre) = scores(byKey, key) {
+                return (Match(energy: energy, positivity: positivity, foundBy: .titleAndArtist), genre)
             }
         }
         return nil
+    }
+
+    /// A MuSe song that can be suggested: it has a Spotify ID (to be checked before playing).
+    struct Song: Equatable {
+        let spotifyId: String
+        let title: String
+        /// MuSe's artist text, the first artist first.
+        let artists: String
+        let genre: String
+        let energy: Double
+        let positivity: Double
+    }
+
+    /// MuSe songs with a Spotify ID whose first artist (normalized, the artist half of
+    /// `match_key`) is one of `artistKeys`, the closest to `energy` first.
+    func songs(byArtists artistKeys: Set<String>, near energy: Double, limit: Int) -> [Song] {
+        songs(where: "substr(match_key, instr(match_key, char(9)) + 1)", in: artistKeys, near: energy, limit: limit)
+    }
+
+    /// MuSe songs with a Spotify ID in one of `genres`, the closest to `energy` first.
+    func songs(inGenres genres: Set<String>, near energy: Double, limit: Int) -> [Song] {
+        songs(where: "genre", in: genres, near: energy, limit: limit)
+    }
+
+    /// Any MuSe song with a Spotify ID, the closest to `energy` first.
+    func songs(near energy: Double, limit: Int) -> [Song] {
+        songs(where: nil, in: [], near: energy, limit: limit)
+    }
+
+    private func songs(where column: String?, in values: Set<String>, near energy: Double, limit: Int) -> [Song] {
+        if column != nil && values.isEmpty { return [] }
+        let values = values.sorted()
+        let filter = column.map { " AND \($0) IN (\(Array(repeating: "?", count: values.count).joined(separator: ", ")))" } ?? ""
+        let sql = """
+            SELECT spotify_id, title, artists, genre, energy, positivity FROM songs
+            WHERE spotify_id != ''\(filter) ORDER BY abs(energy - ?), spotify_id LIMIT ?
+            """
+        guard let statement = try? prepare(sql) else { return [] }
+        defer { sqlite3_finalize(statement) }
+        for (index, value) in values.enumerated() {
+            sqlite3_bind_text(statement, Int32(index + 1), value, -1, Self.transient)
+        }
+        sqlite3_bind_double(statement, Int32(values.count + 1), energy)
+        sqlite3_bind_int(statement, Int32(values.count + 2), Int32(limit))
+        var songs: [Song] = []
+        while sqlite3_step(statement) == SQLITE_ROW {
+            func text(_ column: Int32) -> String { String(cString: sqlite3_column_text(statement, column)) }
+            songs.append(Song(spotifyId: text(0), title: text(1), artists: text(2), genre: text(3),
+                              energy: sqlite3_column_double(statement, 4), positivity: sqlite3_column_double(statement, 5)))
+        }
+        return songs
     }
 
     /// The key gives a different result for a straight `'` (a space) and a curly `’` (`'`), so
@@ -81,11 +143,12 @@ nonisolated final class MuseCatalog {
         return statement
     }
 
-    private func scores(_ statement: OpaquePointer?, _ value: String) -> (Double, Double)? {
+    private func scores(_ statement: OpaquePointer?, _ value: String) -> (Double, Double, String)? {
         defer { sqlite3_reset(statement) }
         sqlite3_bind_text(statement, 1, value, -1, Self.transient)
         guard sqlite3_step(statement) == SQLITE_ROW else { return nil }
-        return (sqlite3_column_double(statement, 0), sqlite3_column_double(statement, 1))
+        return (sqlite3_column_double(statement, 0), sqlite3_column_double(statement, 1),
+                String(cString: sqlite3_column_text(statement, 2)))
     }
 
     /// SQLite copies the bound text.
