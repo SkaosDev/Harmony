@@ -4,11 +4,14 @@ import SwiftUI
 @main
 struct HarmonyApp: App {
     @AppStorage(DemoMode.key) private var demoMode = false
+    /// The queue being played, shared by Home, the player and Debug (TODO 3.11+).
+    @State private var player = PlayerController()
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .modelContainer(demoMode ? Self.demoStore : Self.store)
+                .environment(player)
                 // The Spotify app comes back here after being woken up for App Remote (TODO 3.10).
                 .onOpenURL { SpotifyRemote.shared.handle($0) }
         }

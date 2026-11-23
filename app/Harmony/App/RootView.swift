@@ -8,6 +8,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var context
     @AppStorage(DemoMode.key) private var demoMode = false
+    @Environment(PlayerController.self) private var player
 
     var body: some View {
         VStack(spacing: 0) {
@@ -27,7 +28,15 @@ struct RootView: View {
         .background(Theme.background.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onChange(of: scenePhase, initial: true) {
-            if scenePhase == .active { updateHealth() }
+            switch scenePhase {
+            case .active:
+                updateHealth()
+                Task { await player.enterForeground() }
+            case .background:
+                player.enterBackground()
+            default:
+                break
+            }
         }
         .onChange(of: demoMode) { updateHealth() }
     }
@@ -50,4 +59,5 @@ struct RootView: View {
 
 #Preview {
     RootView()
+        .environment(PlayerController())
 }

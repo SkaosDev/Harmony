@@ -55,12 +55,12 @@ struct QueueMaker {
     /// Stores the queue once it plays (`QueueRecord`, TODO 1.11). `kind` stays `.body` until the
     /// pilot's daily draw (TODO 4.4).
     @discardableResult
-    func record(_ queue: PreparedQueue, kind: QueueKind = .body, at date: Date = .now) throws -> QueueRecord {
+    func record(_ queue: PreparedQueue, id: UUID = UUID(), kind: QueueKind = .body, at date: Date = .now) throws -> QueueRecord {
         let items = queue.entries.enumerated().map { position, entry in
             QueueItem(position: position, spotifyId: entry.song.spotifyId, targetEnergy: entry.target,
                       isSuggestion: entry.song.isSuggestion)
         }
-        let record = QueueRecord(createdAt: date, situation: queue.situation, startEnergy: queue.e0, kind: kind,
+        let record = QueueRecord(id: id, createdAt: date, situation: queue.situation, startEnergy: queue.e0, kind: kind,
                                  reason: queue.reason, items: items)
         context.insert(record)
         try context.save()

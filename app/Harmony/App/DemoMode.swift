@@ -12,6 +12,16 @@ enum DemoMode {
         isOn ? try DemoHealthProvider() : HealthKitProvider.live
     }
 
+    /// The music provider of the mode: demo songs, or Spotify.
+    static func musicProvider(_ isOn: Bool) throws -> any MusicProvider {
+        isOn ? try DemoMusicProvider() : SpotifyProvider.live
+    }
+
+    /// Playback of the mode: simulated, or the Spotify app (TODO 3.11).
+    static func playback(_ isOn: Bool) -> any Playback {
+        isOn ? DemoPlayback() : SpotifyRemote.shared
+    }
+
     /// An in-memory store holding the demo library and its scores.
     static func container() throws -> ModelContainer {
         let container = try HarmonyStore.container(inMemory: true)
