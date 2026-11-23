@@ -48,16 +48,17 @@ struct HealthKitProvider: HealthProvider {
         }
     }
 
-    private func anchorKey(_ signal: HealthSignal) -> String { "healthAnchor.\(signal.rawValue)" }
+    /// `UserDefaults` key of a signal's anchor (also removed by "Delete everything").
+    nonisolated static func anchorKey(_ signal: HealthSignal) -> String { "healthAnchor.\(signal.rawValue)" }
 
     private func anchor(for signal: HealthSignal) -> HKQueryAnchor? {
-        UserDefaults.standard.data(forKey: anchorKey(signal))
+        UserDefaults.standard.data(forKey: Self.anchorKey(signal))
             .flatMap { try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: $0) }
     }
 
     private func saveAnchor(_ anchor: HKQueryAnchor, for signal: HealthSignal) {
         let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
-        UserDefaults.standard.set(data, forKey: anchorKey(signal))
+        UserDefaults.standard.set(data, forKey: Self.anchorKey(signal))
     }
 }
 
