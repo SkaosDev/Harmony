@@ -1390,9 +1390,19 @@ suggéré automatiquement (modèle trop faible sur le stress).
   sous le titre au lieu d'être centrées. Tout vérifié sur l'iPhone 16 de Clément ; textes validés
   par Cyprien (3.20).
 
+- *Library, habillage et QA, 23 nov. 2026 (TODO 3.19b–3.23)* : onglet Library (`V2-Bibliotheque` :
+  morceaux importés, pastilles MUSE/Estimated, rien pour neutre ou pas encore noté, part trouvée
+  dans MuSe calculée comme l'écran Debug, recherche, « Refresh the import ») ; icône dessinée dans
+  le canvas (`V2-Icone`) et validée par Clément, lancement sur `#121212`, portrait seulement ; file à
+  l'écran 0,28–0,37 s après le tap (§8) ; messages en clair sans montre, sans réseau, sans Spotify
+  (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément.
+
 **Pas encore fait**
-- Écran Library (`V2-Bibliotheque`, TODO 3.19b : l'onglet est vide) et habillage de l'app
-  (icône, écran de lancement, portrait seulement, TODO 3.19c).
+- Relecture par Cyprien des textes de Library (3.19b, case à cocher ensuite) et des nouveaux
+  messages d'erreur (§4.5) ; démo M3 au customer (3.24).
+- Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
+  « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
+  vérifiée). À corriger avant le pilote.
 - Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes
