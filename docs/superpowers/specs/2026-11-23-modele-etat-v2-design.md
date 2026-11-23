@@ -1,8 +1,8 @@
 # Modèle d'état v2 — design (A « modèle commun soigné » + B « Harmony apprend de toi »)
 
 > **Statut (23 nov. 2026)** : design proposé par Clément (choix A + B), **rien n'est implémenté**.
-> Plusieurs points touchent des décisions d'équipe de `docs/PROJECT.md` §3 : ils sont listés en §11
-> et doivent être tranchés en réunion **avant** d'écrire du code.
+> Les décisions d'équipe du §11 ont été prises telles que proposées le 23 nov. 2026 et notées dans
+> `docs/PROJECT.md` §3 (résumé en §6.8 et §8) ; les tâches du §10 sont dans `docs/TODO.md`, Phase 6.
 > **Lecteur visé** : une future session Claude Code (ou un membre de l'équipe) qui écrira le plan
 > (skill `superpowers:writing-plans`) puis implémentera, un paquet de travail par branche.
 > **Preuves** : `docs/research/2026-11-23-modele-etat-v2/` (rapports, notes, scripts, résultats agrégés).
@@ -465,9 +465,11 @@ v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comp
 
 ---
 
-## 10. Tâches proposées pour `docs/TODO.md` (à valider en équipe)
+## 10. Tâches proposées pour `docs/TODO.md` (ajoutées le 23 nov. 2026 : Phase 6)
 
 > Nouvelle phase, à insérer avant « En continu ». Format identique au reste de TODO.md.
+> **TODO.md fait foi** : en l'ajoutant, 6.7 a reçu `PromptLog` et 6.12 (réduit) est entré dans le
+> build du pilote, pour suivre le §15.
 > Build du pilote (§15, « collecte seule ») : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.13 (réduit),
 > 6.14 ; côté A : 6.2–6.4 si prêts avant le 5 déc., 6.11 (rang seulement) si la file existe.
 
@@ -501,7 +503,7 @@ v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comp
 
 ---
 
-## 11. Décisions d'équipe à prendre avant de coder
+## 11. Décisions d'équipe à prendre avant de coder (prises telles que proposées le 23 nov. 2026, PROJECT.md §3)
 
 | # | Décision (PROJECT.md §3 ou pilote) | Proposition |
 |---|---|---|
