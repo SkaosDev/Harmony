@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { overDailyLimit } from "./limit";
 import { scoreSongs } from "./llm";
 import { isAllowed, spotifyUserId } from "./spotify";
 import { parseSongs, readBody } from "./validate";
@@ -34,6 +35,11 @@ async function score(request: Request, env: Env): Promise<Response> {
   }
   if (!userId) return json({ error: "invalid Spotify token" }, 401);
   if (!isAllowed(userId, env.ALLOWED_SPOTIFY_IDS)) return json({ error: "user not allowed" }, 403);
+
+  const retryAfter = await overDailyLimit(env.LIMITS, userId);
+  if (retryAfter !== null) {
+    return json({ error: "daily limit reached" }, 429, { "retry-after": String(retryAfter) });
+  }
 
   try {
     return json({ scores: await scoreSongs(songs, env.ANTHROPIC_API_KEY) });

@@ -6,6 +6,8 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-23",
   "compatibility_flags": ["nodejs_compat"],
+  // Daily request counter per Spotify user (TODO 2.27).
+  "kv_namespaces": [{ "binding": "LIMITS" }],
   "secrets": { "required": ["ANTHROPIC_API_KEY", "ALLOWED_SPOTIFY_IDS"] },
   "observability": {
     "enabled": true,
