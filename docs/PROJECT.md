@@ -925,6 +925,12 @@ Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (
   prompt v2, toujours 50 paires valides ; 5,4 s avec le prompt v3 (48 références, format objets). Ça tient dans l'offre gratuite (10 ms de CPU
   par requête, l'attente réseau ne compte pas). Un faux jeton → 401 venant du vrai Spotify.
 - Offre gratuite Cloudflare : 100 000 requêtes/jour, largement suffisant.
+- **Client dans l'app** (TODO 2.33) : `Services/WorkerClient.swift`, URL lue dans `Info.plist`
+  (`WorkerURL`, venue de `Config.xcconfig`) ; une requête = 1 à 50 morceaux, jeton Spotify du
+  Keychain (rafraîchi une fois si le Worker répond 401). Titre et artistes coupés aux limites
+  ci-dessus (unités UTF-16, comme `length` en JavaScript) ; morceau sans titre ou sans artiste
+  jamais envoyé. Paire hors de 0–1 → `null`. 400 = lot refusé (renvoyer n'aiderait pas) ;
+  403, 429, 502 et réponse mal formée = rien n'est mis en cache, on réessaiera.
 
 ---
 
