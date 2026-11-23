@@ -1345,19 +1345,18 @@ suggéré automatiquement (modèle trop faible sur le stress).
   pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
   Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
   **Rien n'est implémenté.**
-- *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.19)* : file (`Core/Queue/` : cibles,
+- *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
   choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
   règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
   chaque file, like, skip, fin, « Did it fit? », repli « Open Spotify » (§9) ; écrans du design :
   onboarding avec import et scores en arrière-plan, Home, lecteur, « Up next », « Can't play this »,
   Réglages (compte Spotify, santé et consentements, export JSON, suppression totale FR13, à propos).
   Ajouts et écarts voulus par Clément : mini-lecteur, pochettes dans « Up next », grilles et listes
-  sous le titre au lieu d'être centrées. Tout vérifié sur l'iPhone 16 de Clément. Reste 3.20
-  (relecture des textes par Cyprien, à demander dans la PR ; à revoir notamment « No made-up
-  playlists » à l'onboarding, maintenant qu'une playlist « Harmony » apparaît dans la bibliothèque).
+  sous le titre au lieu d'être centrées. Tout vérifié sur l'iPhone 16 de Clément ; textes validés
+  par Cyprien (3.20).
 
 **Pas encore fait**
-- Relecture des textes de l'app (TODO 3.20) ; pilote et modèle d'état v2 (Phase 6).
+- Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes
 
