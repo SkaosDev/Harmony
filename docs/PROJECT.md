@@ -123,7 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
-| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
+| Décision 2.31 (23 nov. 2026) : scores LLM **utilisés** pour les morceaux absents de MuSe (MuSe → LLM → neutre), **par décision d'équipe malgré la règle non atteinte** | La référence MuSe est trop peu taguée pour juger le LLM (65 % des morceaux ont ≤ 3 tags ; sur les morceaux à 4–9 tags, l'accord monte à 0,39–0,44). Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
@@ -870,6 +870,21 @@ les scores ramenés vers 0,5, qui font un peu mieux que le neutre (0,233–0,238
 restent proches du milieu. Le Worker est redéployé avec le prompt v3 (format objets, cache), non
 appelé par l'app.
 
+**Décision finale (23 nov. 2026, équipe) : le LLM est utilisé malgré tout.** La règle 2.31 n'est
+atteinte dans aucun des trois essais ; l'équipe passe outre, en connaissance de cause, parce que la
+référence elle-même est trop peu fiable pour juger le LLM : 65 % des morceaux MuSe ont ≤ 3 tags, et
+l'accord monte avec le nombre de tags (essai 3 : 0,39–0,44 sur les morceaux à 4–9 tags, contre
+0,18–0,19 sur ceux à 1 tag). Le contrôle mesure donc autant le bruit de MuSe que l'erreur du LLM.
+- Ordre dans l'app (2.34, comme prévu au départ) : MuSe → Worker (Claude Haiku 5.5, prompt v3,
+  effort `low`) → neutre 0,5 si le Worker échoue ou rend `null` (`origin` = `muse`, `llm` ou
+  `neutral`). 2.33 et 2.34 restent tels quels dans `docs/TODO.md`.
+- Échelle : pas de conversion en centiles dans l'app ; les scores du LLM sont déjà sur une échelle
+  proche de MuSe (essai 3 : moyenne 0,50 / 0,46, écart-type 0,23 contre 0,29).
+- Pour le rapport : écrire que la règle fixée avant n'est pas atteinte (chiffres des trois essais
+  ci-dessus) et que l'utilisation est un choix d'équipe motivé par la qualité de la référence, pas
+  un résultat validé. Le retour « ça collait ? » et les sauts (`FeedbackStore`) restent le moyen de
+  juger ces scores en usage.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
@@ -1057,6 +1072,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   décision confirmée. Worker redéployé avec Haiku 5.5.
   Essai 3 (48 morceaux de référence MuSe dans le prompt, dev/test, format de sortie en objets) :
   0,258 et 0,316 sur le test → décision confirmée à nouveau ; pistes de prompt épuisées (§7).
+  Décision finale d'équipe : le LLM est utilisé malgré la règle non atteinte (référence MuSe trop
+  peu taguée) ; 2.33/2.34 restent comme prévu (MuSe → Worker → neutre).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
