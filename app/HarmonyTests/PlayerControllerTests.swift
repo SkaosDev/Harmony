@@ -179,7 +179,7 @@ struct PlayerControllerTests {
         #expect(controller.activeIds == ["a", "b"])
     }
 
-    @Test func openInSpotifyUsesTheAppOrTheWebPage() async {
+    @Test func openInSpotifyKeepsThePlayingSong() async {
         var opened: [URL] = []
         controller.openURL = { opened.append($0) }
         await play(["a", "b"])
@@ -190,7 +190,19 @@ struct PlayerControllerTests {
         controller.spotifyIsInstalled = { false }
         controller.openInSpotify()
 
-        #expect(opened.map(\.absoluteString) == ["spotify:track:b", "https://open.spotify.com/track/b"])
+        #expect(opened.map(\.absoluteString) == ["spotify:", "https://open.spotify.com/track/b"])
+    }
+
+    @Test func openInSpotifyStartsTheFirstSongWhenPlaybackFailed() async {
+        var opened: [URL] = []
+        controller.openURL = { opened.append($0) }
+        controller.spotifyIsInstalled = { true }
+        playback.fails = true
+        await play(["a", "b"])
+
+        controller.openInSpotify()
+
+        #expect(opened.map(\.absoluteString) == ["spotify:track:a"])
     }
 
     @Test func reconnectsOnlyWhilePlaying() async {

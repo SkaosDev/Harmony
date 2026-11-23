@@ -80,13 +80,20 @@ final class PlayerController {
         await start()
     }
 
-    /// The playing song (else the first of the queue) in the Spotify app, or on Spotify's web
-    /// page when the app is not installed: the fallback of FR9 (TODO 3.13) and the link of NFR6.
+    /// The link to Spotify (NFR6) and the fallback of FR9 (TODO 3.13). While the queue plays, it
+    /// only brings the Spotify app to the front: opening a song's URI would start it again
+    /// (test of 23 Nov.). Otherwise it opens the playing song (else the first of the queue), in the
+    /// app or, when the app is not installed, on Spotify's web page.
     func openInSpotify() {
         guard let id = state?.spotifyId ?? activeIds.first else { return }
         recordQueue()
-        openURL(spotifyIsInstalled() ? URL(string: SpotifyRemote.uri(id))!
-                                     : URL(string: "https://open.spotify.com/track/\(id)")!)
+        if !spotifyIsInstalled() {
+            openURL(URL(string: "https://open.spotify.com/track/\(id)")!)
+        } else if phase == .playing {
+            openURL(URL(string: "spotify:")!)
+        } else {
+            openURL(URL(string: SpotifyRemote.uri(id))!)
+        }
     }
 
     func togglePause() async {

@@ -178,7 +178,7 @@
 - [x] **3.10** App Remote : connexion avec le jeton obtenu en 1.18. — ✔ connexion sur un vrai iPhone.
 - [x] **3.11** Jouer le 1er morceau, mettre les suivants en file. — ✔ la file apparaît dans Spotify.
 - [x] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
-- [ ] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
+- [x] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
 - [x] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
 - [x] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
 

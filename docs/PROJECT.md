@@ -1214,6 +1214,10 @@ suggéré automatiquement (modèle trop faible sur le stress).
   Événements vérifiés sur l'iPhone le 23 nov. (écran Debug › Last queue) : la file apparaît dans
   Spotify, like (`PUT /me/library`, le titre arrive dans les Titres likés), skip avant 30 s,
   pause après un passage en arrière-plan, « Did it fit? » sur Next au dernier morceau.
+  Repli testé le 23 nov., app Spotify fermée (TODO 3.13) : Spotify se réveille, joue le premier
+  morceau, revient dans Harmony, et la file complète arrive dans « À suivre ». Pendant la lecture,
+  le lien vers Spotify (NFR6) ouvre seulement l'app (`spotify:`), car ouvrir `spotify:track:ID`
+  relance le morceau au début.
   Si rien ne marche, l'écran « Can't play this » ouvre le morceau dans l'app Spotify
   (`spotify:track:ID`) ou, sans l'app, sur `https://open.spotify.com/track/ID` (TODO 3.13).
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
