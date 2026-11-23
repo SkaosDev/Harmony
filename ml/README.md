@@ -19,6 +19,7 @@ Python code for the state model and the song scores.
 | `normalize.py` | Normalizes song titles and artists for MuSe lookup (TODO 1.40); shared cases: `ml/fixtures/normalize_cases.json`. |
 | `muse_build.py` | Rebuilds the ignored local SQLite file (TODO 1.39): run `python ml/muse_download.py`, then `python ml/muse_build.py`; no database file is stored in Git. |
 | `llm_check.py`, `llm_anchors.py`, `prompts/` | LLM song scores (TODO 2.29–2.30). `prompts/score.txt` (system prompt, with the 48 reference songs printed by `python ml/llm_anchors.py`) and `prompts/score_config.json` (model, max tokens, effort, output schema) are the single source read by the Worker and by this script; shared cases: `ml/fixtures/score_cases.json`. `python ml/llm_check.py` (needs `ANTHROPIC_API_KEY`) sends 2,000 MuSe titles and artists (never their scores) through the Batch API, keeps the batch in `data/llm_check/` (resumable) and prints aggregates only: correlation and error against MuSe, and the TODO 2.31 rule. Trial 3 (`docs/PROJECT.md` §7): `--part dev --effort low|medium`, then `--part test --shrink K_ENERGY K_POSITIVITY`. Tests: `ml/tests/test_llm_check.py`. |
+| `pilot_analysis.py` | Pilot analysis (TODO 4.7–4.9, `docs/pilot-protocol.md` §7): `python ml/pilot_analysis.py data/pilot/harmony-pilot.json` reads the app's anonymous export (`harmony-pilot-1`, never committed) and prints aggregate tables only; shared example: `ml/fixtures/pilot_export_example.json`. |
 | `requirements.txt` | Python dependencies. |
 
 Run:
@@ -27,7 +28,7 @@ Run:
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r ml/requirements.txt
 python ml/explore_d1.py --data /path/to/dataverse_files/D1
-python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures ml.tests.test_uci ml.tests.test_llm_check -v
+python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures ml.tests.test_uci ml.tests.test_llm_check ml.tests.test_pilot_analysis -v
 python ml/build_features.py --data data/emophone --out data/features
 python ml/train.py --features data/features
 ```
