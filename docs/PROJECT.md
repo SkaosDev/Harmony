@@ -1160,8 +1160,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-library-read` | `GET /me/tracks` (titres aimés) | oui (1.21) |
   | `user-top-read` | `GET /me/top/tracks` | oui (1.21) |
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
-  | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | pas encore |
-  | `app-remote-control` | App Remote (lecture, TODO 3.10) | pas encore |
+  | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
+  | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1169,7 +1169,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   nous-mêmes avec `ASWebAuthenticationSession` (`Services/Music/Spotify/`), redirection
   `harmony://callback` ; **marche sur un vrai iPhone** (TODO 1.18, 10 nov.). Jetons dans le
   Keychain (`AfterFirstUnlockThisDeviceOnly`), rafraîchis 1 min avant expiration ou après un 401.
-  Reste à confirmer en 3.10 : App Remote accepte ce jeton.
+  App Remote accepte ce jeton (TODO 3.10, 23 nov.), mais seulement quand l'app Spotify est déjà
+  réveillée (voir **Lecture** ci-dessous).
 - **Endpoints testés avec un vrai compte** (TODO 1.21, 10 nov., iPhone 16, compte de Clément,
   écran Debug › Check endpoints) :
 
@@ -1189,8 +1190,25 @@ suggéré automatiquement (modèle trop faible sur le stress).
   1.27 (le temps croît avec le nombre de pages de 50). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
   Mesure du 23 nov. (même iPhone et même compte, bibliothèque plus grande) : **2 045 titres en
   14,3 s**, ce qui confirme l'estimation.
-- **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
-  l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
+- **Lecture** : App Remote (SDK iOS 5.0.1, `Services/Music/Spotify/SpotifyRemote.swift`) pilote
+  l'app Spotify. Test du 23 nov. (TODO 3.10, iPhone 16, compte Premium de Clément) :
+  - `connect()` avec le jeton Web API, Spotify ouvert et en train de jouer mais pas réveillé par le
+    SDK : refus immédiat (`com.spotify.app-remote.transport -2000`, POSIX 61 « Connection refused ») ;
+  - `authorizeAndPlayURI(premier morceau)` : Spotify s'ouvre, joue, revient sur `harmony://callback`
+    avec un jeton → connexion OK ;
+  - ensuite, Harmony relancé et Spotify toujours ouvert : `connect()` avec le jeton Web API → OK.
+
+  D'où la règle de l'app : on essaie d'abord le jeton Web API ; si la connexion est refusée, on
+  réveille Spotify sur le premier morceau, puis on ajoute les autres à sa file.
+  `enqueueTrackUri` envoyé juste après `play` est refusé (`error.request_execution_failed`,
+  -3000), parfois même une fois le premier morceau en lecture : on attend que Spotify annonce le
+  premier morceau (5 s max), puis chaque ajout est réessayé jusqu'à 3 fois, à 1 s d'écart. La connexion tombe
+  quand Harmony passe en arrière-plan : on se déconnecte et on se reconnecte au retour (TODO 3.12).
+  Événements vérifiés sur l'iPhone le 23 nov. (écran Debug › Last queue) : la file apparaît dans
+  Spotify, like (`PUT /me/library`, le titre arrive dans les Titres likés), skip avant 30 s,
+  pause après un passage en arrière-plan, « Did it fit? » sur Next au dernier morceau.
+  Si rien ne marche, l'écran « Can't play this » ouvre le morceau dans l'app Spotify
+  (`spotify:track:ID`) ou, sans l'app, sur `https://open.spotify.com/track/ID` (TODO 3.13).
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
 
 ## 10. HealthKit — ce qu'il faut savoir

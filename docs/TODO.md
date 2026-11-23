@@ -174,13 +174,13 @@
 - [x] **3.8** `SituationSuggester` (règles PROJECT.md §8, jamais Stress automatiquement). — ✔ tests à heures fixes.
 
 ### 3.APP-b Lecture et feedback (R)
-- [ ] **3.9** Intégrer le SDK Spotify iOS 5.0.1 (Swift Package Manager). — ✔ compile.
-- [ ] **3.10** App Remote : connexion avec le jeton obtenu en 1.18. — ✔ connexion sur un vrai iPhone.
-- [ ] **3.11** Jouer le 1er morceau, mettre les suivants en file. — ✔ la file apparaît dans Spotify.
-- [ ] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
+- [x] **3.9** Intégrer le SDK Spotify iOS 5.0.1 (Swift Package Manager). — ✔ compile.
+- [x] **3.10** App Remote : connexion avec le jeton obtenu en 1.18. — ✔ connexion sur un vrai iPhone.
+- [x] **3.11** Jouer le 1er morceau, mettre les suivants en file. — ✔ la file apparaît dans Spotify.
+- [x] **3.12** Reconnexion après retour au premier plan. — ✔ testé en sortant/revenant dans l'app.
 - [ ] **3.13** Repli : ouvrir le morceau dans Spotify si App Remote échoue. — ✔ testé app Spotify fermée.
-- [ ] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
-- [ ] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
+- [x] **3.14** Événements : skip (< 30 s), like (`PUT /me/library`), fin de morceau. — ✔ `FeedbackEvent` enregistrés.
+- [x] **3.15** Question « Ça collait ? » à la fin de la file (design : `V2-Feedback`). — ✔ réponse enregistrée.
 
 ### 3.APP-c Écrans (R, textes Cy) — à l'identique de `docs/design/` (voir son README)
 - [ ] **3.16** Onboarding : connexion Spotify, explications santé, import (design : `V2-Main`, `V2-Onb1` à `V2-Onb5`). — ✔ parcours complet sur iPhone neuf.
