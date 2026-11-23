@@ -9,6 +9,8 @@ struct HarmonyApp: App {
         WindowGroup {
             RootView()
                 .modelContainer(demoMode ? Self.demoStore : Self.store)
+                // The Spotify app comes back here after being woken up for App Remote (TODO 3.10).
+                .onOpenURL { SpotifyRemote.shared.handle($0) }
         }
     }
 

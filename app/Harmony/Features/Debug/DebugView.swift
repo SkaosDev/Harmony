@@ -36,6 +36,7 @@ struct DebugView: View {
                 }
             } else {
                 SpotifyDebugSection()
+                PlayerDebugSection()
             }
         }
         .scrollContentBackground(.hidden)
