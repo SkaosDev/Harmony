@@ -147,8 +147,8 @@
 
 ### 2.ML-d Contrôle du LLM (L)
 - [x] **2.29** Écrire le prompt (2 nombres par morceau, JSON strict) dans `ml/prompts/score.txt`, partagé avec le Worker. — ✔ un seul fichier source.
-- [ ] **2.30** `ml/llm_check.py` : 2 000 morceaux MuSe via l'API Batch, scores cachés au LLM. — ✔ corrélation et erreur moyenne pour énergie et positivité.
-- [ ] **2.31** Décider si le LLM est assez fiable (sinon : n'utiliser que MuSe + valeur neutre). — ✔ décision écrite.
+- [x] **2.30** `ml/llm_check.py` : 2 000 morceaux MuSe via l'API Batch, scores cachés au LLM. — ✔ corrélation et erreur moyenne pour énergie et positivité.
+- [x] **2.31** Décider si le LLM est assez fiable (sinon : n'utiliser que MuSe + valeur neutre). — ✔ décision écrite.
 
 ### 2.APP-b Scores dans l'app (R/C)
 - [ ] **2.32** Embarquer `muse.sqlite` ; recherche par ID Spotify puis titre + premier artiste. — ✔ tests sur 20 cas (même normalisation que 1.40).

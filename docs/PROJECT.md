@@ -123,6 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
+| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score) ; sur 2 000 morceaux MuSe, Claude Haiku 4.5 fait Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263, pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
@@ -717,6 +718,32 @@ part de l'abonnement Claude Pro (compte Console + crédit à acheter).
   (`stop_reason` ≠ `end_turn`) → échec de la requête.
 - Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot.
 
+**Contrôle hors ligne (TODO 2.30, 23 nov. 2026)** — `python ml/llm_check.py` : 2 000 morceaux tirés
+de `muse.sqlite` (graine 0), titres et artistes seulement, 40 requêtes Batch de 50 (batch
+`msgbatch_01QKvLVUu7B4pUDXrs9QC8Cu`). 40/40 réussies, aucune coupée, aucun `null`.
+Tokens réels : 42 434 en entrée, 12 320 en sortie (21,2 et 6,2 par morceau), **0,052 $** au prix
+Batch (~0,0026 $ par lot de 50 hors Batch).
+
+| Score | Pearson | Spearman | MAE brute | MAE en centiles | Moyenne / ÉT LLM | Moyenne / ÉT MuSe |
+|---|---|---|---|---|---|---|
+| Énergie | 0,275 | 0,277 | 0,245 | 0,275 | 0,606 / 0,125 | 0,502 / 0,286 |
+| Positivité | 0,339 | 0,336 | 0,232 | 0,263 | 0,554 / 0,169 | 0,501 / 0,288 |
+
+Lecture : le LLM range les morceaux un peu dans le même sens que MuSe, mais faiblement ; ses
+scores sont resserrés (écart-type 0,13–0,17 contre 0,29) et trop hauts en énergie. Une fois
+convertis en centiles, l'erreur est plus grande que celle de la valeur neutre 0,5 (0,25). Limite :
+MuSe n'est pas une vérité parfaite (28,6 % des morceaux n'ont qu'un tag d'émotion, §5.2), donc
+la corrélation mesurée est un plancher de l'accord réel.
+
+**Décision (TODO 2.31, 23 nov. 2026)** — règle écrite avant le contrôle : un score n'est utilisé
+que si Spearman ≥ 0,4 **et** MAE après conversion en centiles < 0,25, chaque score jugé seul.
+Énergie (0,277 ; 0,275) et positivité (0,336 ; 0,263) échouent sur les deux critères → **le LLM
+n'est pas utilisé : MuSe, sinon valeur neutre 0,5 (`origin = neutral`)**. Pas de réglage du prompt
+après coup pour passer la règle. Le Worker reste déployé mais l'app ne l'appelle pas ; les tâches
+2.33 (`WorkerClient`) et 2.34 (`SongScorer` : MuSe → Worker → neutre) sont à redéfinir en équipe.
+Un nouvel essai (autre modèle ou autre prompt) serait une nouvelle expérience, avec sa règle écrite
+avant, sur un autre tirage de MuSe.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
@@ -897,7 +924,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - *Worker et prompt LLM, 23 nov. 2026 (TODO 2.23–2.29)* : `worker/` déployé sur Cloudflare
   (`POST /score`, authentification par jeton Spotify + liste blanche, 50 requêtes/jour/utilisateur
   dans KV, Claude Haiku 4.5 en sortie JSON compacte) ; prompt partagé `ml/prompts/` et cas communs
-  Python ↔ TypeScript (§7, §7.1). Contrôle hors ligne `ml/llm_check.py` prêt (2.30).
+  Python ↔ TypeScript (§7, §7.1). Contrôle hors ligne sur 2 000 morceaux MuSe (2.30) : accord trop
+  faible → décision 2.31 : pas de scores LLM, MuSe puis neutre (§3, §7) ; 2.33/2.34 à redéfinir.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
