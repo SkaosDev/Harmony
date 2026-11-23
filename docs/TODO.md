@@ -192,7 +192,7 @@
 - [x] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR. *(23 nov. : textes validés par Cyprien.)*
 
 ### 3.QA
-- [ ] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone.
+- [x] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone. *(23 nov., iPhone 16 : 12 files, 0,28–0,37 s, médiane 0,34 s ; PROJECT.md §8.)*
 - [ ] **3.22** Comportement sans montre, sans réseau, sans Spotify installé. — ✔ l'app ne plante jamais et le dit clairement.
 - [ ] **3.23** Revue sécurité : aucune clé dans le binaire ni dans Git. — ✔ `git grep` + recherche dans l'app compilée.
 - [ ] **3.24** Démo M3 au customer. — ✔ retours notés.

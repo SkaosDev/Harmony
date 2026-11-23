@@ -1128,6 +1128,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   médicaux) ; « calm » reste permis car il décrit la musique (design).
 - **Suggestion** : Wind-down de 21:00 à 04:59 ; Wake-up prioritaire (inconnu si la nuit l'est) ;
   `e0` brut jusqu'à 6.11.
+- **Temps du tap à la file (TODO 3.21, NFR3 : < 2 s)** : mesuré dans l'app du tap sur une
+  situation jusqu'à l'ouverture du lecteur avec la file (avant tout appel de lecture ; écran Debug
+  « Tap → queue on screen » et console). iPhone 16, bibliothèque de Clément (2 459 titres), état
+  « Body », 23 nov. : 12 files (3 par situation), **0,28 à 0,37 s, médiane 0,34 s**, plus
+  l'animation d'ouverture du lecteur (~0,35 s). Aucune de ces files n'a eu besoin du repli MuSe :
+  le pire cas, jusqu'à 15 `GET /tracks/{id}` à la suite (3 essais × 5 places), n'est pas mesuré.
+  La musique démarre ensuite, sans bloquer l'écran (playlist puis App Remote : ~3 s sur un essai).
 
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
