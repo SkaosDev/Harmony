@@ -2,10 +2,12 @@ import Foundation
 
 /// The private "Harmony" playlist that holds the queue being played (TODO 3.11, PROJECT.md §9).
 /// Spotify's own queue cannot be cleared through any API: every queue added to it stayed in front
-/// of the next ones. Each queue replaces the playlist's songs instead, and App Remote plays it.
-/// Scope `playlist-modify-private`.
+/// of the next ones. Each queue gets a new playlist instead, and App Remote plays it; the previous
+/// one leaves the library. A playlist whose songs were replaced was sometimes played with its
+/// former songs (test of 23 Nov.), while the Spotify app has to load a playlist it has never seen.
+/// Scopes `playlist-modify-private`, `user-library-modify`.
 struct SpotifyPlaylist {
-    /// `UserDefaults` key of the playlist's ID, once created.
+    /// `UserDefaults` key of the current playlist's ID.
     static let idKey = "spotifyPlaylistId"
     static let name = "Harmony"
     static let description = "Played by Harmony. Its songs change with each queue."
@@ -13,21 +15,21 @@ struct SpotifyPlaylist {
     let api: SpotifyAPI
     var defaults: UserDefaults = .standard
 
-    /// Puts `spotifyIds` in the playlist, in this order, creating it the first time (or again if
-    /// it no longer exists); returns its ID.
+    /// Makes a new playlist holding `spotifyIds`, in this order, and takes the previous one out of
+    /// the library; returns the new playlist's ID.
     func fill(with spotifyIds: [String]) async throws -> String {
-        let uris = spotifyIds.map(SpotifyRemote.uri)
-        if let id = defaults.string(forKey: Self.idKey) {
+        let previous = defaults.string(forKey: Self.idKey)
+        let id = try await create()
+        try await replace(id, with: spotifyIds.map(SpotifyRemote.uri))
+        defaults.set(id, forKey: Self.idKey)
+        if let previous {
             do {
-                try await replace(id, with: uris)
-                return id
-            } catch SpotifyError.http(404) {
-                // Deleted on Spotify's side: a new one is made below.
+                let uri = SpotifyRemote.playlistURI(previous)
+                try await api.delete("me/library?uris=\(uri.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? uri)")
+            } catch {
+                print("Previous Harmony playlist not removed: \(error)")
             }
         }
-        let id = try await create()
-        defaults.set(id, forKey: Self.idKey)
-        try await replace(id, with: uris)
         return id
     }
 
@@ -44,7 +46,7 @@ struct SpotifyPlaylist {
         return try JSONDecoder().decode(Created.self, from: body).id
     }
 
-    /// `PUT /playlists/{id}/items` with `uris`: replaces all its songs (100 at most).
+    /// `PUT /playlists/{id}/items` with `uris`: sets all its songs (100 at most).
     private func replace(_ id: String, with uris: [String]) async throws {
         try await api.send("PUT", "playlists/\(id)/items", json: ["uris": uris])
     }

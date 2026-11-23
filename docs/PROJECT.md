@@ -1162,7 +1162,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
   | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
   | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
-  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items`) | pas encore (ajouté le 23 nov.) |
+  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items` ; l'ancienne sort par `DELETE /me/library`) | oui (23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1206,10 +1206,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   iPhone du 23 nov. a montré que chaque file lancée y restait, devant les suivantes (7 files
   lancées : les morceaux des anciennes passaient avant ceux de la nouvelle, l'écran restait sur le
   premier titre, le morceau retiré passait quand même, « Did it fit? » n'arrivait jamais). Désormais
-  chaque file remplace le contenu d'une playlist privée « Harmony » (créée une fois, recréée si elle
-  a disparu), puis App Remote coupe l'aléatoire et la répétition et joue la playlist ; si le premier
-  état ne montre pas le premier morceau (Spotify a encore l'ancien contenu), `play` repart, 3 fois
-  max à 1 s d'écart. « Remove this song » retire le morceau de la playlist (marche aussi téléphone
+  chaque file est une **nouvelle** playlist privée « Harmony » ; la précédente sort de la
+  bibliothèque (`DELETE /me/library?uris=spotify:playlist:…`). Une seule playlist réécrite à chaque
+  file a été essayée d'abord (même jour) : au changement de file, l'app Spotify rejouait parfois
+  l'ancien contenu de la playlist, d'où un morceau d'avant, une pochette qui ne correspondait pas et
+  des redémarrages ; une playlist neuve, Spotify doit la charger. App Remote coupe ensuite
+  l'aléatoire et la répétition et joue la playlist ; si aucun état ne montre le premier morceau dans
+  les 5 s, `play` repart, 3 fois max à 1 s d'écart. « Remove this song » retire le morceau de la playlist (marche aussi téléphone
   verrouillé) ; s'il démarre quand même, l'app le passe. Après le dernier morceau, la lecture
   automatique de Spotify enchaîne : le premier morceau hors file termine la file (« Did it fit? »).
   Restes de l'ancienne méthode, gardés pour mémoire, ajouts à la file (`enqueueTrackUri`), tests du 23 nov. :

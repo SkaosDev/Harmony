@@ -2,8 +2,9 @@ import Foundation
 import Testing
 @testable import Harmony
 
-/// TODO 3.11: the queue is played as the private "Harmony" playlist, created once and refilled
-/// at each queue (Spotify's own queue cannot be cleared).
+/// TODO 3.11: each queue is played as a new private "Harmony" playlist; the previous one leaves
+/// the library (Spotify's own queue cannot be cleared, and a refilled playlist could play its
+/// former songs).
 @MainActor
 struct SpotifyPlaylistTests {
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
@@ -46,26 +47,28 @@ struct SpotifyPlaylistTests {
         #expect(defaults.string(forKey: SpotifyPlaylist.idKey) == "pl1")
     }
 
-    @Test func nextQueuesReplaceTheSongsOfTheSamePlaylist() async throws {
+    @Test func nextQueueMakesANewPlaylistAndDropsThePreviousOne() async throws {
         defer { try? store.delete(); defaults.removePersistentDomain(forName: suite) }
         defaults.set("pl1", forKey: SpotifyPlaylist.idKey)
-        server.on("/v1/playlists/pl1/items", body: #"{"snapshot_id":"s"}"#)
-
-        _ = try await makePlaylist().fill(with: ["c"])
-
-        #expect(calls() == ["PUT /v1/playlists/pl1/items"])
-    }
-
-    @Test func deletedPlaylistIsMadeAgain() async throws {
-        defer { try? store.delete(); defaults.removePersistentDomain(forName: suite) }
-        defaults.set("gone", forKey: SpotifyPlaylist.idKey)
-        server.on("/v1/playlists/gone/items", status: 404)
         server.on("/v1/me/playlists", status: 201, body: #"{"id":"pl2"}"#)
         server.on("/v1/playlists/pl2/items", body: #"{"snapshot_id":"s"}"#)
+        server.on("/v1/me/library", body: "")
 
-        let id = try await makePlaylist().fill(with: ["a"])
+        let id = try await makePlaylist().fill(with: ["c"])
 
         #expect(id == "pl2" && defaults.string(forKey: SpotifyPlaylist.idKey) == "pl2")
+        #expect(calls() == ["POST /v1/me/playlists", "PUT /v1/playlists/pl2/items", "DELETE /v1/me/library"])
+        #expect(server.requests.last?.url?.query == "uris=spotify%3Aplaylist%3Apl1")
+    }
+
+    @Test func previousPlaylistLeftInTheLibraryDoesNotStopTheQueue() async throws {
+        defer { try? store.delete(); defaults.removePersistentDomain(forName: suite) }
+        defaults.set("pl1", forKey: SpotifyPlaylist.idKey)
+        server.on("/v1/me/playlists", status: 201, body: #"{"id":"pl2"}"#)
+        server.on("/v1/playlists/pl2/items", body: #"{"snapshot_id":"s"}"#)
+        server.on("/v1/me/library", status: 500)
+
+        #expect(try await makePlaylist().fill(with: ["c"]) == "pl2")
     }
 
     @Test func removeTakesTheSongOutOfThePlaylist() async throws {

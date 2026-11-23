@@ -27,9 +27,9 @@ final class SpotifyRemote: NSObject, Playback {
     static let connectTimeout: Duration = .seconds(10)
     /// Longest wait for the Spotify app to open, play and come back.
     static let wakeTimeout: Duration = .seconds(60)
-    /// Right after the playlist changed, the Spotify app may still play its former songs: after
-    /// `play`, the first state must show the queue's first song (within `firstSongTimeout`),
-    /// else `play` is sent again, up to `playTries` times, 1 s apart.
+    /// After `play`, a state must show the queue's first song within `firstSongTimeout` (the
+    /// states of the song playing before may come first), else `play` is sent again, up to
+    /// `playTries` times, 1 s apart.
     static let firstSongTimeout: Duration = .seconds(5)
     static let playTries = 3
 
@@ -137,21 +137,21 @@ final class SpotifyRemote: NSObject, Playback {
         for attempt in 1...Self.playTries {
             let mark = stateCount
             try await command("play \(uri)") { $0.play(uri, callback: $1) }
-            if await firstState(after: mark)?.spotifyId == first { return }
+            if await plays(first, after: mark) { return }
             if attempt < Self.playTries { try await Task.sleep(for: .seconds(1)) }
         }
         print("App Remote: the queue's first song did not start, \(lastState?.spotifyId ?? "nothing") plays")
     }
 
-    /// The first player state received after `mark`, or nil after `firstSongTimeout`.
-    private func firstState(after mark: Int) async -> PlaybackState? {
+    /// Whether a state received after `mark` shows `spotifyId`, within `firstSongTimeout`.
+    private func plays(_ spotifyId: String, after mark: Int) async -> Bool {
         let clock = ContinuousClock()
         let deadline = clock.now + Self.firstSongTimeout
         while clock.now < deadline {
-            if stateCount > mark { return lastState }
+            if stateCount > mark, lastState?.spotifyId == spotifyId { return true }
             try? await Task.sleep(for: .milliseconds(100))
         }
-        return nil
+        return false
     }
 
     /// Takes a coming song out of the playlist: Spotify will not play it.

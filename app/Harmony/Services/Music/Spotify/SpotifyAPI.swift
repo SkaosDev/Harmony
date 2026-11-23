@@ -37,6 +37,11 @@ final class SpotifyAPI {
         _ = try await data(for: URL(string: path, relativeTo: Self.baseURL)!.absoluteURL, method: "PUT")
     }
 
+    /// `DELETE` a path under `/v1/` with its query and no body (e.g. `me/library?uris=…`).
+    func delete(_ path: String) async throws {
+        _ = try await data(for: URL(string: path, relativeTo: Self.baseURL)!.absoluteURL, method: "DELETE")
+    }
+
     /// `POST`, `PUT` or `DELETE` a path under `/v1/` with a JSON body; returns the answer's body.
     @discardableResult
     func send(_ method: String, _ path: String, json: some Encodable) async throws -> Data {
