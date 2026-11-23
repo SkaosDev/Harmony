@@ -164,14 +164,14 @@
 ## Phase 3 — File, lecture, feedback (→ M3, 6 déc.)
 
 ### 3.APP-a Logique (C) — fonctions pures, tests d'abord
-- [ ] **3.1** `Situation` (4 cas, énergie cible, préférence positive). — ✔ test.
-- [ ] **3.2** Calcul des cibles (n, m, répartition e0 → g). — ✔ tests : wind-down ne finit jamais plus énergique qu'il ne commence.
-- [ ] **3.3** Choix du morceau le plus proche avec pénalités. — ✔ tests sur une petite bibliothèque.
-- [ ] **3.4** Exclusions (joué < 3 jours, passé 2 fois dans la situation). — ✔ tests.
-- [ ] **3.5** Repli MuSe (≤ 2 suggestions, artiste ou genre partagé). — ✔ test : jamais plus de 2.
-- [ ] **3.6** Vérification de l'ID Spotify d'une suggestion via `GET /tracks/{id}`. — ✔ ID faux → suggestion écartée.
-- [ ] **3.7** `Explainer` : phrases fixes, aucun mot d'émotion. — ✔ test qui cherche une liste de mots interdits.
-- [ ] **3.8** `SituationSuggester` (règles PROJECT.md §8, jamais Stress automatiquement). — ✔ tests à heures fixes.
+- [x] **3.1** `Situation` (4 cas, énergie cible, préférence positive). — ✔ test.
+- [x] **3.2** Calcul des cibles (n, m, répartition e0 → g). — ✔ tests : wind-down ne finit jamais plus énergique qu'il ne commence.
+- [x] **3.3** Choix du morceau le plus proche avec pénalités. — ✔ tests sur une petite bibliothèque.
+- [x] **3.4** Exclusions (joué < 3 jours, passé 2 fois dans la situation). — ✔ tests.
+- [x] **3.5** Repli MuSe (≤ 2 suggestions, artiste ou genre partagé). — ✔ test : jamais plus de 2.
+- [x] **3.6** Vérification de l'ID Spotify d'une suggestion via `GET /tracks/{id}`. — ✔ ID faux → suggestion écartée.
+- [x] **3.7** `Explainer` : phrases fixes, aucun mot d'émotion. — ✔ test qui cherche une liste de mots interdits.
+- [x] **3.8** `SituationSuggester` (règles PROJECT.md §8, jamais Stress automatiquement). — ✔ tests à heures fixes.
 
 ### 3.APP-b Lecture et feedback (R)
 - [ ] **3.9** Intégrer le SDK Spotify iOS 5.0.1 (Swift Package Manager). — ✔ compile.

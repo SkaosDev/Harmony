@@ -1096,6 +1096,39 @@ Suggestion de situation (FR5) : Wake-up dans les 2 h après la fin du sommeil ; 
 21 h ; Low energy entre 13 h et 17 h si état < 0,4 ; sinon aucune suggestion. Stress jamais
 suggéré automatiquement (modèle trop faible sur le stress).
 
+**Règles précisées à l'implémentation (TODO 3.1–3.8, 23 nov. 2026 ; `app/Harmony/Core/Queue/`)** :
+- **Sens de la file** (décision du 23 nov., 4 situations) : Wake-up et Low energy ne font jamais
+  baisser l'énergie, Stress et Wind-down ne la font jamais monter. Si `e0` est déjà au-delà du but,
+  le but devient `e0` et la file reste plate (3 morceaux à `e0`).
+- **Cibles** : `m` fois `e0`, puis `n − m` cibles régulières, la dernière exactement au but (« Goal »).
+- **Coût** = |énergie − cible| + 0,2 + 0,3 + 0,1 (pénalités ci-dessus ; « artiste » = premier artiste
+  normalisé). Un morceau n'apparaît qu'une fois par file. Les scores `neutral` ne servent que si
+  aucun morceau MuSe/LLM n'est éligible (« utilisé en dernier », §7). Égalité : plus petit ID.
+- **Exclusions** : morceaux d'une file lancée dans les 72 h ; morceaux passés (< 30 s) 2 fois dans
+  des files de la même situation ; une suggestion passée une fois n'est plus jamais suggérée (rapport).
+- **Repli MuSe** : déclenché si aucun morceau MuSe/LLM éligible n'est à moins de 0,15 de la cible
+  et qu'il y a moins de 2 suggestions. Candidats : morceaux MuSe avec ID, hors bibliothèque, non
+  exclus, d'un artiste de la bibliothèque, sinon d'un de ses genres ; on garde ceux dont le coût est
+  plus bas que celui du meilleur morceau de la bibliothèque, et on en vérifie au plus 3 par place
+  (`GET /tracks/{id}` : même titre et même premier artiste, clés MuSe `SongKey`) ; sinon le morceau
+  de la bibliothèque. Bibliothèque épuisée → file plus courte.
+- **« Use suggested tracks »** (Home vide, décision du 23 nov.) : file de morceaux MuSe seuls, tous
+  vérifiés, pour la situation suggérée ; la limite de 2 suggestions ne s'applique qu'aux files de
+  la bibliothèque.
+- **Raison** (`Explainer`, phrases en anglais) : contexte puis plan, ex. « Short night, morning: calm
+  songs first, then more energy. ». Contexte : nuit courte/longue (`z_sleep_min` ≤ −1 / ≥ 1),
+  moment de la journée (5–12 h morning, 12–17 h afternoon, 17–21 h evening, sinon night), FC
+  plus haute/basse que d'habitude (`z_hr_30` ≥ 1 / ≤ −1), HRV plus haute/basse que d'habitude
+  (décision du 23 nov., FR3 : dernière HRV horaire des 6 dernières heures contre les HRV horaires
+  des 14 jours précédents, prête à 7 jours, z ≥ 1 / ≤ −1). File en mode heure seule : moment de la
+  journée seulement (rien n'est dit sur des données que la file n'a pas utilisées). Plan : niveau de
+  départ (calm < 0,35, energetic > 0,65, sinon medium), puis « (a little) more energy » ou
+  « (a little) calmer » (« a little » si l'écart au but ≤ 0,3), ou « all the way » si la file est plate.
+  Un test balaie toutes les combinaisons contre une liste de mots interdits (émotions, stress, mots
+  médicaux) ; « calm » reste permis car il décrit la musique (design).
+- **Suggestion** : Wind-down de 21:00 à 04:59 ; Wake-up prioritaire (inconnu si la nuit l'est) ;
+  `e0` brut jusqu'à 6.11.
+
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
   probabilité brute, tassée entre ≈ 0,36 et 0,55 ; avec ≥ 5 check-ins énergie étiquetés dans les
