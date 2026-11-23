@@ -894,7 +894,7 @@ Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (
   requête) ; un Durable Object serait la version stricte si besoin.
 - Mesures du 23 nov. 2026 (vrai jeton Spotify, 50 titres connus) : 50 paires entre 0 et 1, aucun
   `null` ; 4,3 s en local, 5,1 s une fois déployé (Haiku 4.5) ; 4,4 s déployé avec Haiku 5.5 et le
-  prompt v2, toujours 50 paires valides. Ça tient dans l'offre gratuite (10 ms de CPU
+  prompt v2, toujours 50 paires valides ; 5,4 s avec le prompt v3 (48 références, format objets). Ça tient dans l'offre gratuite (10 ms de CPU
   par requête, l'attente réseau ne compte pas). Un faux jeton → 401 venant du vrai Spotify.
 - Offre gratuite Cloudflare : 100 000 requêtes/jour, largement suffisant.
 
