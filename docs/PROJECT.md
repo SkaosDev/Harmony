@@ -123,7 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
-| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score) ; sur 2 000 morceaux MuSe, Claude Haiku 4.5 fait Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263, pire que la valeur neutre (§7) |
+| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Les deux font pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
@@ -762,6 +762,27 @@ Haiku 5.5 avec un prompt v2 tiré des leçons de l'essai 1.
 - Protocole : nouveau tirage de 2 000 morceaux (`--seed 1`, dossier `data/llm_check_v2/`), un seul
   lancement, pas de retouche du prompt après avoir vu les résultats. Même règle qu'à l'essai 1.
 
+**Essai 2 — résultats (23 nov. 2026)** : batch `msgbatch_01PUDVqh21SKGjp8K5Y5q3Tc`, 40/40 requêtes
+réussies, aucune coupée, aucun `null`. Tokens : 64 777 en entrée, 14 360 en sortie, réflexion
+comprise (32,4 et 7,2 par morceau), **0,0068 $** au prix Batch.
+
+| Essai | Score | Pearson | Spearman | MAE brute | MAE en centiles | Moyenne / ÉT LLM | Moyenne / ÉT MuSe |
+|---|---|---|---|---|---|---|---|
+| 1 (Haiku 4.5, v1, graine 0) | Énergie | 0,275 | 0,277 | 0,245 | 0,275 | 0,606 / 0,125 | 0,502 / 0,286 |
+| 1 | Positivité | 0,339 | 0,336 | 0,232 | 0,263 | 0,554 / 0,169 | 0,501 / 0,288 |
+| 2 (Haiku 5.5, v2, graine 1) | Énergie | 0,280 | 0,279 | 0,254 | 0,273 | 0,476 / 0,237 | 0,510 / 0,288 |
+| 2 | Positivité | 0,324 | 0,324 | 0,251 | 0,266 | 0,444 / 0,232 | 0,504 / 0,290 |
+
+Lecture : le prompt v2 a corrigé ce qu'il visait, l'échelle (écart-type 0,24 au lieu de 0,13–0,17,
+plus de biais d'énergie) ; il n'a pas changé le classement (Spearman 0,28 et 0,32, comme à
+l'essai 1). Deux modèles et deux prompts donnent le même accord : la limite semble venir de
+l'information disponible (titre + artiste) et de la référence (tags MuSe bruités), pas du prompt.
+Haiku 5.5 coûte 7,6 fois moins cher que Haiku 4.5 pour ce contrôle.
+
+**Décision sur l'essai 2 (TODO 2.31)** : même règle, mêmes échecs (énergie 0,279 ; 0,273 —
+positivité 0,324 ; 0,266) → la décision de l'essai 1 est confirmée : **pas de scores LLM, MuSe puis
+valeur neutre 0,5**. Le Worker reste déployé (Haiku 5.5, prompt v2), non appelé par l'app.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
@@ -944,6 +965,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   dans KV, Claude Haiku 4.5 en sortie JSON compacte) ; prompt partagé `ml/prompts/` et cas communs
   Python ↔ TypeScript (§7, §7.1). Contrôle hors ligne sur 2 000 morceaux MuSe (2.30) : accord trop
   faible → décision 2.31 : pas de scores LLM, MuSe puis neutre (§3, §7) ; 2.33/2.34 à redéfinir.
+  Essai 2 (Haiku 5.5, prompt v2, nouveau tirage) : échelle corrigée, classement inchangé ;
+  décision confirmée. Worker redéployé avec Haiku 5.5.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
