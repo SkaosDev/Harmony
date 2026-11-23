@@ -51,11 +51,26 @@ nonisolated final class MuseCatalog {
         if !spotifyId.isEmpty, let (energy, positivity) = scores(byId, spotifyId) {
             return Match(energy: energy, positivity: positivity, foundBy: .spotifyId)
         }
-        let key = SongKey.match(title: title, artist: artists.first ?? "")
-        if let (energy, positivity) = scores(byKey, key) {
-            return Match(energy: energy, positivity: positivity, foundBy: .titleAndArtist)
+        for key in Self.titleKeys(title: title, artist: artists.first ?? "") {
+            if let (energy, positivity) = scores(byKey, key) {
+                return Match(energy: energy, positivity: positivity, foundBy: .titleAndArtist)
+            }
         }
         return nil
+    }
+
+    /// The key gives a different result for a straight `'` (a space) and a curly `’` (`'`), so
+    /// "Don’t" would miss "Don't". Both spellings are tried: straight first, as most of MuSe writes
+    /// it (6,595 titles with `'`, 62 with `’`), then curly (PROJECT.md §5.2).
+    static func titleKeys(title: String, artist: String) -> [String] {
+        func respell(_ text: String, _ apostrophe: Unicode.Scalar) -> String {
+            String(String.UnicodeScalarView(text.unicodeScalars.map {
+                $0 == "'" || SongKey.apostrophes.contains($0) ? apostrophe : $0
+            }))
+        }
+        let straight = SongKey.match(title: respell(title, "'"), artist: respell(artist, "'"))
+        let curly = SongKey.match(title: respell(title, "\u{2019}"), artist: respell(artist, "\u{2019}"))
+        return straight == curly ? [straight] : [straight, curly]
     }
 
     private func prepare(_ sql: String) throws -> OpaquePointer? {

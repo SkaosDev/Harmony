@@ -16,6 +16,10 @@ struct MuseCatalogTests {
         MuseRow(spotifyId: "id-dont-stop", title: "Don't Stop Me Now", artists: "Queen", energy: 0.90, positivity: 0.90, matchKey: "don t stop me now\tqueen"),
         MuseRow(spotifyId: "id-live", title: "Song (Live)", artists: "Live Band", energy: 0.55, positivity: 0.50, matchKey: "song live\tlive band"),
         MuseRow(spotifyId: "id-other", title: "Other Title", artists: "Other Artist", energy: 0.10, positivity: 0.15, matchKey: "other title\tother artist"),
+        // Curly apostrophes in MuSe (62 titles), and one song written both ways.
+        MuseRow(title: "Sweet Child O’ Mine", artists: "Guns N’ Roses", energy: 0.75, positivity: 0.70, matchKey: "sweet child o' mine\tguns n' roses"),
+        MuseRow(title: "It’s Time", artists: "Some Band", energy: 0.20, positivity: 0.30, matchKey: "it's time\tsome band"),
+        MuseRow(title: "It's Time", artists: "Some Band", energy: 0.60, positivity: 0.40, matchKey: "it s time\tsome band"),
     ]
 
     struct Case: Sendable, CustomTestStringConvertible {
@@ -68,6 +72,28 @@ struct MuseCatalogTests {
         } else {
             #expect(match == nil)
         }
+    }
+
+    /// "Don’t" finds "Don't" and the other way round; when MuSe has both, the straight one
+    /// (most of MuSe) comes first.
+    @Test(arguments: [
+        ("Don’t Stop Me Now", "Queen", 0.90),
+        ("Sweet Child O' Mine", "Guns N' Roses", 0.75),
+        ("Sweet Child O’ Mine", "Guns N’ Roses", 0.75),
+        ("Sweet Child Oʼ Mine", "Guns N' Roses", 0.75),
+        ("It's Time", "Some Band", 0.60),
+        ("It’s Time", "Some Band", 0.60),
+    ])
+    func apostrophesMatchEitherWay(_ title: String, _ artist: String, _ energy: Double) throws {
+        let catalog = try MuseCatalog(url: makeMuseFile(Self.rows))
+        let match = try #require(catalog.lookUp(spotifyId: "", title: title, artists: [artist]))
+        #expect(match.energy == energy)
+        #expect(match.foundBy == .titleAndArtist)
+    }
+
+    @Test func oneKeyWithoutApostrophe() {
+        #expect(MuseCatalog.titleKeys(title: "Song", artist: "Artist") == ["song\tartist"])
+        #expect(MuseCatalog.titleKeys(title: "It’s", artist: "A") == ["it s\ta", "it's\ta"])
     }
 
     @Test func missingFileIsAnError() {

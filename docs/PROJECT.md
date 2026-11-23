@@ -323,9 +323,15 @@ copie de `data/muse/`, vérifié par empreinte des lignes). Lecture seule avec S
 calculée par `Core/Scoring/SongKey.swift`, portage Swift de `ml/normalize.py`. Vérifié : mêmes clés
 que Python sur les 31 cas partagés, sur les 89 269 lignes MuSe et sur chaque point de code Unicode
 (titre `a<c>b`). Le *case folding* de Foundation diffère de `casefold` de Python sur 181 points de
-code (cherokee, variantes cyrilliques U+1C80–U+1C88) : corrigé dans `SongKey`. À noter : comme en
-Python, l'apostrophe ASCII devient une espace mais l'apostrophe typographique `’` devient `'`, donc
-« Don’t » ne retrouve pas « Don't » (MuSe : 6 595 titres avec `'`, 62 avec `’`).
+code (cherokee, variantes cyrilliques U+1C80–U+1C88) : corrigé dans `SongKey`.
+**Apostrophes (décision du 23 nov. 2026)** : la clé (Python comme Swift) change l'apostrophe droite
+`'` en espace mais l'apostrophe typographique `’` en `'`, donc « Don’t » ne retrouvait pas « Don't »
+(MuSe : 6 595 titres avec `'`, 62 avec `’`). Règle : l'app cherche **les deux graphies, la droite
+d'abord** (celle de la plupart des morceaux MuSe), puis la typographique
+(`MuseCatalog.titleKeys`) ; si MuSe a le même morceau sous les deux graphies, la droite gagne. La
+clé de `ml/normalize.py` et la table ne changent pas : les changer modifierait 85 clés et
+fusionnerait 13 lignes, dont 2 dans le vivier des 48 morceaux de référence du prompt v3, et
+rendrait les tirages des essais LLM (§7) non reproductibles.
 
 **Couverture MuSe d'une vraie bibliothèque (TODO 2.35, 23 nov. 2026)** — iPhone 16, compte
 Spotify de Clément, écran Debug › Song scores, après un import complet (2 045 titres : aimés + 50 top
@@ -346,8 +352,9 @@ scores sont gardés : les ouvertures suivantes n'envoient que les nouveaux titre
 le premier scoring doit tourner en arrière-plan pendant l'onboarding (3.16) ; avec 50 requêtes par
 jour (§7.1), soit 2 500 titres pour le LLM, une bibliothèque de plus de ~2 800 titres (à 88,6 % hors
 MuSe) finit d'être notée le lendemain. Mesure
-faite sur une seule bibliothèque (décision du 23 nov.) ; l'effet de l'apostrophe `’` n'y a pas été
-compté.
+faite sur une seule bibliothèque (décision du 23 nov.), avant la recherche des deux graphies
+d'apostrophe (ci-dessus) : son effet sur cette bibliothèque n'est pas mesuré, et les titres déjà
+notés par le LLM gardent leur score (cache).
 
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
@@ -725,7 +732,8 @@ pilote mesurera (§13).
    les espaces. Ne pas décomposer les écritures non latines. Si le titre devient vide, reprendre
    le titre normalisé avant suppression des marqueurs featuring/version. Le premier artiste est
    la partie avant le premier marqueur featuring ; ne pas couper sur `&`, `and` ou `,`.
-2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste.
+2. Chercher dans la table MuSe : d'abord par ID Spotify, puis par titre + premier artiste (dans
+   l'app, apostrophe droite d'abord, puis typographique : §5.2).
 3. Sinon, envoyer par lots de 50 (titre + artistes seulement) au **Worker**, qui appelle le LLM
    et renvoie `{energy, positivity}` entre 0 et 1 en JSON. Réponse invalide → 0,5 / 0,5, origine
    « neutre » (`SongScore.origin = neutral`), utilisé en dernier.

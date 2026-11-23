@@ -32,7 +32,8 @@ nonisolated enum SongKey {
     private static let versions = try! NSRegularExpression(
         pattern: #"(?:\s*[\[(]\s*\#(versionLabel)\s*[\])]|\s*[-–—]\s*\#(versionLabel)|\s+\#(versionLabel))\s*$"#,
         options: .caseInsensitive)
-    private static let apostrophes: Set<Unicode.Scalar> = ["\u{2018}", "\u{2019}", "\u{02BC}", "\u{FF07}", "\u{0060}", "\u{00B4}"]
+    /// The apostrophes that become `'` (the straight `'` itself is punctuation, so a space).
+    static let apostrophes: Set<Unicode.Scalar> = ["\u{2018}", "\u{2019}", "\u{02BC}", "\u{FF07}", "\u{0060}", "\u{00B4}"]
 
     private static func firstArtist(_ value: String) -> String {
         cutAtFeat(value.precomposedStringWithCompatibilityMapping)
