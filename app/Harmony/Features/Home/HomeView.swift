@@ -17,7 +17,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             if scores.isEmpty { empty } else { situations }
         }
-        .padding(EdgeInsets(top: 56, leading: 16, bottom: 20, trailing: 16))
+        .padding(EdgeInsets(top: 56, leading: 16, bottom: 0, trailing: 16))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.background)
         .ignoresSafeArea(edges: .top)
@@ -31,8 +31,10 @@ struct HomeView: View {
 
     // MARK: V2-Accueil
 
+    /// The title at the top, the grid in the middle of the space left above the tab bar
+    /// (`justify-content: space-between`).
     private var situations: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 Text("What’s your moment?")
@@ -41,6 +43,7 @@ struct HomeView: View {
                     .designLineHeight(36 * 1.08)
                     .foregroundStyle(Theme.textPrimary)
             }
+            Spacer(minLength: 20)
             VStack(alignment: .leading, spacing: 12) {
                 Text("Pick a situation")
                     .font(Theme.font(size: 12, bold: true))
@@ -54,6 +57,7 @@ struct HomeView: View {
                     }
                 }
             }
+            Spacer(minLength: 20)
         }
     }
 
@@ -86,6 +90,7 @@ struct HomeView: View {
                 PillButton("Retry the import") { Task { await retryImport() } }
                 PillButton("Use suggested tracks", style: .outline) { Task { await start(suggestion ?? timeOfDaySituation, museOnly: true) } }
             }
+            .padding(.bottom, 12)
         }
     }
 
