@@ -22,15 +22,14 @@ nonisolated enum TrackPicker {
     static let negativePenalty = 0.2
     /// Main artist already in the queue.
     static let sameArtistPenalty = 0.3
-    /// Score estimated by the LLM rather than found in MuSe.
-    static let llmPenalty = 0.1
 
+    /// No penalty for an LLM score (decision of 23 Nov 2026): any fixed one left only MuSe songs in
+    /// the queues, a MuSe song being almost always within 0.01 of the target.
     static func cost(_ song: QueueCandidate, target: Double, situation: Situation,
                      artistsInQueue: Set<String>) -> Double {
         var cost = abs(song.energy - target)
         if situation.prefersPositive && song.positivity < 0.5 { cost += negativePenalty }
         if artistsInQueue.contains(song.artistKey) { cost += sameArtistPenalty }
-        if song.origin == .llm { cost += llmPenalty }
         return cost
     }
 
