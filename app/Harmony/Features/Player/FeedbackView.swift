@@ -27,19 +27,10 @@ struct FeedbackView: View {
             Spacer(minLength: 0)
             VStack(spacing: 16) {
                 HStack(spacing: 12) {
-                    tile("Yes", icon: StrokeIcon(lines: [[(5, 13), (9, 17), (19, 7)]]), color: Theme.accent) { onAnswer(true) }
-                    tile("Nope", icon: StrokeIcon(lines: [[(6, 6), (18, 18)], [(18, 6), (6, 18)]]), color: Theme.stress) { onAnswer(false) }
+                    tile("Yes", icon: .check, color: Theme.accent) { onAnswer(true) }
+                    tile("Nope", icon: .cross, color: Theme.stress) { onAnswer(false) }
                 }
-                Button { onAnswer(nil) } label: {
-                    Text("Skip")
-                        .font(Theme.font(size: 16, bold: true))
-                        .foregroundStyle(Theme.textPrimary)
-                        .padding(.horizontal, 20)
-                        .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52)
-                        .overlay(Capsule().strokeBorder(Theme.outline, lineWidth: 1))
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
+                PillButton("Skip", style: .outline) { onAnswer(nil) }
             }
         }
         .padding(EdgeInsets(top: 56, leading: 16, bottom: 24, trailing: 16))
@@ -64,20 +55,6 @@ struct FeedbackView: View {
             .contentShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// An SVG icon made of polylines, given in the design's 24 × 24 box.
-nonisolated struct StrokeIcon: Shape {
-    let lines: [[(CGFloat, CGFloat)]]
-
-    func path(in rect: CGRect) -> Path {
-        let scale = min(rect.width, rect.height) / 24
-        var path = Path()
-        for line in lines {
-            path.addLines(line.map { CGPoint(x: rect.minX + $0.0 * scale, y: rect.minY + $0.1 * scale) })
-        }
-        return path
     }
 }
 
