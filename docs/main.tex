@@ -607,10 +607,10 @@ Fig.~\ref{fig:architecture} shows the parts of the system and where they run. Ev
 \node[part] (mp) at (0,-3.35) {Music provider\\{\tiny Web API, App Remote}};
 \node[part] (wc) at (2.7,-3.35) {Worker client};
 \node[draw, thick, rounded corners=3pt, fit=(ui) (hk) (wc), inner sep=3pt] (phone) {};
-\node[font=\scriptsize\bfseries, anchor=north west] at (phone.north west) {iPhone};
-\node[part] (aw) at (-2.7,-4.75) {Apple Watch\\{\tiny via Apple Health}};
-\node[part] (sp) at (0,-4.75) {Spotify\\{\tiny account and app}};
-\node[part] (cw) at (2.7,-4.75) {Cloudflare Worker\\{\tiny key, allowlist, limit}};
+\node[font=\scriptsize\bfseries, anchor=south west, inner sep=1pt] at (phone.north west) {iPhone};
+\node[part] (aw) at (-2.7,-4.95) {Apple Watch\\{\tiny via Apple Health}};
+\node[part] (sp) at (0,-4.95) {Spotify\\{\tiny account and app}};
+\node[part] (cw) at (2.7,-4.95) {Cloudflare Worker\\{\tiny key, allowlist, limit}};
 \draw[flow] (ml) -- node[lbl, right]{shipped in the app} (ui);
 \draw[both] (ui) -- (qu);
 \draw[flow] (st) -- (qu);
@@ -637,7 +637,7 @@ Table~\ref{tab:modules} lists the modules and the requirements they cover. The a
 \caption{Module Structure}
 \label{tab:modules}
 \scriptsize
-\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}p{1.8cm}|X|>{\raggedright\arraybackslash}p{1.2cm}|}
+\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}p{1.9cm}|X|>{\raggedright\arraybackslash}p{1.2cm}|}
 \hline
 \textbf{Module} & \textbf{Main types or files} & \textbf{Req.} \\ \hline
 \texttt{App} & \texttt{HarmonyApp}, \texttt{RootView}, tab bar, theme, \texttt{DemoMode} & FR12, NFR5 \\ \hline
@@ -715,7 +715,7 @@ The final model keeps the 13 features of Requirement~4 and a logistic regression
 \caption{State Model Evaluation (People Kept Apart)}
 \label{tab:eval}
 \scriptsize
-\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{1.45cm}|>{\raggedright\arraybackslash}p{1.0cm}|}
+\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{1.85cm}|>{\raggedright\arraybackslash}p{0.75cm}|}
 \hline
 \textbf{Test and inputs} & \textbf{AUROC} & \textbf{Bal.\ acc.} \\ \hline
 \multicolumn{3}{|l|}{\textit{Waves 1+2, 5 folds by participant (31,301 answers)}} \\ \hline
@@ -755,7 +755,7 @@ The pilot follows the protocol written before any data (\texttt{docs/pilot-proto
 The watch gives an estimate from the first day, without asking anything, but more watch inputs or larger models barely change it: on waves 1 and 2, no model family beats the simple logistic regression by more than the variation between folds. In a simulation on EmoPhone, short answers of the user (``energy right now?'', two a day) raise the AUROC of a personal layer from 0.555 to 0.666 over the study, so the next version adds optional one-tap questions that adjust the shared model on the phone. These figures are simulated on EmoPhone students and must be confirmed on real users.
 
 %=====================================================================
-\enlargethispage{3\baselineskip}
+\enlargethispage{5\baselineskip}
 \begin{thebibliography}{99}
 \setlength{\itemsep}{0pt}
 \footnotesize
