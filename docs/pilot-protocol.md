@@ -38,8 +38,8 @@ This is **not** a proof of anything general: one participant, two weeks.
 - [ ] Build from `main` installed; `Config.xcconfig` filled; Spotify connected; library imported
       and scored.
 - [ ] Apple Watch worn for at least 7 days before day 1 (the personal reference is ready at 7 days).
-- [ ] Known bug checked: old "Harmony" playlists not removed from the Spotify account
-      (`docs/PROJECT.md` §12) — fixed, or accepted for the pilot.
+- [ ] Spotify connected with the playlist scopes of 23 Nov. (`docs/PROJECT.md` §9): after a queue,
+      the Spotify library holds a single "Harmony" playlist.
 - [ ] Demo mode **off** (Settings › Debug).
 - [ ] On day 1: Settings › Debug › Pilot › **Pilot running** switched on. This saves the start day
       and a random seed for the daily draw.

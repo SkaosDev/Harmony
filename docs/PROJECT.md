@@ -1197,7 +1197,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   lecture et file. Supprimé : `GET /tracks` (plusieurs titres d'un coup). Sauvegarder un titre :
   `PUT /me/library` avec des URI. `GET /me` ne renvoie plus e-mail ni pays. `GET /search` : 10
   résultats max par page.
-- **Scopes demandés** (TODO 1.22, tous accordés au test du 10 nov.) — un par usage :
+- **Scopes demandés** (TODO 1.22, tous accordés au test du 10 nov. ; les trois scopes de
+  playlist le 23 nov. : un jeton plus ancien ne les a pas, il faut se reconnecter, Debug › Spotify
+  › Disconnect puis Connect) — un par usage :
 
   | Scope | Pour | Testé |
   |---|---|---|
@@ -1206,7 +1208,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
   | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
   | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
-  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items` ; l'ancienne sort par `DELETE /me/library`) | oui (23 nov.) |
+  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items`) | oui (23 nov.) |
+  | `playlist-read-private` | `GET /me/playlists` : retrouver les anciennes playlists « Harmony » (privées) | oui (23 nov.) |
+  | `playlist-modify-public` | `DELETE /me/library` d'une playlist : sans lui, Spotify répond 403 (référence de l'API ; vu le 23 nov.) | oui (23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1250,8 +1254,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   iPhone du 23 nov. a montré que chaque file lancée y restait, devant les suivantes (7 files
   lancées : les morceaux des anciennes passaient avant ceux de la nouvelle, l'écran restait sur le
   premier titre, le morceau retiré passait quand même, « Did it fit? » n'arrivait jamais). Désormais
-  chaque file est une **nouvelle** playlist privée « Harmony » ; la précédente sort de la
-  bibliothèque (`DELETE /me/library?uris=spotify:playlist:…`). Une seule playlist réécrite à chaque
+  chaque file est une **nouvelle** playlist privée « Harmony » ; pendant que la musique démarre,
+  les anciennes sortent de la bibliothèque (`SpotifyPlaylist.removeOthers` : `GET /me/playlists`,
+  puis `DELETE /me/library?uris=spotify:playlist:…`, 40 par appel). Seules sortent celles dont le
+  nom **et** la description sont ceux de l'app (l'utilisateur peut avoir sa propre playlist
+  « Harmony ») ; une suppression ratée est rattrapée à la file suivante. Bug du 23 nov. corrigé le
+  même jour : le scope `playlist-modify-public` manquait (403 à chaque file) ; sur l'iPhone, après
+  reconnexion, 67 anciennes playlists sont sorties d'un coup, puis une par file. Une seule playlist réécrite à chaque
   file a été essayée d'abord (même jour) : au changement de file, l'app Spotify rejouait parfois
   l'ancien contenu de la playlist, d'où un morceau d'avant, une pochette qui ne correspondait pas et
   des redémarrages ; une playlist neuve, Spotify doit la charger. App Remote coupe ensuite
@@ -1421,15 +1430,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
   body / time only par blocs de 2 jours et export anonyme dans Debug (§8) ; script d'analyse
   `ml/pilot_analysis.py` testé sur un export synthétique ; rapport : sections Design (architecture,
   modules, répartition des tâches tirée de Git), Use Cases et Evaluation and Discussion dans
-  `docs/main.tex` (résultats du pilote en `\tbd`). 4.2 et 4.3 sans objet.
+  `docs/main.tex` (résultats du pilote en `\tbd`). 4.2 et 4.3 cochées : une installation, un compte.
+- *Playlists « Harmony », 23 nov.* : l'ancienne playlist ne sortait pas de la bibliothèque (403,
+  scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
+  file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.
 
 **Pas encore fait**
 - Démo M3 au customer (3.24).
 - Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
-  « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
-  vérifiée). À corriger avant le pilote.
 - Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes
