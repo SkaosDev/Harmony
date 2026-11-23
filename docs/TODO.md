@@ -154,7 +154,7 @@
 - [x] **2.32** Embarquer `muse.sqlite` ; recherche par ID Spotify puis titre + premier artiste. — ✔ tests sur 20 cas (même normalisation que 1.40).
 - [x] **2.33** `WorkerClient` : lots de 50, jeton Spotify dans l'en-tête. — ✔ test avec serveur simulé.
 - [x] **2.34** `SongScorer` : MuSe → Worker → neutre, cache dans `SongScore`. — ✔ un morceau n'est jamais envoyé deux fois.
-- [ ] **2.35** Mesurer la couverture MuSe sur les bibliothèques de l'équipe. — ✔ % noté dans PROJECT.md §5.2.
+- [x] **2.35** Mesurer la couverture MuSe sur les bibliothèques de l'équipe. — ✔ % noté dans PROJECT.md §5.2.
 
 ### 2.DOC
 - [ ] **2.36** Démo M2 : scores des morceaux, état estimé à l'écran Debug, résultats du modèle. — ✔ retours notés.

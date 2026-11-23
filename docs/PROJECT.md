@@ -327,6 +327,28 @@ code (cherokee, variantes cyrilliques U+1C80–U+1C88) : corrigé dans `SongKey`
 Python, l'apostrophe ASCII devient une espace mais l'apostrophe typographique `’` devient `'`, donc
 « Don’t » ne retrouve pas « Don't » (MuSe : 6 595 titres avec `'`, 62 avec `’`).
 
+**Couverture MuSe d'une vraie bibliothèque (TODO 2.35, 23 nov. 2026)** — iPhone 16, compte
+Spotify de Clément, écran Debug › Song scores, après un import complet (2 045 titres : aimés + 50 top
++ 50 récents) :
+
+| | Titres | Part |
+|---|---|---|
+| MuSe par ID Spotify | 102 | 5,0 % |
+| MuSe par titre + premier artiste | 131 | 6,4 % |
+| **MuSe, total** | **233** | **11,4 %** |
+| LLM (Worker) | 1 812 | 88,6 % |
+| Neutre / non noté | 0 / 0 | 0 % |
+
+Premier scoring en **158 s** (MuSe < 1 s, puis ~37 requêtes de 50 au Worker, ~4,3 s chacune, à la
+suite), aucune erreur. La couverture est faible : MuSe vient de tags Last.fm (surtout des morceaux
+occidentaux anciens), donc l'essentiel des scores de l'app viendra du LLM (§7, décision finale). Les
+scores sont gardés : les ouvertures suivantes n'envoient que les nouveaux titres. Conséquences :
+le premier scoring doit tourner en arrière-plan pendant l'onboarding (3.16) ; avec 50 requêtes par
+jour (§7.1), soit 2 500 titres pour le LLM, une bibliothèque de plus de ~2 800 titres (à 88,6 % hors
+MuSe) finit d'être notée le lendemain. Mesure
+faite sur une seule bibliothèque (décision du 23 nov.) ; l'effet de l'apostrophe `’` n'y a pas été
+compté.
+
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Les données brutes et les tables dérivées restent locales dans `data/`, même si le dépôt est CC0.
@@ -1007,6 +1029,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   **939 titres en 4,6 s** (enregistrement SwiftData compris), soit ~10 s attendues pour 2 000
   (NFR3 : < 60 s). Pas de compte à 2 000 titres aimés sous la main : estimation acceptée pour
   1.27 (le temps croît avec le nombre de pages de 50). Un `429` attend `Retry-After` (≤ 30 s, sinon erreur), 3 essais max.
+  Mesure du 23 nov. (même iPhone et même compte, bibliothèque plus grande) : **2 045 titres en
+  14,3 s**, ce qui confirme l'estimation.
 - **Lecture** : App Remote (SDK iOS 5.0.1) pilote l'app Spotify ; la connexion peut tomber quand
   l'app passe en arrière-plan → prévoir la reconnexion et le repli « ouvrir dans Spotify ».
 - **Règles d'affichage** : pochette non modifiée, logo Spotify, lien vers Spotify (NFR6).
@@ -1103,6 +1127,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
   0,258 et 0,316 sur le test → décision confirmée à nouveau ; pistes de prompt épuisées (§7).
   Décision finale d'équipe : le LLM est utilisé malgré la règle non atteinte (référence MuSe trop
   peu taguée) ; 2.33/2.34 restent comme prévu (MuSe → Worker → neutre).
+- *Scores des morceaux dans l'app, 23 nov. 2026 (TODO 2.32–2.35)* : `muse.sqlite` versionné dans
+  `Resources/`, recherche par ID puis titre + premier artiste (`SongKey`, mêmes clés que Python sur
+  toutes les lignes MuSe), `WorkerClient`, `SongScorer` (MuSe → Worker → neutre, cache
+  `SongScore`), section « Song scores » de l'écran Debug. Sur la bibliothèque de Clément
+  (2 045 titres) : 11,4 % trouvés dans MuSe, 88,6 % notés par le LLM, premier scoring en 158 s (§5.2).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
@@ -1118,7 +1147,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 | Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Vérifier TestFlight vs. installation Xcode (UDID) avant M3 |
 | Spotify PKCE/App Remote | Bloque M1 | Prototype d'auth dès la première semaine |
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
-| Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurer dès que l'import marche |
+| Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurée (2.35) : 11,4 % sur 2 045 titres, 88,6 % notés par le LLM ; premier scoring 158 s → à lancer en arrière-plan à l'onboarding (3.16) |
 | Gain réel de pas + sommeil | Modèle plus complexe sans gain | Tester sur D-2/D-3 et au pilote ; repli heure + FC |
 | Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Comparer files « corps » et « heure seule » au pilote (4.4, 4.7) ; mode heure seule si aucun gain |
 | Coût Claude Pro (160 $) annoncé dans le rapport | Doit correspondre à la réalité | Confirmer qui s'abonne |
