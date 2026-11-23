@@ -783,6 +783,33 @@ Haiku 5.5 coûte 7,6 fois moins cher que Haiku 4.5 pour ce contrôle.
 positivité 0,324 ; 0,266) → la décision de l'essai 1 est confirmée : **pas de scores LLM, MuSe puis
 valeur neutre 0,5**. Le Worker reste déployé (Haiku 5.5, prompt v2), non appelé par l'app.
 
+**Essai 3 — écrit avant de le lancer (23 nov. 2026)** : décision d'équipe d'ajouter des morceaux de
+référence au prompt, **règle 2.31 inchangée**.
+- Diagnostic des essais 1–2 (agrégats sur les 4 000 morceaux) : l'accord monte avec le nombre de
+  tags MuSe (Spearman énergie / positivité 0,21 / 0,28 sur 1 tag, 0,38 / 0,47–0,49 sur ≥ 10 tags ;
+  65 % des morceaux ont ≤ 3 tags) ; dans un même genre, le classement est faible (0,15–0,39) ;
+  dans MuSe l'énergie et la positivité vont ensemble (corrélation 0,35–0,38), pas chez le LLM. Par
+  simulation, une MAE en centiles < 0,25 demande un Spearman ≈ 0,42 : les deux critères de la
+  règle demandent en pratique la même chose.
+- Prompt v3 = v2 + **48 morceaux de référence** avec leurs scores MuSe (0–100).
+  `python ml/llm_anchors.py` (graine 0) prend, dans chaque case d'une grille 4 × 4 des quartiles
+  énergie × positivité, 3 morceaux MuSe avec ≥ 10 tags (référence fiable), de genres différents
+  dans la case et d'artistes tous différents. Liste non retouchée à la main (un test vérifie que
+  le prompt contient exactement la sortie du script). MuSe est sous CC BY 4.0 (cité dans le script).
+- Le prompt (~900 tokens) dépasse le minimum de cache de Haiku 5.5 (512) : prompt système mis en
+  cache (`cache_control`) dans le Worker et dans le contrôle. `max_tokens` 8 192 (plafond ; la
+  réflexion compte dedans).
+- Échantillons : un tirage (graine 2) parmi les morceaux MuSe hors morceaux de référence et hors
+  échantillons des essais 1–2 ; les 1 000 premiers = **dev**, les 2 000 suivants = **test**,
+  disjoints par construction (test unitaire).
+- Dev : deux variantes, effort `low` et `medium`. `medium` n'est gardé que si la moyenne de ses
+  deux Spearman dépasse celle de `low` d'au moins 0,02 ; sinon `low` (moins cher, plus rapide).
+  Le choix est écrit dans `score_config.json` et commité avant le test.
+- Test : un seul lancement avec la variante choisie et la règle 2.31 telle quelle (Spearman ≥ 0,4
+  et MAE en centiles < 0,25, chaque score jugé seul). Pas de retouche du prompt après.
+- Chiffres secondaires, sans effet sur la décision : Spearman par nombre de tags MuSe ; MAE des
+  scores ramenés vers 0,5 (0,5 + k × (centile − 0,5)), k choisi sur le dev pour chaque score.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).

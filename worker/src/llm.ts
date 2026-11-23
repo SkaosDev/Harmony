@@ -9,7 +9,9 @@ export async function scoreSongs(songs: Song[], apiKey: string): Promise<(Score 
   const message = await client.messages.create({
     model: config.model,
     max_tokens: config.max_tokens,
-    system: prompt,
+    // Cached prefix (the prompt is over the 512-token minimum of Haiku 5.5): cheaper when a
+    // library is scored in several requests in a row.
+    system: [{ type: "text", text: prompt, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: userMessage(songs) }],
     output_config: {
       effort: config.effort as Anthropic.OutputConfig["effort"],

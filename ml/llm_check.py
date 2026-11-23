@@ -1,7 +1,10 @@
 """LLM song scores: shared request format and offline check (TODO 2.29, 2.30).
 
 Usage: python ml/llm_check.py [--db data/muse/muse.sqlite] [--out data/llm_check] [--n 2000]
-Needs ANTHROPIC_API_KEY. Sends a seeded sample of MuSe titles and artists (never their scores)
+       [--seed 0] [--part dev|test] [--effort low|medium] [--shrink K_ENERGY K_POSITIVITY]
+Needs ANTHROPIC_API_KEY. Trials 1-2 use --n/--seed. Trial 3 uses --part (PROJECT.md §7): a dev
+sample of 1,000 songs to choose the effort, then a test sample of 2,000 never-seen songs, both
+without the reference songs of the prompt (ml/llm_anchors.py) and the songs of trials 1-2. Sends a seeded sample of MuSe titles and artists (never their scores)
 through the Message Batches API (half price), waits for the batch, then prints aggregates only:
 correlation and mean error of the LLM scores against MuSe, and the TODO 2.31 rule. The batch ID,
 sample and raw answers are kept in --out (under data/, ignored by Git), so a rerun resumes.
@@ -29,6 +32,11 @@ BATCH = 50
 # Claude Haiku 5.5 through the Batch API: half of US$0.10 / US$0.50 per million input / output
 # tokens (prompts under 100K tokens). Output tokens include thinking.
 PRICE_IN, PRICE_OUT = 0.05 / 1e6, 0.25 / 1e6
+# Prompt caching (system prompt over 512 tokens): writes cost 1.25x the input price, reads 0.1x.
+CACHE_WRITE, CACHE_READ = 1.25, 0.1
+# Trial 3 samples (PROJECT.md §7): one seeded draw split into dev and test.
+TRIAL3_SEED, TRIAL3_DEV, TRIAL3_TEST = 2, 1000, 2000
+TAG_BINS, TAG_LABELS = [0, 1, 3, 9, 10_000], ["1 tag", "2-3 tags", "4-9 tags", ">=10 tags"]
 # TODO 2.31 rule, written before the run: a score is used only if both hold (PROJECT.md §7).
 RULE_SPEARMAN, RULE_MAE_PCT = 0.4, 0.25
 
@@ -53,15 +61,17 @@ def user_message(songs: list[dict]) -> str:
     )
 
 
-def request_params(songs: list[dict]) -> dict:
-    """Messages API parameters for one batch of at most 50 songs (same as the Worker)."""
+def request_params(songs: list[dict], effort: str | None = None) -> dict:
+    """Messages API parameters for one batch of at most 50 songs (same as the Worker).
+
+    effort overrides the shared setting, only to compare the two effort levels of trial 3."""
     config = load_config()
     return {
         "model": config["model"],
         "max_tokens": config["max_tokens"],
-        "system": load_prompt(),
+        "system": [{"type": "text", "text": load_prompt(), "cache_control": {"type": "ephemeral"}}],
         "messages": [{"role": "user", "content": user_message(songs)}],
-        "output_config": {"effort": config["effort"],
+        "output_config": {"effort": effort or config["effort"],
                           "format": {"type": "json_schema", "schema": config["output_schema"]}},
     }
 
@@ -94,16 +104,26 @@ def parse_scores(text: str, count: int) -> list[dict | None]:
 def sample_songs(db: Path, n: int, seed: int) -> pd.DataFrame:
     """n MuSe songs drawn with a fixed seed: title, artists (one MuSe text field), scores."""
     with sqlite3.connect(db) as con:
-        songs = pd.read_sql("SELECT title, artists, energy, positivity FROM songs ORDER BY match_key", con)
+        songs = pd.read_sql("SELECT title, artists, energy, positivity, match_key FROM songs "
+                            "ORDER BY match_key", con)
     return songs.sample(n=n, random_state=seed).reset_index(drop=True)
 
 
-def batch_requests(sample: pd.DataFrame) -> list[dict]:
+def trial3_samples(songs: pd.DataFrame, anchors: pd.DataFrame,
+                   earlier: list[pd.DataFrame]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Dev and test samples of trial 3: no reference song of the prompt, no song of trials 1-2."""
+    used = set(anchors["match_key"]).union(*(set(s["match_key"]) for s in earlier))
+    pool = songs[~songs["match_key"].isin(used)].sort_values("match_key").reset_index(drop=True)
+    drawn = pool.sample(n=TRIAL3_DEV + TRIAL3_TEST, random_state=TRIAL3_SEED).reset_index(drop=True)
+    return drawn.iloc[:TRIAL3_DEV].reset_index(drop=True), drawn.iloc[TRIAL3_DEV:].reset_index(drop=True)
+
+
+def batch_requests(sample: pd.DataFrame, effort: str | None = None) -> list[dict]:
     """One Batch request per 50 songs, with titles and artists only."""
     return [
         {"custom_id": f"chunk-{start // BATCH:03d}",
          "params": request_params([{"title": row.title, "artists": [row.artists]}
-                                   for row in sample.iloc[start:start + BATCH].itertuples()])}
+                                   for row in sample.iloc[start:start + BATCH].itertuples()], effort)}
         for start in range(0, len(sample), BATCH)
     ]
 
@@ -139,6 +159,17 @@ def use_llm(m: dict) -> bool:
     return bool(m["spearman"] >= RULE_SPEARMAN and m["mae_pct"] < RULE_MAE_PCT)
 
 
+def shrunk_mae(llm: pd.Series, muse: pd.Series, k: float) -> float:
+    """Secondary: MAE of the percentile LLM scores pulled toward 0.5 (0.5 + k * (score - 0.5))."""
+    ok = llm.notna()
+    return float((0.5 + k * (llm[ok].rank(pct=True) - 0.5) - muse[ok]).abs().mean())
+
+
+def best_shrink(llm: pd.Series, muse: pd.Series) -> float:
+    """Secondary: the k in 0, 0.05, ..., 1 with the lowest shrunk MAE (chosen on the dev sample)."""
+    return min(np.round(np.arange(0, 1.0001, 0.05), 2), key=lambda k: shrunk_mae(llm, muse, k))
+
+
 def _fetch_results(client, batch_id: str) -> list[dict]:
     rows = []
     for result in client.messages.batches.results(batch_id):
@@ -148,21 +179,26 @@ def _fetch_results(client, batch_id: str) -> list[dict]:
             row.update(stop_reason=message.stop_reason,
                        text=next((b.text for b in message.content if b.type == "text"), ""),
                        input_tokens=message.usage.input_tokens,
+                       cache_write_tokens=message.usage.cache_creation_input_tokens or 0,
+                       cache_read_tokens=message.usage.cache_read_input_tokens or 0,
                        output_tokens=message.usage.output_tokens)
         rows.append(row)
     return rows
 
 
-def report(sample: pd.DataFrame, results: list[dict]) -> None:
+def report(sample: pd.DataFrame, results: list[dict], shrink: list[float] | None = None) -> None:
     ok = [r for r in results if r["type"] == "succeeded"]
     tokens_in = sum(r["input_tokens"] for r in ok)
+    cache_write = sum(r.get("cache_write_tokens", 0) for r in ok)
+    cache_read = sum(r.get("cache_read_tokens", 0) for r in ok)
     tokens_out = sum(r["output_tokens"] for r in ok)
     cut = sum(r.get("stop_reason") != "end_turn" for r in ok)
+    cost = (tokens_in + CACHE_WRITE * cache_write + CACHE_READ * cache_read) * PRICE_IN \
+        + tokens_out * PRICE_OUT
     print(f"Requests: {len(results)}, succeeded {len(ok)}, failed {len(results) - len(ok)}, "
           f"not end_turn {cut}")
-    print(f"Tokens: {tokens_in} in, {tokens_out} out "
-          f"(per song {tokens_in / len(sample):.1f} in, {tokens_out / len(sample):.1f} out); "
-          f"cost US${tokens_in * PRICE_IN + tokens_out * PRICE_OUT:.4f}")
+    print(f"Tokens: {tokens_in} in, {cache_write} cache write, {cache_read} cache read, "
+          f"{tokens_out} out (per song {tokens_out / len(sample):.1f} out); cost US${cost:.4f}")
     llm = llm_scores(len(sample), results)
     print(f"Rule 2.31: Spearman >= {RULE_SPEARMAN} and MAE after percentile conversion < {RULE_MAE_PCT}")
     for score in ("energy", "positivity"):
@@ -173,6 +209,19 @@ def report(sample: pd.DataFrame, results: list[dict]) -> None:
               f"LLM mean {m['mean_llm']:.3f} SD {m['sd_llm']:.3f}, "
               f"MuSe mean {m['mean_muse']:.3f} SD {m['sd_muse']:.3f} -> "
               f"{'use the LLM' if use_llm(m) else 'neutral 0.5'}")
+    print("Secondary (not part of the rule):")
+    for i, score in enumerate(("energy", "positivity")):
+        line = f"{score:>10}: best shrink k on this sample {best_shrink(llm[score], sample[score]):.2f}"
+        if shrink is not None:
+            line += (f", MAE percentile shrunk with k={shrink[i]:.2f}: "
+                     f"{shrunk_mae(llm[score], sample[score], shrink[i]):.3f}")
+        if "tags" in sample:
+            bins = pd.cut(sample["tags"], TAG_BINS, labels=TAG_LABELS)
+            line += " | Spearman " + ", ".join(
+                f"{label} (n={int((bins == label).sum())}) "
+                f"{llm[score][bins == label].corr(sample[score][bins == label], method='spearman'):.3f}"
+                for label in TAG_LABELS)
+        print(line)
 
 
 def main():
@@ -181,6 +230,11 @@ def main():
     parser.add_argument("--out", type=Path, default=ROOT / "data" / "llm_check")
     parser.add_argument("--n", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--part", choices=["dev", "test"], help="trial 3 sample (ignores --n/--seed)")
+    parser.add_argument("--csv", type=Path, default=ROOT / "data" / "muse" / "muse_v3.csv")
+    parser.add_argument("--effort", choices=["low", "medium"], help="overrides score_config.json")
+    parser.add_argument("--shrink", type=float, nargs=2, metavar=("K_ENERGY", "K_POSITIVITY"),
+                        help="secondary: shrink factors chosen on the dev sample")
     args = parser.parse_args()
 
     import anthropic                                   # only needed for the real run
@@ -194,11 +248,19 @@ def main():
         sample = pd.read_json(sample_path, orient="records")
         print(f"Resuming batch {batch_id}")
     else:
-        sample = sample_songs(args.db, args.n, args.seed)
+        if args.part:
+            from llm_anchors import muse_with_tags, select_anchors
+            songs = muse_with_tags(args.db, args.csv)
+            earlier = [sample_songs(args.db, 2000, seed) for seed in (0, 1)]
+            dev, test = trial3_samples(songs, select_anchors(songs), earlier)
+            sample = dev if args.part == "dev" else test
+        else:
+            sample = sample_songs(args.db, args.n, args.seed)
         sample.to_json(sample_path, orient="records", force_ascii=False)
-        batch = client.messages.batches.create(requests=batch_requests(sample))
+        batch = client.messages.batches.create(requests=batch_requests(sample, args.effort))
         batch_id = batch.id
-        state_path.write_text(json.dumps({"batch_id": batch_id, "n": args.n, "seed": args.seed}))
+        state_path.write_text(json.dumps({"batch_id": batch_id, "n": len(sample), "seed": args.seed,
+                                          "part": args.part, "effort": args.effort}))
         print(f"Batch {batch_id} submitted: {len(sample)} songs")
 
     while (batch := client.messages.batches.retrieve(batch_id)).processing_status != "ended":
@@ -209,7 +271,7 @@ def main():
         rows = _fetch_results(client, batch_id)
         results_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
     results = [json.loads(line) for line in results_path.read_text().splitlines()]
-    report(sample, results)
+    report(sample, results, args.shrink)
 
 
 if __name__ == "__main__":

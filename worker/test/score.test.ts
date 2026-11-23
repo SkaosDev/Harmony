@@ -30,7 +30,7 @@ describe("POST /score with the LLM", () => {
     expect(seen[0].body).toEqual({
       model: config.model,
       max_tokens: config.max_tokens,
-      system: prompt,
+      system: [{ type: "text", text: prompt, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMessage(songs(2)) }],
       output_config: { effort: "low", format: { type: "json_schema", schema: config.output_schema } },
     });

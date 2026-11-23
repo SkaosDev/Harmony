@@ -1,4 +1,6 @@
-"""LLM song scores (TODO 2.29): shared cases with the Worker. Synthetic titles only."""
+"""LLM song scores (TODO 2.29, 2.30): shared cases with the Worker, trial 3 samples and
+reference songs. Synthetic titles only, except the check of the prompt against real MuSe data
+(skipped when data/muse/ is absent)."""
 
 import json
 import sqlite3
@@ -11,7 +13,10 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import llm_anchors as A                                          # noqa: E402
 import llm_check as L                                            # noqa: E402
+
+MUSE = Path(__file__).resolve().parents[2] / "data" / "muse"
 
 CASES = json.loads((Path(__file__).resolve().parents[1] / "fixtures" / "score_cases.json")
                    .read_text(encoding="utf-8"))
@@ -34,11 +39,16 @@ class RequestTests(unittest.TestCase):
         params = L.request_params([{"title": "T", "artists": ["A"]}])
         self.assertEqual(params["model"], "claude-haiku-5-5")
         self.assertEqual(params["output_config"]["effort"], "low")     # few thinking tokens
-        self.assertEqual(params["system"], L.load_prompt())
+        self.assertEqual(params["system"], [{"type": "text", "text": L.load_prompt(),
+                                             "cache_control": {"type": "ephemeral"}}])
         self.assertEqual(params["messages"], [{"role": "user", "content": "0\tT\tA"}])
         self.assertEqual(params["output_config"]["format"]["schema"], L.load_config()["output_schema"])
         self.assertNotIn("thinking", params)          # adaptive thinking (the default), set by effort
         self.assertNotIn("temperature", params)       # sampling parameters are refused on Haiku 5.5
+
+    def test_effort_can_be_overridden_for_the_trial_3_comparison(self):
+        params = L.request_params([{"title": "T", "artists": ["A"]}], effort="medium")
+        self.assertEqual(params["output_config"]["effort"], "medium")
 
 
 def synthetic_db(path: Path, n: int = 120) -> None:
@@ -57,7 +67,7 @@ class CheckTests(unittest.TestCase):
             synthetic_db(db)
             a, b = L.sample_songs(db, 60, seed=0), L.sample_songs(db, 60, seed=0)
         pd.testing.assert_frame_equal(a, b)
-        self.assertEqual(list(a.columns), ["title", "artists", "energy", "positivity"])
+        self.assertEqual(list(a.columns), ["title", "artists", "energy", "positivity", "match_key"])
         self.assertEqual(len(a), 60)
 
     def test_batch_requests_send_titles_and_artists_only(self):
@@ -96,6 +106,50 @@ class CheckTests(unittest.TestCase):
         squeezed = L.metrics(0.4 + muse / 5, muse)
         self.assertLess(squeezed["mae_pct"], 0.02)
         self.assertTrue(L.use_llm(squeezed))
+
+    def test_shrink_toward_neutral(self):
+        muse = pd.Series(np.linspace(0, 1, 101))
+        self.assertAlmostEqual(L.shrunk_mae(muse, muse, 0), (muse - 0.5).abs().mean())
+        self.assertEqual(L.best_shrink(muse.copy(), muse), 1.0)
+        self.assertLess(L.best_shrink(pd.Series(np.random.default_rng(0).random(101)), muse), 0.5)
+
+
+def synthetic_songs(n: int = 4000) -> pd.DataFrame:
+    rng = np.random.default_rng(1)
+    return pd.DataFrame({
+        "match_key": [f"title {i}\tartist {i}" for i in range(n)], "title": [f"Title {i}" for i in range(n)],
+        "artists": [f"Artist {i}" for i in range(n)], "genre": [f"g{i % 9}" for i in range(n)],
+        "energy": rng.random(n), "positivity": rng.random(n), "tags": rng.integers(1, 30, n)})
+
+
+class Trial3Tests(unittest.TestCase):
+    def test_reference_songs_cover_the_grid(self):
+        songs = synthetic_songs()
+        anchors = A.select_anchors(songs)
+        pd.testing.assert_frame_equal(anchors, A.select_anchors(songs))      # seeded
+        self.assertEqual(len(anchors), 48)
+        self.assertTrue((anchors["tags"] >= A.MIN_TAGS).all())
+        self.assertEqual(anchors["artists"].nunique(), 48)
+        self.assertTrue((anchors.groupby(["cell_e", "cell_p"])["genre"].nunique() == 3).all())
+        self.assertTrue(anchors["energy"].is_monotonic_increasing)
+        first = A.anchor_block(anchors).splitlines()[0].split("\t")
+        self.assertEqual(first[2:], [str(round(anchors.energy[0] * 100)), str(round(anchors.positivity[0] * 100))])
+
+    def test_dev_and_test_never_see_reference_or_earlier_songs(self):
+        songs = synthetic_songs()
+        anchors = A.select_anchors(songs)
+        earlier = [songs.sample(300, random_state=seed) for seed in (0, 1)]
+        dev, test = L.trial3_samples(songs, anchors, earlier)
+        self.assertEqual((len(dev), len(test)), (1000, 2000))
+        used = set(anchors.match_key) | set(earlier[0].match_key) | set(earlier[1].match_key)
+        self.assertFalse(used & (set(dev.match_key) | set(test.match_key)))
+        self.assertFalse(set(dev.match_key) & set(test.match_key))
+        pd.testing.assert_frame_equal(dev, L.trial3_samples(songs, anchors, earlier)[0])   # seeded
+
+    @unittest.skipUnless((MUSE / "muse_v3.csv").exists(), "MuSe data not on this machine")
+    def test_prompt_holds_the_reference_songs_of_the_script(self):
+        anchors = A.select_anchors(A.muse_with_tags(MUSE / "muse.sqlite", MUSE / "muse_v3.csv"))
+        self.assertIn("\n" + A.anchor_block(anchors) + "\n", L.load_prompt())
 
 
 if __name__ == "__main__":

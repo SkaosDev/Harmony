@@ -1,6 +1,6 @@
 {
   "model": "claude-haiku-5-5",
-  "max_tokens": 4096,
+  "max_tokens": 8192,
   "effort": "low",
   "output_schema": {
     "type": "object",
