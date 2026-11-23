@@ -55,7 +55,7 @@ final class QueueItem {
 }
 
 /// The four situations of the home screen (PROJECT.md §2.3).
-enum Situation: String, Codable {
+enum Situation: String, Codable, CaseIterable {
     case wakeUp, stress, lowEnergy, windDown
 }
 
