@@ -1,11 +1,14 @@
 import SwiftUI
 
 /// A row with a 48 pt coloured tile (radius 4), as in the onboarding: 12 pt gap, 4 pt vertical
-/// padding, title 16 pt bold, optional detail 13 pt grey, optional number in the tile (17 pt),
-/// and what comes at the right end (badges and buttons of `V2-File`, 4 pt apart).
+/// padding, title 16 pt bold, optional detail 13 pt grey, optional number in the tile (17 pt) or
+/// the song's cover in its place, and what comes at the right end (badges and buttons of
+/// `V2-File`, 4 pt apart).
 struct TileRow<Trailing: View>: View {
     let color: Color
     var number: String?
+    /// Spotify's cover, unmodified (NFR6), instead of the design's coloured placeholder.
+    var cover: URL?
     let title: String
     var detail: String?
     var titleColor = Theme.textPrimary
@@ -17,12 +20,15 @@ struct TileRow<Trailing: View>: View {
                 .fill(color)
                 .frame(width: 48, height: 48)
                 .overlay {
-                    if let number {
+                    if let cover {
+                        AsyncImage(url: cover) { $0.resizable().scaledToFit() } placeholder: { Color.clear }
+                    } else if let number {
                         Text(number)
                             .font(Theme.font(size: 17, bold: true))
                             .foregroundStyle(Theme.textPrimary)
                     }
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 4))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(Theme.font(size: 16, bold: true))

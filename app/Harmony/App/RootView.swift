@@ -58,6 +58,11 @@ struct RootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
+            if player.showsMiniPlayer {
+                MiniPlayer()
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+            }
             TabBar(selection: $selection)
         }
         // The tab bar reaches the bottom edge and keeps its own 26 pt bottom padding, as in the design.

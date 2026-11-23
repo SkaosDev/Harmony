@@ -31,10 +31,10 @@ struct HomeView: View {
 
     // MARK: V2-Accueil
 
-    /// The title at the top, the grid in the middle of the space left above the tab bar
-    /// (`justify-content: space-between`).
+    /// The title, then the grid 20 pt below. The design centres the grid in the free space;
+    /// Clément asked for it at the top (23 Nov.).
     private var situations: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 Text("What’s your moment?")
@@ -43,7 +43,6 @@ struct HomeView: View {
                     .designLineHeight(36 * 1.08)
                     .foregroundStyle(Theme.textPrimary)
             }
-            Spacer(minLength: 20)
             VStack(alignment: .leading, spacing: 12) {
                 Text("Pick a situation")
                     .font(Theme.font(size: 12, bold: true))
@@ -57,7 +56,6 @@ struct HomeView: View {
                     }
                 }
             }
-            Spacer(minLength: 20)
         }
     }
 

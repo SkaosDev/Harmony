@@ -101,11 +101,7 @@ struct NowPlayingView: View {
         .ignoresSafeArea()
     }
 
-    /// The playing song, else the first of the queue while Spotify starts.
-    private var song: TrackInfo? {
-        guard let queue = player.queue else { return nil }
-        return queue.songs[safe: player.currentIndex ?? 0]
-    }
+    private var song: TrackInfo? { player.currentSong }
 
     /// "2 / 5": place of the playing song among the songs still in the queue.
     private var counter: String {
@@ -173,8 +169,9 @@ struct NowPlayingView: View {
     }
 }
 
-/// `V2-File`: the queue in order, the playing song in green with "Now", MuSe suggestions marked
-/// "New", the last song "Goal"; the coming songs can be removed.
+/// `V2-File`: the queue in order with the covers, the playing song in green with "Now", MuSe
+/// suggestions marked "New", the last song "Goal"; the coming songs can be removed. The design
+/// centres the list in the free space; Clément asked for it under the header (23 Nov.).
 struct UpNextView: View {
     let onBack: () -> Void
     @Environment(PlayerController.self) private var player
@@ -197,11 +194,11 @@ struct UpNextView: View {
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
-            Spacer(minLength: 16)
             ViewThatFits(in: .vertical) {
                 rows
                 ScrollView { rows }
             }
+            .padding(.top, 20)
             Spacer(minLength: 16)
             PillButton("Back to player", style: .outline, action: onBack)
         }
@@ -218,9 +215,11 @@ struct UpNextView: View {
                 let shown = queue.entries.indices.filter { !player.removed.contains(queue.entries[$0].song.spotifyId) }
                 ForEach(Array(shown.enumerated()), id: \.element) { place, index in
                     let entry = queue.entries[index]
+                    let song = queue.songs[safe: index]
                     TileRow(color: Self.colors[place % Self.colors.count], number: "\(place + 1)",
-                            title: queue.songs[safe: index]?.title ?? "",
-                            detail: queue.songs[safe: index]?.artists.joined(separator: ", "),
+                            cover: song?.coverURL,
+                            title: song?.title ?? "",
+                            detail: song?.artists.joined(separator: ", "),
                             titleColor: index == current ? Theme.accent : Theme.textPrimary) {
                         if index == current {
                             Badge("Now")
@@ -284,6 +283,52 @@ struct CannotPlayView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Theme.background)
         .ignoresSafeArea()
+    }
+}
+
+/// Brings the player back once closed (not in the design: Clément's choice of 23 Nov.). It
+/// takes the look of the "Up next" row of `V2-Lecture` (`#282828`, radius 8) with the cover
+/// (40 pt, radius 4), the song (14 pt bold, artist 13 pt grey) and Pause / Play.
+struct MiniPlayer: View {
+    @Environment(PlayerController.self) private var player
+
+    var body: some View {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Theme.neutralTile)
+                .frame(width: 40, height: 40)
+                .overlay {
+                    AsyncImage(url: player.currentSong?.coverURL) { $0.resizable().scaledToFit() } placeholder: { Color.clear }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(player.currentSong?.title ?? " ")
+                    .font(Theme.font(size: 14, bold: true))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(player.currentSong?.artists.joined(separator: ", ") ?? " ")
+                    .font(Theme.font(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            let isPaused = player.state?.isPaused == true
+            IconButton(isPaused ? "Play" : "Pause") { Task { await player.togglePause() } } icon: {
+                if isPaused {
+                    PlayTriangle().fill(Theme.textPrimary)
+                } else {
+                    StrokeIcon(lines: [[(8, 5), (8, 19)], [(16, 5), (16, 19)]])
+                        .stroke(Theme.textPrimary, style: StrokeIcon.style(2.2, size: 26))
+                }
+            }
+        }
+        .padding(.leading, 8)
+        .padding(.trailing, 4)
+        .padding(.vertical, 6)
+        .background(Theme.tile, in: RoundedRectangle(cornerRadius: 8))
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .onTapGesture { player.isPresented = true }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Opens the player")
     }
 }
 

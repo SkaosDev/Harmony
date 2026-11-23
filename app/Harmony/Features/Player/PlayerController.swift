@@ -52,6 +52,18 @@ final class PlayerController {
         return queue?.entries.firstIndex { $0.song.spotifyId == id }
     }
 
+    /// The playing song, else the first of the queue while the music app starts.
+    var currentSong: TrackInfo? {
+        guard let queue else { return nil }
+        let index = currentIndex ?? 0
+        return queue.songs.indices.contains(index) ? queue.songs[index] : nil
+    }
+
+    /// A queue plays while the player is closed: the mini-player brings it back.
+    var showsMiniPlayer: Bool {
+        queue != nil && !isPresented && (phase == .playing || phase == .starting)
+    }
+
     /// Estimated position of the playing song at `date`, in seconds.
     func position(at date: Date) -> TimeInterval {
         guard let state else { return 0 }
