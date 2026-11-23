@@ -827,6 +827,20 @@ référence au prompt, **règle 2.31 inchangée**.
   relancé pour les deux variantes sur les mêmes 1 000 morceaux, avec la même règle de choix ;
   l'échantillon test (2 000) reste intact.
 
+**Essai 3 — dev, 2e passage (format objets, 23 nov. 2026)** : batches
+`msgbatch_01YPAjL4t51VHy3RQNWd4u7R` (`low`) et `msgbatch_01MVtz2LUNa84FfUSjFW5jTS` (`medium`),
+20/20 requêtes réussies chacun, **aucun `null`**.
+
+| Effort | Spearman énergie | Spearman positivité | Moyenne | Sortie / morceau | Coût |
+|---|---|---|---|---|---|
+| `low` | 0,291 | 0,347 | 0,319 | 16,2 tokens | 0,0053 $ |
+| `medium` | 0,300 | 0,345 | 0,323 | 39,4 tokens | 0,0110 $ |
+
+Choix par la règle écrite avant : `medium` ne gagne que 0,004 (< 0,02) → **`low`** (déjà dans
+`score_config.json`). Facteurs de rapprochement vers 0,5 choisis sur le dev (chiffre secondaire) :
+k = 0,45 (énergie), 0,50 (positivité). Test : `python ml/llm_check.py --part test --shrink 0.45
+0.50 --out data/llm_check_v3_test`.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
