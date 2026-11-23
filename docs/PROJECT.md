@@ -1309,6 +1309,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Le LLM ne reçoit que titres et artistes.
 - L'utilisateur peut tout voir, exporter, supprimer (FR13).
 - Pas de nom d'émotion affiché, pas de promesse médicale (NFR7).
+- **Revue des secrets (TODO 3.23, 23 nov.)** : aucun fichier de secrets suivi ni jamais commité
+  (`app/Harmony/Config.xcconfig`, `worker/.dev.vars`, `.env` ignorés ; `git log --all` ne les a
+  jamais vus) ; dans l'arbre et tout l'historique, 0 chaîne de forme clé (`sk-ant-…`, clés AWS,
+  GitHub, Slack, clés privées, `api_key`/`secret`/`token` suivis d'une valeur), seulement des valeurs
+  vides ou factices (`worker/.dev.vars.example`, `"test-key"` des tests du Worker). Build Release
+  neuf (iOS, 20 fichiers lus octet par octet) : 0 `sk-ant-`, `ANTHROPIC`, `ALLOWED_SPOTIFY_IDS`,
+  `client_secret`, clé privée, aucun `.xcconfig`/`.dev.vars`. L'`Info.plist` ne contient que le
+  Client ID Spotify (public par conception : PKCE, pas de secret client) et l'URL https du Worker.
+  À refaire avant chaque rendu (TODO « En continu »).
 - **Check-ins (modèle v2, §6.8)** : traités comme des données de santé ; stockés sur le téléphone,
   inclus dans l'export et la suppression totale, « Reset what Harmony learned » les efface. Au
   pilote, seuls des paires (probabilité, étiquette, jour d'utilisation) et des comptes sortent, avec

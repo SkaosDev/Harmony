@@ -194,7 +194,7 @@
 ### 3.QA
 - [x] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone. *(23 nov., iPhone 16 : 12 files, 0,28–0,37 s, médiane 0,34 s ; PROJECT.md §8.)*
 - [x] **3.22** Comportement sans montre, sans réseau, sans Spotify installé. — ✔ l'app ne plante jamais et le dit clairement. *(23 nov., iPhone 16 : FC coupée dans Santé, mode avion, Spotify déchargé ; messages en clair au lieu de l'erreur brute, relance de l'import sur l'écran de lancement, repli heure seule si Santé est illisible ; tableau en PROJECT.md §4.5. Nouveaux textes à faire relire par Cyprien.)*
-- [ ] **3.23** Revue sécurité : aucune clé dans le binaire ni dans Git. — ✔ `git grep` + recherche dans l'app compilée.
+- [x] **3.23** Revue sécurité : aucune clé dans le binaire ni dans Git. — ✔ `git grep` + recherche dans l'app compilée. *(23 nov. : arbre, historique complet et build Release propres ; seuls le Client ID Spotify (public, PKCE) et l'URL du Worker sont dans l'app ; PROJECT.md §11.)*
 - [ ] **3.24** Démo M3 au customer. — ✔ retours notés.
 
 ---
