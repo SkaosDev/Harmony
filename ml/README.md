@@ -18,6 +18,7 @@ Python code for the state model and the song scores.
 | `muse_download.py` | Downloads MuSe v3 (`muse_v3.csv`, Kaggle, CC BY 4.0) into `data/muse/`, checks its size against Kaggle and its SHA-256 against the recorded one (same file for everyone), then prints the columns and value ranges (aggregates only). Standard library only: `python ml/muse_download.py`. Results and decisions: `docs/PROJECT.md` §5.2. |
 | `normalize.py` | Normalizes song titles and artists for MuSe lookup (TODO 1.40); shared cases: `ml/fixtures/normalize_cases.json`. |
 | `muse_build.py` | Rebuilds the ignored local SQLite file (TODO 1.39): run `python ml/muse_download.py`, then `python ml/muse_build.py`; no database file is stored in Git. |
+| `llm_check.py`, `prompts/` | LLM song scores (TODO 2.29–2.30). `prompts/score.txt` (system prompt) and `prompts/score_config.json` (model, max tokens, output schema) are the single source read by the Worker and by this script; shared cases: `ml/fixtures/score_cases.json`. `python ml/llm_check.py` (needs `ANTHROPIC_API_KEY`) sends 2,000 MuSe titles and artists (never their scores) through the Batch API, keeps the batch in `data/llm_check/` (resumable) and prints aggregates only: correlation and error against MuSe, and the TODO 2.31 rule. Tests: `ml/tests/test_llm_check.py`. |
 | `requirements.txt` | Python dependencies. |
 
 Run:
@@ -26,7 +27,7 @@ Run:
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r ml/requirements.txt
 python ml/explore_d1.py --data /path/to/dataverse_files/D1
-python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures ml.tests.test_uci -v
+python -m unittest ml.tests.test_features ml.tests.test_normalize ml.tests.test_train ml.tests.test_export ml.tests.test_fixtures ml.tests.test_uci ml.tests.test_llm_check -v
 python ml/build_features.py --data data/emophone --out data/features
 python ml/train.py --features data/features
 ```
