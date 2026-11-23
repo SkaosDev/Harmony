@@ -39,12 +39,12 @@ struct TrackPickerTests {
         #expect(pick(0.5, library) == "a")
     }
 
-    @Test func llmScoresArePenalized() {
-        // "a" is exact but scored by the LLM (cost 0.1); "b" is 0.05 away, from MuSe.
-        let library = [candidate("a", energy: 0.5, origin: .llm), candidate("b", energy: 0.55)]
-        #expect(pick(0.5, library) == "b")
-        // 0.15 away from MuSe loses to an exact LLM score.
-        #expect(pick(0.5, [candidate("a", energy: 0.5, origin: .llm), candidate("b", energy: 0.65)]) == "a")
+    @Test func llmScoresAreNotPenalized() {
+        // "a" is exact and scored by the LLM; "b" is 0.05 away, from MuSe.
+        #expect(pick(0.5, [candidate("a", energy: 0.5, origin: .llm), candidate("b", energy: 0.55)]) == "a")
+        // Same energy: the origin does not count, the smaller ID wins.
+        #expect(pick(0.5, [candidate("a", energy: 0.5, origin: .llm), candidate("b", energy: 0.5)]) == "a")
+        #expect(pick(0.5, [candidate("a", energy: 0.5), candidate("b", energy: 0.5, origin: .llm)]) == "a")
     }
 
     @Test func neutralScoresAreUsedLast() {

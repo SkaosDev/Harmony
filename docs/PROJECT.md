@@ -136,6 +136,7 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
 | Décision 2.31 (23 nov. 2026) : scores LLM **utilisés** pour les morceaux absents de MuSe (MuSe → LLM → neutre), **par décision d'équipe malgré la règle non atteinte** | La référence MuSe est trop peu taguée pour juger le LLM (65 % des morceaux ont ≤ 3 tags ; sur les morceaux à 4–9 tags, l'accord monte à 0,39–0,44). Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
+| Décision du 23 nov. 2026 : **aucune pénalité** pour un score LLM dans le choix des morceaux (§8 ; l'ancienne règle mettait +0,1) | Toute pénalité fixe ne laissait que des morceaux MuSe dans les files : sur une vraie bibliothèque (2 045 titres, 233 dans MuSe, §5.2), un morceau MuSe est presque toujours à moins de 0,01 de la cible. Simulation (233 MuSe, 1 812 LLM, 2 000 files) : 0 % de morceaux LLM avec une pénalité de 0,1, 0,05 ou 0,02 ; 0,4 % avec 0,01 ; 90,5 % sans pénalité |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 | **Modèle d'état v2 (23 nov. 2026)** : A « modèle commun soigné » + B « Harmony apprend de toi » retenus ; C (HRV, respiration, température, lumière, bruit, modèles plus gros) écarté. Design : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` ; preuves : `docs/research/2026-11-23-modele-etat-v2/` | Plus de capacité ou plus d'entrées montre ne change presque rien ; les réponses de l'utilisateur sont le seul levier à gain important (design v2 §2–§3). Lignes D1–D9 ci-dessus et ci-dessous |
 | D4 : couche personnelle en mode **ombre** pendant le pilote (calculée et journalisée, ne pilote pas la file ; toutes les files en stratégie S1) ; mode **actif** pour la démo finale | Garde propre l'A/B « corps vs heure seule » (4.4) et mesure une vraie courbe d'apprentissage (design v2 §4.5, §4.6) |
@@ -1104,7 +1105,8 @@ Paramètres de départ (à ajuster au pilote) :
 - `n = 5` si |e0 − g| > 0,3, sinon 3 ; `m` = 2 morceaux « de correspondance » si n = 5, sinon 1.
 - Cibles : `m` fois `e0`, puis réparties régulièrement de `e0` à `g`.
 - Pour chaque cible : morceau de la bibliothèque le plus proche en énergie, avec pénalités
-  (+0,2 si positivité < 0,5 pour Stress/Low energy ; +0,3 artiste déjà dans la file ; +0,1 score LLM).
+  (+0,2 si positivité < 0,5 pour Stress/Low energy ; +0,3 artiste déjà dans la file ; aucune pour un
+  score LLM, décision du 23 nov. 2026, §3).
   Exclure les morceaux joués dans les 3 derniers jours et ceux passés 2 fois dans cette situation.
 - Si aucun morceau à moins de 0,15 de la cible et < 2 suggestions : morceau MuSe d'un artiste de la
   bibliothèque, sinon d'un genre de la bibliothèque (genres MuSe de ses morceaux, §5.2), ID vérifié
@@ -1120,7 +1122,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
   baisser l'énergie, Stress et Wind-down ne la font jamais monter. Si `e0` est déjà au-delà du but,
   le but devient `e0` et la file reste plate (3 morceaux à `e0`).
 - **Cibles** : `m` fois `e0`, puis `n − m` cibles régulières, la dernière exactement au but (« Goal »).
-- **Coût** = |énergie − cible| + 0,2 + 0,3 + 0,1 (pénalités ci-dessus ; « artiste » = premier artiste
+- **Coût** = |énergie − cible| + 0,2 + 0,3 (pénalités ci-dessus ; « artiste » = premier artiste
   normalisé). Un morceau n'apparaît qu'une fois par file. Les scores `neutral` ne servent que si
   aucun morceau MuSe/LLM n'est éligible (« utilisé en dernier », §7). Égalité : plus petit ID.
 - **Exclusions** : morceaux d'une file lancée dans les 72 h ; morceaux passés (< 30 s) 2 fois dans
