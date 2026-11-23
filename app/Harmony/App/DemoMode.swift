@@ -22,6 +22,12 @@ enum DemoMode {
         isOn ? DemoPlayback() : SpotifyRemote.shared
     }
 
+    /// Scores new songs: MuSe, then the LLM through the Worker (none in demo mode, TODO 2.34).
+    static func scorer(_ isOn: Bool) -> SongScorer? {
+        guard let muse = try? MuseCatalog.bundled() else { return nil }
+        return SongScorer(muse: muse, worker: isOn ? nil : WorkerClient.live())
+    }
+
     /// An in-memory store holding the demo library and its scores.
     static func container() throws -> ModelContainer {
         let container = try HarmonyStore.container(inMemory: true)

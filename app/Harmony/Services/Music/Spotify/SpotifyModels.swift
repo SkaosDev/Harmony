@@ -5,6 +5,8 @@ struct SpotifyPage<Item: Decodable>: Decodable {
     let items: [Item]
     /// Full URL of the next page; nil on the last one.
     let next: String?
+    /// Items in the whole list (import progress, TODO 3.16).
+    let total: Int?
 }
 
 /// An item of `GET /me/tracks`.

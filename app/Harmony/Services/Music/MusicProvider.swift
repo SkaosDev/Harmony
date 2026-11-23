@@ -8,6 +8,8 @@ protocol MusicProvider {
     /// The user's library (liked songs, top tracks, recently played), not yet inserted in the store.
     /// The same song can come back twice; `Track.spotifyId` is unique, so inserting merges them.
     func importLibrary() async throws -> [Track]
+    /// The same, telling how far it is: songs read so far, out of how many (TODO 3.16).
+    func importLibrary(progress: @escaping (_ done: Int, _ total: Int) -> Void) async throws -> [Track]
     /// Title, artists and cover of any song, in the library or not (checks a suggestion, TODO 3.6).
     /// Nil if the service has no song with this ID.
     func lookUp(spotifyId: String) async throws -> TrackInfo?
@@ -15,6 +17,15 @@ protocol MusicProvider {
     func play(spotifyIds: [String]) async throws
     /// Adds the song to the user's liked songs.
     func save(spotifyId: String) async throws
+}
+
+extension MusicProvider {
+    /// A provider that reads its library at once reports it when done.
+    func importLibrary(progress: @escaping (_ done: Int, _ total: Int) -> Void) async throws -> [Track] {
+        let tracks = try await importLibrary()
+        progress(tracks.count, tracks.count)
+        return tracks
+    }
 }
 
 /// A song as the music service describes it, without anything stored by the app.
