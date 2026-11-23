@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 /// The real music provider: the user's Spotify account (PROJECT.md §4.3, §9).
-/// Library through the Web API (TODO 1.23+); playback through App Remote later (TODO 3.10+).
+/// Library through the Web API (TODO 1.23+); playback through App Remote (TODO 3.10+).
 struct SpotifyProvider: MusicProvider {
     /// The app's provider, on the signed-in account.
     static let live = SpotifyProvider(auth: .shared, api: SpotifyAPI(auth: .shared))
@@ -61,8 +61,9 @@ struct SpotifyProvider: MusicProvider {
         }
     }
 
+    /// Through App Remote, in the Spotify app (TODO 3.11).
     func play(spotifyIds: [String]) async throws {
-        throw SpotifyError.notImplemented
+        try await SpotifyRemote.shared.start(spotifyIds: spotifyIds)
     }
 
     func save(spotifyId: String) async throws {

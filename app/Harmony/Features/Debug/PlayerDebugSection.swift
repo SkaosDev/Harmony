@@ -21,6 +21,12 @@ struct PlayerDebugSection: View {
                     run("Connected after waking Spotify") { try await remote.wake(playing: "spotify:track:\(song.spotifyId)") }
                 }
             }
+            if tracks.count >= 5 {
+                Button("Play the 5 latest library songs") {
+                    let ids = tracks.prefix(5).map(\.spotifyId)
+                    run("Playing 5 songs: check Spotify's queue") { try await remote.start(spotifyIds: ids) }
+                }
+            }
             if isWorking {
                 ProgressView()
             }

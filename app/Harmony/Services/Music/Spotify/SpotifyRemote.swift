@@ -7,7 +7,7 @@ import Foundation
 /// Connection: first with the Web API token (scope `app-remote-control`); App Remote only
 /// connects to a running Spotify app, so if that fails, Spotify is woken up on the first song
 /// (`authorizeAndPlayURI`) and comes back to `harmony://callback` with a token (`handle(_:)`).
-final class SpotifyRemote: NSObject {
+final class SpotifyRemote: NSObject, Playback {
     static let shared = SpotifyRemote(auth: .shared)
 
     enum Failure: Error, Equatable {
@@ -23,6 +23,8 @@ final class SpotifyRemote: NSObject {
     static let connectTimeout: Duration = .seconds(10)
     /// Longest wait for the Spotify app to open, play and come back.
     static let wakeTimeout: Duration = .seconds(60)
+
+    var onChange: ((PlaybackState) -> Void)?
 
     private let auth: SpotifyAuth
     private var connecting: CheckedContinuation<Void, Error>?
@@ -97,7 +99,85 @@ final class SpotifyRemote: NSObject {
     }
 
     private func didConnect() {
+        appRemote.playerAPI?.delegate = self
+        appRemote.playerAPI?.subscribe(toPlayerState: { @Sendable _, _ in })
         finishConnecting(.success(()))
+    }
+
+    // MARK: Playback (TODO 3.11)
+
+    /// Connects if needed, plays the first song and queues the others. If Spotify is not
+    /// running, it is woken up on the first song.
+    func start(spotifyIds: [String]) async throws {
+        guard let first = spotifyIds.first else { return }
+        let rest = spotifyIds.dropFirst()
+        if !appRemote.isConnected {
+            do {
+                try await connect()
+            } catch {
+                try await wake(playing: Self.uri(first))
+                for id in rest { try await command { $0.enqueueTrackUri(Self.uri(id), callback: $1) } }
+                return
+            }
+        }
+        try await command { $0.play(Self.uri(first), callback: $1) }
+        for id in rest { try await command { $0.enqueueTrackUri(Self.uri(id), callback: $1) } }
+    }
+
+    func pause() async throws {
+        try await command { $0.pause($1) }
+    }
+
+    func resume() async throws {
+        try await command { $0.resume($1) }
+    }
+
+    func skipToNext() async throws {
+        try await command { $0.skip(toNext: $1) }
+    }
+
+    /// With the last token (Web API or the one Spotify gave): App Remote drops the connection
+    /// when the app goes to the background (PROJECT.md §9).
+    func reconnect() async {
+        guard !appRemote.isConnected, appRemote.connectionParameters.accessToken != nil else { return }
+        try? await waitForConnection(timeout: Self.connectTimeout) { $0.appRemote.connect() }
+    }
+
+    func disconnect() {
+        // Not while Spotify is being woken up: the app is in the background on purpose.
+        guard appRemote.isConnected, connecting == nil else { return }
+        appRemote.disconnect()
+    }
+
+    nonisolated static func uri(_ spotifyId: String) -> String { "spotify:track:\(spotifyId)" }
+
+    nonisolated static func spotifyId(fromURI uri: String) -> String? {
+        let prefix = "spotify:track:"
+        return uri.hasPrefix(prefix) ? String(uri.dropFirst(prefix.count)) : nil
+    }
+
+    /// Sends a player command and waits for Spotify's answer.
+    private func command(_ send: (any SPTAppRemotePlayerAPI, @escaping SPTAppRemoteCallback) -> Void) async throws {
+        guard appRemote.isConnected, let api = appRemote.playerAPI else { throw Failure.connection("not connected") }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            send(api) { @Sendable _, error in
+                if let error {
+                    continuation.resume(throwing: Failure.command(error.localizedDescription))
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+}
+
+extension SpotifyRemote: SPTAppRemotePlayerStateDelegate {
+    nonisolated func playerStateDidChange(_ playerState: any SPTAppRemotePlayerState) {
+        let state = PlaybackState(spotifyId: Self.spotifyId(fromURI: playerState.track.uri),
+                                  position: Double(playerState.playbackPosition) / 1000,
+                                  duration: Double(playerState.track.duration) / 1000,
+                                  isPaused: playerState.isPaused)
+        Task { @MainActor in self.onChange?(state) }
     }
 }
 
