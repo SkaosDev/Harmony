@@ -12,7 +12,7 @@ describe("daily limit per user", () => {
   });
 
   it("returns 429 with Retry-After on request 51 of the day", async () => {
-    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[[0,50,50]]}'));
+    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[{"i":0,"e":50,"p":50}]}'));
     for (let i = 0; i < DAILY_LIMIT; i++) {
       expect((await call(scoreRequest({ songs: songs(1) }))).status).toBe(200);
     }
@@ -25,7 +25,7 @@ describe("daily limit per user", () => {
 
   it("does not limit another user", async () => {
     await env.LIMITS.put(today(), String(DAILY_LIMIT));
-    network.use(spotifyMe("bob"), anthropicAnswer('{"s":[[0,50,50]]}'));
+    network.use(spotifyMe("bob"), anthropicAnswer('{"s":[{"i":0,"e":50,"p":50}]}'));
     expect((await call(scoreRequest({ songs: songs(1) }))).status).toBe(200);
   });
 

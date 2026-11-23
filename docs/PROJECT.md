@@ -713,11 +713,13 @@ effort, schéma de sortie). Cas communs Python ↔ TypeScript :
   (Essai 1, Haiku 4.5 : sans réflexion, `max_tokens` 1 024.)
 - entrée compacte, une ligne par morceau : `index<TAB>titre<TAB>artiste1, artiste2` (caractères de
   contrôle → espace) ;
-- sortie en *structured output* (JSON garanti) : `{"s":[[index, énergie, positivité], …]}` en
-  **entiers 0–100**, divisés par 100 chez nous. « 50 = un morceau typique (la moitié des morceaux
+- sortie en *structured output* (JSON garanti) : `{"s":[{"i":index,"e":énergie,"p":positivité}, …]}`
+  en **entiers 0–100**, divisés par 100 chez nous (objets depuis l'essai 3 : le schéma impose les
+  trois clés, donc l'index ; essais 1–2 en triplets `[index, énergie, positivité]`, cf. leurs
+  commits). « 50 = un morceau typique (la moitié des morceaux
   en dessous) », pour coller à l'échelle en centiles de MuSe (§5.2) ;
-- lecture : pour chaque index, la paire n'est gardée que si exactement un triplet porte cet index
-  et que les deux valeurs sont des entiers 0–100, sinon `null` (→ neutre). Réponse coupée
+- lecture : pour chaque index, la paire n'est gardée que si exactement un objet porte cet index,
+  avec les seules clés `i`, `e`, `p`, et que les deux valeurs sont des entiers 0–100, sinon `null` (→ neutre). Réponse coupée
   (`stop_reason` ≠ `end_turn`) → échec de la requête.
 - Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot
   avec Haiku 4.5, ~0,0004 $ avec Haiku 5.5 (dix fois moins cher par token).
@@ -809,6 +811,21 @@ référence au prompt, **règle 2.31 inchangée**.
   et MAE en centiles < 0,25, chaque score jugé seul). Pas de retouche du prompt après.
 - Chiffres secondaires, sans effet sur la décision : Spearman par nombre de tags MuSe ; MAE des
   scores ramenés vers 0,5 (0,5 + k × (centile − 0,5)), k choisi sur le dev pour chaque score.
+
+**Essai 3 — dev, 1er passage et écart au protocole (23 nov. 2026)** : batches
+`msgbatch_014eCRhzR3iL7fYAab3Z7PRL` (`low`) et `msgbatch_01NjHLMNLe6f8rXTyp85k6Cy` (`medium`).
+- `low` : 4 requêtes sur 20 ont répondu des paires `[énergie, positivité]` sans index (copie du
+  format des lignes de référence), rejetées par la lecture stricte → **20 % de `null`**. Spearman
+  sur les 800 morceaux notés : énergie 0,279, positivité 0,370. `medium` : aucun `null`, 0,315 et
+  0,340 ; 3,4 fois plus de tokens de sortie (22,8 par morceau, réflexion comprise).
+- La règle de choix écrite avant (`medium` si + 0,02 de Spearman moyen) donnerait `low` (+ 0,003
+  pour `medium`), mais elle n'avait pas prévu une panne de format qui laisse 20 % des morceaux au
+  neutre (en production, tout un lot de 50).
+- Écart décidé avant de relancer : le schéma de sortie passe aux objets `{"i","e","p"}` (le schéma
+  ne permet pas d'imposer la longueur d'un tableau, mais impose des clés requises), donc l'index ne
+  peut plus manquer ; ~13 tokens de sortie par morceau au lieu de ~7, coût négligeable. Le dev est
+  relancé pour les deux variantes sur les mêmes 1 000 morceaux, avec la même règle de choix ;
+  l'échantillon test (2 000) reste intact.
 
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).

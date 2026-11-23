@@ -24,7 +24,7 @@ describe("POST /score authentication", () => {
   });
 
   it("lets an allowed user through", async () => {
-    network.use(spotifyMe("bob"), anthropicAnswer('{"s":[[0,50,50]]}'));
+    network.use(spotifyMe("bob"), anthropicAnswer('{"s":[{"i":0,"e":50,"p":50}]}'));
     expect((await call(scoreRequest({ songs: songs(1) }))).status).toBe(200);
   });
 });

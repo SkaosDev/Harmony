@@ -11,8 +11,9 @@ sample and raw answers are kept in --out (under data/, ignored by Git), so a rer
 
 The Cloudflare Worker (worker/src/prompt.ts) sends exactly the same request: system prompt
 ml/prompts/score.txt, settings ml/prompts/score_config.json, one line per song
-"index<TAB>title<TAB>artist1, artist2". The answer is {"s": [[index, energy, positivity], ...]}
-with integers 0-100, divided by 100 here. Shared cases: ml/fixtures/score_cases.json.
+"index<TAB>title<TAB>artist1, artist2". The answer is {"s": [{"i": index, "e": energy,
+"p": positivity}, ...]} with integers 0-100, divided by 100 here (objects since trial 3: the schema
+then forces the index; trials 1-2 used [index, energy, positivity] triples, see their commits). Shared cases: ml/fixtures/score_cases.json.
 """
 
 import argparse
@@ -81,23 +82,24 @@ def _score(value) -> bool:
 
 
 def parse_scores(text: str, count: int) -> list[dict | None]:
-    """{"energy", "positivity"} in 0..1 per song, or None when the answer has no single valid triple."""
+    """{"energy", "positivity"} in 0..1 per song, or None when the answer has no single valid item."""
     try:
-        triples = json.loads(text).get("s")
+        items = json.loads(text).get("s")
     except (ValueError, AttributeError):
         return [None] * count
-    if not isinstance(triples, list):
+    if not isinstance(items, list):
         return [None] * count
     found: dict[int, list] = {}
-    for triple in triples:
-        if isinstance(triple, list) and triple and isinstance(triple[0], int) \
-                and not isinstance(triple[0], bool) and 0 <= triple[0] < count:
-            found.setdefault(triple[0], []).append(triple)
+    for item in items:
+        i = item.get("i") if isinstance(item, dict) else None
+        if isinstance(i, int) and not isinstance(i, bool) and 0 <= i < count:
+            found.setdefault(i, []).append(item)
     result = []
     for i in range(count):
         matches = found.get(i, [])
-        ok = len(matches) == 1 and len(matches[0]) == 3 and _score(matches[0][1]) and _score(matches[0][2])
-        result.append({"energy": matches[0][1] / 100, "positivity": matches[0][2] / 100} if ok else None)
+        ok = len(matches) == 1 and set(matches[0]) == {"i", "e", "p"} \
+            and _score(matches[0]["e"]) and _score(matches[0]["p"])
+        result.append({"energy": matches[0]["e"] / 100, "positivity": matches[0]["p"] / 100} if ok else None)
     return result
 
 

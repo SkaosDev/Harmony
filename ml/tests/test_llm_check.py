@@ -83,7 +83,7 @@ class CheckTests(unittest.TestCase):
     def test_llm_scores_handles_failed_and_cut_requests(self):
         results = [
             {"custom_id": "chunk-000", "type": "succeeded", "stop_reason": "end_turn",
-             "text": json.dumps({"s": [[i, 10, 90] for i in range(50)]})},
+             "text": json.dumps({"s": [{"i": i, "e": 10, "p": 90} for i in range(50)]})},
             {"custom_id": "chunk-001", "type": "errored"},
             {"custom_id": "chunk-002", "type": "succeeded", "stop_reason": "max_tokens", "text": "{"},
         ]

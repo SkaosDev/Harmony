@@ -4,7 +4,7 @@ import { call, scoreRequest, songs } from "./helpers";
 import { anthropicAnswer, network, spotifyMe } from "./network";
 
 const answer = (count: number) =>
-  JSON.stringify({ s: Array.from({ length: count }, (_, i) => [i, i % 101, 100 - (i % 101)]) });
+  JSON.stringify({ s: Array.from({ length: count }, (_, i) => ({ i, e: i % 101, p: 100 - (i % 101) })) });
 
 describe("POST /score with the LLM", () => {
   it("returns 50 score pairs between 0 and 1 for 50 songs", async () => {
@@ -37,7 +37,7 @@ describe("POST /score with the LLM", () => {
   });
 
   it("returns null for songs the LLM did not score", async () => {
-    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[[0,20,30],[2,101,5]]}'));
+    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[{"i":0,"e":20,"p":30},{"i":2,"e":101,"p":5}]}'));
     const response = await call(scoreRequest({ songs: songs(3) }));
     expect(await response.json()).toEqual({ scores: [{ energy: 0.2, positivity: 0.3 }, null, null] });
   });
@@ -48,7 +48,7 @@ describe("POST /score with the LLM", () => {
   });
 
   it("returns 502 when the answer is cut", async () => {
-    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[[0,', { stopReason: "max_tokens" }));
+    network.use(spotifyMe("alice"), anthropicAnswer('{"s":[{"i":0,', { stopReason: "max_tokens" }));
     expect((await call(scoreRequest({ songs: songs(1) }))).status).toBe(502);
   });
 });

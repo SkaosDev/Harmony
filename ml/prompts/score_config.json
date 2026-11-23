@@ -8,10 +8,24 @@
       "s": {
         "type": "array",
         "items": {
-          "type": "array",
-          "items": {
-            "type": "integer"
-          }
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "integer"
+            },
+            "e": {
+              "type": "integer"
+            },
+            "p": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "i",
+            "e",
+            "p"
+          ],
+          "additionalProperties": false
         }
       }
     },

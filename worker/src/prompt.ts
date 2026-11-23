@@ -23,26 +23,31 @@ export function userMessage(songs: Song[]): string {
 const isScore = (value: unknown): value is number =>
   Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 100;
 
-/** Energy and positivity in 0..1 per song, or null when the answer has no single valid triple. */
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** Energy and positivity in 0..1 per song, or null when the answer has no single valid item. */
 export function parseScores(text: string, count: number): (Score | null)[] {
-  let triples: unknown;
+  let items: unknown;
   try {
-    triples = (JSON.parse(text) as { s?: unknown })?.s;
+    items = (JSON.parse(text) as { s?: unknown })?.s;
   } catch {
     return Array(count).fill(null);
   }
-  if (!Array.isArray(triples)) return Array(count).fill(null);
-  const found = new Map<number, unknown[][]>();
-  for (const triple of triples) {
-    if (Array.isArray(triple) && Number.isInteger(triple[0]) && triple[0] >= 0 && triple[0] < count) {
-      found.set(triple[0], [...(found.get(triple[0]) ?? []), triple]);
+  if (!Array.isArray(items)) return Array(count).fill(null);
+  const found = new Map<number, Record<string, unknown>[]>();
+  for (const item of items) {
+    const i = isObject(item) ? item.i : undefined;
+    if (typeof i === "number" && Number.isInteger(i) && i >= 0 && i < count) {
+      found.set(i, [...(found.get(i) ?? []), item as Record<string, unknown>]);
     }
   }
   return Array.from({ length: count }, (_, i) => {
     const matches = found.get(i) ?? [];
-    const [, energy, positivity] = matches[0] ?? [];
-    return matches.length === 1 && matches[0].length === 3 && isScore(energy) && isScore(positivity)
-      ? { energy: energy / 100, positivity: positivity / 100 }
+    const item = matches[0] ?? {};
+    const exactKeys = Object.keys(item).sort().join(",") === "e,i,p";
+    return matches.length === 1 && exactKeys && isScore(item.e) && isScore(item.p)
+      ? { energy: item.e / 100, positivity: item.p / 100 }
       : null;
   });
 }
