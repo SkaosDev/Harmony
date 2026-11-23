@@ -123,7 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
-| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Les deux font pire que la valeur neutre (§7) |
+| Décision 2.31 (23 nov. 2026) : scores LLM non utilisés, MuSe puis valeur neutre | Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
@@ -841,6 +841,35 @@ Choix par la règle écrite avant : `medium` ne gagne que 0,004 (< 0,02) → **`
 k = 0,45 (énergie), 0,50 (positivité). Test : `python ml/llm_check.py --part test --shrink 0.45
 0.50 --out data/llm_check_v3_test`.
 
+**Essai 3 — test (23 nov. 2026)** : batch `msgbatch_012GbFPRyyZ5ayDE2VTk6mpw`, 2 000 morceaux jamais
+vus, effort `low`, 40/40 requêtes réussies, aucun `null`. Tokens : 39 338 en entrée, 70 640 lus
+dans le cache (le prompt de référence), 32 360 en sortie (16,2 par morceau, réflexion comprise) ;
+**0,0104 $**.
+
+| Essai | Score | Spearman | MAE en centiles | Moyenne / ÉT LLM |
+|---|---|---|---|---|
+| 1 (Haiku 4.5, v1) | Énergie | 0,277 | 0,275 | 0,606 / 0,125 |
+| 1 | Positivité | 0,336 | 0,263 | 0,554 / 0,169 |
+| 2 (Haiku 5.5, v2) | Énergie | 0,279 | 0,273 | 0,476 / 0,237 |
+| 2 | Positivité | 0,324 | 0,266 | 0,444 / 0,232 |
+| 3 (Haiku 5.5, v3 + 48 références) | Énergie | 0,258 | 0,280 | 0,501 / 0,228 |
+| 3 | Positivité | 0,316 | 0,267 | 0,461 / 0,235 |
+
+Chiffres secondaires (sans effet sur la décision) : Spearman par nombre de tags MuSe — énergie
+0,18 (1 tag, n = 556), 0,20 (2–3), 0,39 (4–9), 0,26 (≥ 10, n = 187) ; positivité 0,19, 0,29, 0,44,
+0,50. Scores ramenés vers 0,5 avec les k du dev (0,45 ; 0,50) : MAE en centiles 0,238 et 0,233,
+sous la valeur neutre (0,250).
+
+**Décision sur l'essai 3 (TODO 2.31)** : même règle, mêmes échecs → **pas de scores LLM, MuSe puis
+valeur neutre 0,5**. Les morceaux de référence n'ont rien apporté sur le test (écart avec l'essai 2
+dans le bruit : erreur type ≈ 0,02). Trois essais, deux modèles, trois prompts donnent le même
+accord (0,26–0,34) : la limite vient de ce que le LLM reçoit (titre + artiste) et du bruit de MuSe,
+pas de la rédaction du prompt ; d'autres retouches du prompt ne sont pas prévues. Seule piste
+restante, à décider en équipe avec une nouvelle règle écrite avant et un nouveau tirage : utiliser
+les scores ramenés vers 0,5, qui font un peu mieux que le neutre (0,233–0,238 contre 0,250) mais
+restent proches du milieu. Le Worker est redéployé avec le prompt v3 (format objets, cache), non
+appelé par l'app.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
@@ -1026,6 +1055,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   faible → décision 2.31 : pas de scores LLM, MuSe puis neutre (§3, §7) ; 2.33/2.34 à redéfinir.
   Essai 2 (Haiku 5.5, prompt v2, nouveau tirage) : échelle corrigée, classement inchangé ;
   décision confirmée. Worker redéployé avec Haiku 5.5.
+  Essai 3 (48 morceaux de référence MuSe dans le prompt, dev/test, format de sortie en objets) :
+  0,258 et 0,316 sur le test → décision confirmée à nouveau ; pistes de prompt épuisées (§7).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
