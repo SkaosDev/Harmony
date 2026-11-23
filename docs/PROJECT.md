@@ -237,8 +237,8 @@ par `devicectl`) :
 | Sans Spotify | app Spotify déchargée (Réglages › Stockage) | « Can't play this » ; « Open Spotify » ouvre open.spotify.com dans Safari (vu par Clément, pas dans la console) |
 | Premier import impossible | code relu, pas reproduit sur l'iPhone | « Loading your library » montre « The import did not finish. » + le message et « Try again » au lieu d'une barre figée |
 
-Textes nouveaux à faire relire par Cyprien : les trois messages ci-dessus, « The import did not
-finish. … » et le bouton « Try again » de l'écran de lancement.
+Textes nouveaux (les trois messages ci-dessus, « The import did not finish. … » et le bouton
+« Try again » de l'écran de lancement) relus par Cyprien le 23 nov.
 
 ---
 
@@ -1395,11 +1395,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
   dans MuSe calculée comme l'écran Debug, recherche, « Refresh the import ») ; icône dessinée dans
   le canvas (`V2-Icone`) et validée par Clément, lancement sur `#121212`, portrait seulement ; file à
   l'écran 0,28–0,37 s après le tap (§8) ; messages en clair sans montre, sans réseau, sans Spotify
-  (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément.
+  (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément ; textes
+  relus par Cyprien.
 
 **Pas encore fait**
-- Relecture par Cyprien des textes de Library (3.19b, case à cocher ensuite) et des nouveaux
-  messages d'erreur (§4.5) ; démo M3 au customer (3.24).
+- Démo M3 au customer (3.24).
 - Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
   « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
   vérifiée). À corriger avant le pilote.
