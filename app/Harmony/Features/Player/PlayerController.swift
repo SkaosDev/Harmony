@@ -31,6 +31,8 @@ final class PlayerController {
     private(set) var problem: String?
     /// `QueueRecord.id` of the queue, also in its `FeedbackEvent`s.
     private(set) var queueId = UUID()
+    /// Time from the tap on a situation to this queue on screen (TODO 3.21, NFR3: < 2 s); set by Home.
+    var queueDelay: Duration?
 
     @ObservationIgnored private var playback: (any Playback)?
     @ObservationIgnored private var music: (any MusicProvider)?

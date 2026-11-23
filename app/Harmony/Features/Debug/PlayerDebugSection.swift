@@ -37,6 +37,9 @@ struct PlayerDebugSection: View {
                 Button("Play test queue (3 latest library songs)") { playTestQueue() }
             }
             LabeledContent("Phase", value: "\(player.phase)")
+            LabeledContent("Tap → queue on screen", value: player.queueDelay.map {
+                $0.formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 2)))
+            } ?? "–")
             if let index = player.currentIndex, let queue = player.queue {
                 LabeledContent("Song", value: "\(index + 1) / \(queue.entries.count)  \(queue.songs[index].title)")
             }

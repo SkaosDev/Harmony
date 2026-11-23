@@ -145,6 +145,7 @@ struct HomeView: View {
     }
 
     private func start(_ situation: Situation, museOnly: Bool = false) async {
+        let tap = ContinuousClock.now
         do {
             if state == nil { await computeState() }
             guard let state else { throw CocoaError(.featureUnsupported) }
@@ -156,6 +157,9 @@ struct HomeView: View {
                 problem = "No song fits this moment yet."
                 return
             }
+            // `play` shows the queue before its first wait (TODO 3.21).
+            player.queueDelay = ContinuousClock.now - tap
+            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue)")
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
             problem = UserMessage.text(for: error)
