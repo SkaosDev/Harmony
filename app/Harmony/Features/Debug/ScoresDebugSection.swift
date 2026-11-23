@@ -23,7 +23,8 @@ struct ScoresDebugSection: View {
                 LabeledContent("Library: \(origin.rawValue)", value: library.count { $0.origin == origin }, format: .number)
             }
             LabeledContent("Library: not scored", value: tracks.count - library.count, format: .number)
-            LabeledContent("MuSe coverage", value: percent(library.count { $0.origin == .muse }, of: tracks.count))
+            LabeledContent("MuSe coverage", value: LibraryFigures.museCoverage(tracks: tracks, scores: scores)
+                .map { $0.formatted(.percent.precision(.fractionLength(1))) } ?? "–")
             if let lastRun {
                 Text(lastRun).font(.caption)
             }
@@ -72,10 +73,6 @@ struct ScoresDebugSection: View {
     private func describe(_ score: SongScore) -> String {
         "E \(score.energy.formatted(.number.precision(.fractionLength(2)))) · "
             + "P \(score.positivity.formatted(.number.precision(.fractionLength(2)))) · \(score.origin.rawValue)"
-    }
-
-    private func percent(_ count: Int, of total: Int) -> String {
-        total == 0 ? "–" : (Double(count) / Double(total)).formatted(.percent.precision(.fractionLength(1)))
     }
 }
 #endif

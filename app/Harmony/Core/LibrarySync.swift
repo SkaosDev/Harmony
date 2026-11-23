@@ -62,7 +62,7 @@ final class LibrarySync {
             }
         } catch {
             print("Library import failed: \(error)")
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 

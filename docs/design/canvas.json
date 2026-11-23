@@ -145,6 +145,13 @@
    "w": 390,
    "x": 1410,
    "y": 2188
+  },
+  "V2-Icone.dc.html": {
+   "h": 1024,
+   "title": "0.1 App icon",
+   "w": 1024,
+   "x": 2820,
+   "y": 260
   }
  },
  "createdOnFiles": {
@@ -199,7 +206,8 @@
   "V2-Onb4-Sante.dc.html",
   "V2-Onb5-Import.dc.html",
   "V2-Reglages.dc.html",
-  "V2-Sante.dc.html"
+  "V2-Sante.dc.html",
+  "V2-Icone.dc.html"
  ],
  "pages": [],
  "title": "Harmony \u2014 brand identity + screens"

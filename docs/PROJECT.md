@@ -221,6 +221,25 @@ Harmony/
 └── data/                     EmoPhone, UC Irvine… (ignoré par Git)
 ```
 
+### 4.5 Sans montre, sans réseau, sans Spotify (TODO 3.22)
+
+Règle : l'app ne plante pas et dit ce qui se passe en une phrase (`Core/UserMessage.swift`), jamais
+l'erreur brute (qui reste dans la console). Hors ligne → « No internet connection. Check it and try
+again. » ; `429` trop long → « Spotify is busy. Try again in a minute. » ; le reste → « Something
+went wrong. Try again. ». Essais du 23 nov. sur l'iPhone 16 de Clément (build Debug, console lue
+par `devicectl`) :
+
+| Cas | Comment | Ce que montre l'app |
+|---|---|---|
+| Sans montre | lecture de la FC coupée dans Santé | badge « Watch not synced », file en 0,33 s en mode heure seule, raison limitée au moment de la journée |
+| Données Santé illisibles | test unitaire (`CurrentStateTests`) | même chose que sans montre (`CurrentState.computeOrTimeOnly`), au lieu de « Can't start the queue » |
+| Sans réseau | mode avion, Wi‑Fi coupé | la file s'affiche (données locales), puis « Can't play this » (`-1009` sur `POST /me/playlists`) ; ⟳ de Library et « Import again » : « Something went wrong » + message hors ligne ; retour du réseau → la lecture repart |
+| Sans Spotify | app Spotify déchargée (Réglages › Stockage) | « Can't play this » ; « Open Spotify » ouvre open.spotify.com dans Safari (vu par Clément, pas dans la console) |
+| Premier import impossible | code relu, pas reproduit sur l'iPhone | « Loading your library » montre « The import did not finish. » + le message et « Try again » au lieu d'une barre figée |
+
+Textes nouveaux (les trois messages ci-dessus, « The import did not finish. … » et le bouton
+« Try again » de l'écran de lancement) relus par Cyprien le 23 nov.
+
 ---
 
 ## 5. Les données
@@ -1128,6 +1147,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   médicaux) ; « calm » reste permis car il décrit la musique (design).
 - **Suggestion** : Wind-down de 21:00 à 04:59 ; Wake-up prioritaire (inconnu si la nuit l'est) ;
   `e0` brut jusqu'à 6.11.
+- **Temps du tap à la file (TODO 3.21, NFR3 : < 2 s)** : mesuré dans l'app du tap sur une
+  situation jusqu'à l'ouverture du lecteur avec la file (avant tout appel de lecture ; écran Debug
+  « Tap → queue on screen » et console). iPhone 16, bibliothèque de Clément (2 459 titres), état
+  « Body », 23 nov. : 12 files (3 par situation), **0,28 à 0,37 s, médiane 0,34 s**, plus
+  l'animation d'ouverture du lecteur (~0,35 s). Aucune de ces files n'a eu besoin du repli MuSe :
+  le pire cas, jusqu'à 15 `GET /tracks/{id}` à la suite (3 essais × 5 places), n'est pas mesuré.
+  La musique démarre ensuite, sans bloquer l'écran (playlist puis App Remote : ~3 s sur un essai).
 
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
@@ -1283,6 +1309,15 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Le LLM ne reçoit que titres et artistes.
 - L'utilisateur peut tout voir, exporter, supprimer (FR13).
 - Pas de nom d'émotion affiché, pas de promesse médicale (NFR7).
+- **Revue des secrets (TODO 3.23, 23 nov.)** : aucun fichier de secrets suivi ni jamais commité
+  (`app/Harmony/Config.xcconfig`, `worker/.dev.vars`, `.env` ignorés ; `git log --all` ne les a
+  jamais vus) ; dans l'arbre et tout l'historique, 0 chaîne de forme clé (`sk-ant-…`, clés AWS,
+  GitHub, Slack, clés privées, `api_key`/`secret`/`token` suivis d'une valeur), seulement des valeurs
+  vides ou factices (`worker/.dev.vars.example`, `"test-key"` des tests du Worker). Build Release
+  neuf (iOS, 20 fichiers lus octet par octet) : 0 `sk-ant-`, `ANTHROPIC`, `ALLOWED_SPOTIFY_IDS`,
+  `client_secret`, clé privée, aucun `.xcconfig`/`.dev.vars`. L'`Info.plist` ne contient que le
+  Client ID Spotify (public par conception : PKCE, pas de secret client) et l'URL https du Worker.
+  À refaire avant chaque rendu (TODO « En continu »).
 - **Check-ins (modèle v2, §6.8)** : traités comme des données de santé ; stockés sur le téléphone,
   inclus dans l'export et la suppression totale, « Reset what Harmony learned » les efface. Au
   pilote, seuls des paires (probabilité, étiquette, jour d'utilisation) et des comptes sortent, avec
@@ -1355,7 +1390,19 @@ suggéré automatiquement (modèle trop faible sur le stress).
   sous le titre au lieu d'être centrées. Tout vérifié sur l'iPhone 16 de Clément ; textes validés
   par Cyprien (3.20).
 
+- *Library, habillage et QA, 23 nov. 2026 (TODO 3.19b–3.23)* : onglet Library (`V2-Bibliotheque` :
+  morceaux importés, pastilles MUSE/Estimated, rien pour neutre ou pas encore noté, part trouvée
+  dans MuSe calculée comme l'écran Debug, recherche, « Refresh the import ») ; icône dessinée dans
+  le canvas (`V2-Icone`) et validée par Clément, lancement sur `#121212`, portrait seulement ; file à
+  l'écran 0,28–0,37 s après le tap (§8) ; messages en clair sans montre, sans réseau, sans Spotify
+  (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément ; textes
+  relus par Cyprien.
+
 **Pas encore fait**
+- Démo M3 au customer (3.24).
+- Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
+  « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
+  vérifiée). À corriger avant le pilote.
 - Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes

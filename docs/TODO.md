@@ -187,12 +187,14 @@
 - [x] **3.17** Accueil : 4 grands boutons, suggestion mise en avant (design : `V2-Accueil`, `V2-AccueilVide`). — ✔ ≤ 2 taps entre lancement et musique (NFR5). *(23 nov., iPhone 16 : ouverture de l'app puis tap sur une tuile → Spotify joue. Écart au design voulu par Clément : la grille sous le titre au lieu d'être centrée.)*
 - [x] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like (design : `V2-Lecture`, `V2-File`, `V2-LectureImpossible`). — ✔ conforme NFR6. *(23 nov., iPhone 16 : pochette Spotify non recadrée, logo vert officiel, « Play on Spotify », skip/like/remove, « Did it fit? », changement de file. Ajouts voulus par Clément : mini-lecteur au-dessus des onglets, pochettes dans « Up next », liste sous l'en-tête ; la file est jouée comme playlist « Harmony », voir PROJECT.md §9.)*
 - [x] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation (design : `V2-Reglages`, `V2-CompteSpotify`, `V2-Sante`, `V2-MesDonnees`, `V2-APropos`). — ✔ après suppression, toutes les tables sont vides (FR13). *(23 nov. : test `DataControlTests` (les 8 tables vides, jetons et clés effacés) + sur l'iPhone 16, export JSON et « Delete everything » → retour à l'onboarding. Écarts : liste des Réglages sous le titre, barre d'onglets visible dans les sous-pages.)*
+- [x] **3.19b** Bibliothèque (onglet Library, vide depuis 1.6) : titre « My library », logo Spotify, bouton « Refresh the import » (relance l'import comme « Import again » de 3.19), part de la bibliothèque trouvée dans MuSe (« N% found in MUSE. », même calcul que 2.35), recherche par titre ou artiste, liste des morceaux importés (pochette Spotify non modifiée, titre, artiste, pastille d'origine du score « MUSE » ou « Estimated ») (design : `V2-Bibliotheque`). À trancher avant de coder, le design ne le montre pas : pastille des morceaux au score neutre ou pas encore notés. — ✔ sur iPhone : autant de lignes que de `Track`, la recherche filtre, le pourcentage = celui de l'écran Debug, pochettes et logo conformes NFR6 ; textes relus par Cyprien. *(23 nov. : écran fait ; sur l'iPhone 16 de Clément, liste, recherche, pourcentage = Debug, pochettes et logo vérifiés. Textes relus par Cyprien le 23 nov.)*
+- [x] **3.19c** Habillage de l'app : icône (absente du design : la dessiner d'abord dans le canvas puis la copier dans `docs/design/`), écran de lancement système sur fond `#121212` (à vérifier : il est généré par défaut, donc clair si l'iPhone est en mode clair), iPhone en portrait seulement (écrans du design en 390 × 844 ; le projet autorise aujourd'hui le paysage). — ✔ icône visible sur l'écran d'accueil de l'iPhone ; pas d'écran blanc au lancement ; l'app ne pivote pas. *(23 nov. : icône dessinée dans le canvas et validée par Clément (`V2-Icone`, `AppIcon.svg`) ; lancement sur `#121212` (`UILaunchScreen` › `LaunchBackground`) ; portrait seulement. Vérifié sur l'iPhone 16 en mode clair : icône, aucun flash blanc, pas de rotation.)*
 - [x] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR. *(23 nov. : textes validés par Cyprien.)*
 
 ### 3.QA
-- [ ] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone.
-- [ ] **3.22** Comportement sans montre, sans réseau, sans Spotify installé. — ✔ l'app ne plante jamais et le dit clairement.
-- [ ] **3.23** Revue sécurité : aucune clé dans le binaire ni dans Git. — ✔ `git grep` + recherche dans l'app compilée.
+- [x] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone. *(23 nov., iPhone 16 : 12 files, 0,28–0,37 s, médiane 0,34 s ; PROJECT.md §8.)*
+- [x] **3.22** Comportement sans montre, sans réseau, sans Spotify installé. — ✔ l'app ne plante jamais et le dit clairement. *(23 nov., iPhone 16 : FC coupée dans Santé, mode avion, Spotify déchargé ; messages en clair au lieu de l'erreur brute, relance de l'import sur l'écran de lancement, repli heure seule si Santé est illisible ; tableau en PROJECT.md §4.5. Nouveaux textes relus par Cyprien.)*
+- [x] **3.23** Revue sécurité : aucune clé dans le binaire ni dans Git. — ✔ `git grep` + recherche dans l'app compilée. *(23 nov. : arbre, historique complet et build Release propres ; seuls le Client ID Spotify (public, PKCE) et l'URL du Worker sont dans l'app ; PROJECT.md §11.)*
 - [ ] **3.24** Démo M3 au customer. — ✔ retours notés.
 
 ---
@@ -250,28 +252,29 @@
 > **Build du pilote** (design §15, « collecte seule ») : à faire **avant la Phase 4** (pilote le
 > 7 déc.) : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.12 (réduit), 6.13 (réduit), 6.14 ; côté A :
 > 6.2–6.4 si prêts avant le 5 déc., 6.11 (rang seulement) si la file (3.2–3.3) existe.
-> Le reste (6.9, 6.11 branchement actif, 6.12b, 6.15) vient après le pilote. Le modèle commun est
+> Le reste (6.6b, 6.9, 6.11 branchement actif, 6.12b, 6.13 complet, 6.15) vient après le pilote. Le modèle commun est
 > figé pendant tout le pilote.
 
 ### 6.ML
 - [ ] **6.1** Groupes de validation déterministes dans `ml/train.py` (design §7, WP-0). — ✔ deux machines donnent les mêmes écarts-types ; PROJECT.md §6.5 mis à jour.
 - [ ] **6.2** Critères d'adoption v2 et valence écrits avant résultats (design §9). — ✔ notés dans PROJECT.md §3.
 - [ ] **6.3** Features v2 (17) + valence : CV D-1 + D-2, test unique D-3, décision selon 6.2. — ✔ chiffres dans PROJECT.md §6.5.
-- [ ] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat). — ✔ tests Python et Swift passent.
+- [ ] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat), puis `FeatureBuilder` et `StateEstimator` Swift en v3 (17 features + valence, S9). — ✔ tests Python et Swift passent.
 - [ ] **6.5** Simulation de la règle exacte de l'app (WP-B0) + fixtures de la couche personnelle et du rang. — ✔ hyper-paramètres et courbe notés dans PROJECT.md ; fixtures dans `ml/fixtures/`.
 
 ### 6.DESIGN
 - [ ] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.
+- [ ] **6.6b** Après le pilote, dessiner le reste du design §5.4 dans le canvas et le copier dans `docs/design/` : ligne « Energy right now? » sur `V2-Accueil`, feuille de check-in (énergie sur 7 crans avec repère « Last », agrément facultatif), paragraphe sur l'apprentissage local dans `V2-APropos` et, si retenu, l'indicateur « Harmony is learning your usual — N answers this week ». — ✔ README du design à jour, avant 6.9 et 6.13 complet.
 
 ### 6.APP
 - [ ] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.
 - [ ] **6.8** Couche personnelle (S2 ; énergie seulement au pilote, en mode ombre). — ✔ fixtures 6.5 à 1e-6.
 - [ ] **6.9** Ligne énergie + feuille de check-in (S4). — ✔ NFR5 tenu.
 - [ ] **6.10** Notifications à actions (S5). — ✔ réponse depuis l'écran verrouillé et la montre.
-- [ ] **6.11** Rang `e0` (S3) et branchement dans la file (S6). — ✔ tests de file.
+- [ ] **6.11** Rang `e0` (S3) et branchement de `e0`/`v0` dans la file, avec la raison de file tirée des réponses (S6). — ✔ tests de file.
 - [ ] **6.12** Journal de file + modes ombre/actif (S7a). — ✔ champs remplis pour chaque file.
 - [ ] **6.12b** Bandit S1/S2/S3, après le pilote (S7b). — ✔ probabilités ≥ 0,15 journalisées.
-- [ ] **6.13** Réglages, My Data, About, Debug (S8). — ✔ reset → b = 0.
+- [ ] **6.13** Étape d'onboarding des questions (avec la demande d'autorisation des notifications), Réglages (« Questions » on/off et plages horaires, « Reset what Harmony learned »), My Data (check-ins et leur durée de conservation), About, Debug (`b_E`, `b_V`, p commune vs personnelle) (S8 ; réduit au pilote : onboarding, « Questions », « Reset », check-ins dans My Data). — ✔ reset → b = 0 ; textes relus par Cyprien.
 
 ### 6.PILOTE
 - [ ] **6.14** Protocole et consentement incluant les check-ins (complète 4.1) ; demander à l'enseignant si un avis éthique est requis. — ✔ document dans `docs/`.

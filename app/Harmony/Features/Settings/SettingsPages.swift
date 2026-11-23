@@ -92,7 +92,7 @@ struct SpotifyAccountView: View {
             await library.run(music: try DemoMode.musicProvider(demoMode), scorer: DemoMode.scorer(demoMode), context: context)
             problem = library.problem
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 
@@ -102,7 +102,7 @@ struct SpotifyAccountView: View {
             library.forget()
             onboarded = false
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 
@@ -232,7 +232,7 @@ struct MyDataView: View {
             try DataControl.exportJSON(from: context).write(to: url, options: [.atomic, .completeFileProtection])
             export = ExportFile(url: url)
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 
@@ -242,7 +242,7 @@ struct MyDataView: View {
             library.forget()
             refresh()
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 

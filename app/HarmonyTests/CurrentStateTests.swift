@@ -18,9 +18,31 @@ private struct FixedProvider: HealthProvider {
     }
 }
 
+/// A health provider whose reads fail, as HealthKit can (TODO 3.22).
+@MainActor
+private struct FailingProvider: HealthProvider {
+    func requestConsent(_ signals: Set<HealthSignal>) async throws {}
+
+    func samples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] {
+        throw CocoaError(.fileReadUnknown)
+    }
+
+    func newSamples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] {
+        throw CocoaError(.fileReadUnknown)
+    }
+}
+
 /// TODO 2.22: the state now, from what a health provider returns (as the Debug screen does).
 @MainActor
 struct CurrentStateTests {
+    /// TODO 3.22: unreadable health data is the same as no watch: time of day only, never a
+    /// failed queue.
+    @Test func unreadableHealthDataGivesTheTimeOfDayEstimate() async throws {
+        let state = try await CurrentState.computeOrTimeOnly(provider: FailingProvider(), estimator: try StateEstimator.bundled())
+        #expect(state.estimate.mode == .timeOnly)
+        #expect((state.features["z_hr_30"] ?? nil) == nil)
+    }
+
     @Test func providerSamplesGiveTheGoldenFeaturesAndState() async throws {
         let estimator = try StateEstimator.bundled()
         for fixture in try StateFixtures.load().cases {

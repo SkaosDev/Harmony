@@ -29,4 +29,25 @@ struct CurrentState {
                                                nights: nights, calendar: calendar)
         return CurrentState(date: now, features: features, estimate: try estimator.estimate(features))
     }
+
+    /// `compute`, or, when the health data cannot be read, the same as a phone without a watch:
+    /// every watch feature unknown, so the time-of-day estimate (TODO 3.22).
+    static func computeOrTimeOnly(provider: any HealthProvider, estimator: StateEstimator, now: Date = .now,
+                                  calendar: Calendar = .current) async throws -> CurrentState {
+        do {
+            return try await compute(provider: provider, estimator: estimator, now: now, calendar: calendar)
+        } catch {
+            print("Health data not read, time of day only: \(error)")
+            return try await compute(provider: NoWatchData(), estimator: estimator, now: now, calendar: calendar)
+        }
+    }
+}
+
+/// No sample of any kind: what a phone without a watch gives.
+private struct NoWatchData: HealthProvider {
+    func requestConsent(_ signals: Set<HealthSignal>) async throws {}
+
+    func samples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] { [] }
+
+    func newSamples(_ signal: HealthSignal, since: Date) async throws -> [HealthSample] { [] }
 }
