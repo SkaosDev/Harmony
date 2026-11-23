@@ -12,6 +12,8 @@ struct HomeView: View {
     @Query private var scores: [SongScore]
     @State private var state: CurrentState?
     @State private var problem: String?
+    /// Why "Retry the import" failed (TODO 3.22).
+    @State private var importProblem: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -26,6 +28,11 @@ struct HomeView: View {
             Button("OK") { problem = nil }
         } message: {
             Text(problem ?? "")
+        }
+        .alert("The import did not finish", isPresented: .constant(importProblem != nil)) {
+            Button("OK") { importProblem = nil }
+        } message: {
+            Text(importProblem ?? "")
         }
     }
 
@@ -131,7 +138,7 @@ struct HomeView: View {
 
     private func computeState() async {
         do {
-            state = try await CurrentState.compute(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
+            state = try await CurrentState.computeOrTimeOnly(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
         } catch {
             print("State not computed: \(error)")
         }
@@ -151,13 +158,14 @@ struct HomeView: View {
             }
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 
     private func retryImport() async {
         guard let music = try? DemoMode.musicProvider(demoMode) else { return }
         await library.run(music: music, scorer: DemoMode.scorer(demoMode), context: context)
+        importProblem = library.problem
     }
 }
 

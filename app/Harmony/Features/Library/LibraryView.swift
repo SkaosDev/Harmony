@@ -93,7 +93,7 @@ struct LibraryView: View {
             await library.run(music: try DemoMode.musicProvider(demoMode), scorer: DemoMode.scorer(demoMode), context: context)
             problem = library.problem
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 }

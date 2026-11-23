@@ -172,7 +172,7 @@ struct OnboardingView: View {
             try await DemoMode.musicProvider(demoMode).signIn()
             step = 4
         } catch {
-            problem = "Spotify sign-in did not work: \(error)"
+            problem = "Spotify sign-in did not work. \(UserMessage.text(for: error))"
         }
     }
 
@@ -195,10 +195,10 @@ struct OnboardingView: View {
         do {
             await library.run(music: try DemoMode.musicProvider(demoMode), scorer: DemoMode.scorer(demoMode), context: context)
             if let failure = library.problem {
-                problem = "The import did not finish: \(failure)"
+                problem = "The import did not finish. \(failure)"
             }
         } catch {
-            problem = "\(error)"
+            problem = UserMessage.text(for: error)
         }
     }
 }
