@@ -17,7 +17,7 @@ enum DataControl {
     /// `UserDefaults` keys the app writes; deleting everything removes them.
     static var storedKeys: [String] {
         [LibrarySync.importDateKey, RootView.onboardedKey, SpotifyPlaylist.idKey]
-            + HealthSignal.allCases.map(HealthKitProvider.anchorKey)
+            + HealthSignal.allCases.map(HealthKitProvider.anchorKey) + PilotSchedule.keys
     }
 
     static func counts(in context: ModelContext) throws -> Counts {
@@ -67,7 +67,7 @@ enum DataControl {
     }
 
     /// Deletes everything (FR13): the 8 tables, the Spotify tokens (`signOut`), the HealthKit
-    /// anchors, the import date and the onboarding flag. The app then starts again at the
+    /// anchors, the import date, the onboarding flag and the pilot draw. The app then starts again at the
     /// onboarding.
     static func deleteAll(in context: ModelContext, defaults: UserDefaults = .standard,
                           signOut: () throws -> Void) throws {
