@@ -221,6 +221,25 @@ Harmony/
 └── data/                     EmoPhone, UC Irvine… (ignoré par Git)
 ```
 
+### 4.5 Sans montre, sans réseau, sans Spotify (TODO 3.22)
+
+Règle : l'app ne plante pas et dit ce qui se passe en une phrase (`Core/UserMessage.swift`), jamais
+l'erreur brute (qui reste dans la console). Hors ligne → « No internet connection. Check it and try
+again. » ; `429` trop long → « Spotify is busy. Try again in a minute. » ; le reste → « Something
+went wrong. Try again. ». Essais du 23 nov. sur l'iPhone 16 de Clément (build Debug, console lue
+par `devicectl`) :
+
+| Cas | Comment | Ce que montre l'app |
+|---|---|---|
+| Sans montre | lecture de la FC coupée dans Santé | badge « Watch not synced », file en 0,33 s en mode heure seule, raison limitée au moment de la journée |
+| Données Santé illisibles | test unitaire (`CurrentStateTests`) | même chose que sans montre (`CurrentState.computeOrTimeOnly`), au lieu de « Can't start the queue » |
+| Sans réseau | mode avion, Wi‑Fi coupé | la file s'affiche (données locales), puis « Can't play this » (`-1009` sur `POST /me/playlists`) ; ⟳ de Library et « Import again » : « Something went wrong » + message hors ligne ; retour du réseau → la lecture repart |
+| Sans Spotify | app Spotify déchargée (Réglages › Stockage) | « Can't play this » ; « Open Spotify » ouvre open.spotify.com dans Safari (vu par Clément, pas dans la console) |
+| Premier import impossible | code relu, pas reproduit sur l'iPhone | « Loading your library » montre « The import did not finish. » + le message et « Try again » au lieu d'une barre figée |
+
+Textes nouveaux à faire relire par Cyprien : les trois messages ci-dessus, « The import did not
+finish. … » et le bouton « Try again » de l'écran de lancement.
+
 ---
 
 ## 5. Les données
