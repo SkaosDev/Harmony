@@ -252,8 +252,8 @@ struct MyDataView: View {
     }
 }
 
-/// The iOS share sheet for the exported file.
-private struct ShareSheet: UIViewControllerRepresentable {
+/// The iOS share sheet for an exported file (also the pilot export of the Debug screen).
+struct ShareSheet: UIViewControllerRepresentable {
     let url: URL
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
