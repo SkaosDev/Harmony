@@ -202,9 +202,9 @@
 ## Phase 4 — Pilote et rapport final (7 déc. → fin du semestre)
 
 ### 4.A Préparer le pilote
-- [ ] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`.
-- [ ] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK.
-- [ ] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun.
+- [x] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`. *(23 nov. : `docs/pilot-protocol.md`, en anglais ; un seul participant, Clément, du 7 au 20 déc. (PROJECT.md §3) ; plan d'analyse fixé avant les données ; section check-ins laissée à 6.14.)*
+- [ ] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK. *(Sans objet : pilote à une personne, l'app est déjà sur l'iPhone de Clément ; décision de Clément, 23 nov.)*
+- [ ] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun. *(Sans objet : seul le compte de Clément, déjà autorisé ; décision de Clément, 23 nov.)*
 - [ ] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`.
 - [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié.
 
