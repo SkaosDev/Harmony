@@ -12,10 +12,13 @@ struct PillButton: View {
     var spotifyIcon = false
     /// The arrow after the title (`M4 12h16M14 6l6 6-6 6`, 20 pt).
     var arrow = false
+    /// A 20 pt icon before the title (e.g. `StrokeIcon.download`), stroke 2.
+    var icon: StrokeIcon?
     let action: () -> Void
 
     init(_ title: String, style: Style = .primary, spotifyIcon: Bool = false, arrow: Bool = false,
-         action: @escaping () -> Void) {
+         icon: StrokeIcon? = nil, action: @escaping () -> Void) {
+        self.icon = icon
         self.title = title
         self.style = style
         self.spotifyIcon = spotifyIcon
@@ -32,6 +35,11 @@ struct PillButton: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 18, height: 18)
+                        .accessibilityHidden(true)
+                }
+                if let icon {
+                    icon.stroke(foreground, style: StrokeIcon.style(2, size: 20))
+                        .frame(width: 20, height: 20)
                         .accessibilityHidden(true)
                 }
                 Text(title)

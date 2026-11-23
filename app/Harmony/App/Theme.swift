@@ -20,6 +20,8 @@ enum Theme {
     static let track = Color(hex: 0x4D4D4D)
     /// Destructive buttons.
     static let destructive = Color(hex: 0xE91429)
+    /// Lines between the rows of a card (`V2-CompteSpotify`, `V2-MesDonnees`).
+    static let divider = Color(hex: 0x333333)
     /// Background of "Now playing" (`V2-Lecture`).
     static let player = Color(hex: 0x191414)
 

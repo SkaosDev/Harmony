@@ -10,6 +10,8 @@ nonisolated struct StrokeIcon: Shape {
     /// `M5 13l4 4L19 7`
     static let check = StrokeIcon(lines: [[(5, 13), (9, 17), (19, 7)]])
     /// `M6 6l12 12M18 6L6 18`
+    /// `M12 3v13M6 10l6 6 6-6M4 21h16` ("Export as JSON").
+    static let download = StrokeIcon(lines: [[(12, 3), (12, 16)], [(6, 10), (12, 16), (18, 10)], [(4, 21), (20, 21)]])
     static let cross = StrokeIcon(lines: [[(6, 6), (18, 18)], [(18, 6), (6, 18)]])
 
     func path(in rect: CGRect) -> Path {
