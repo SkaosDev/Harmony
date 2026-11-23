@@ -9,7 +9,11 @@ final class QueueRecord {
     var situation: Situation
     /// Estimated state when the queue was built (e0), 0…1.
     var startEnergy: Double
+    /// Kind drawn for the pilot (TODO 4.4); `.body` outside the pilot.
     var kind: QueueKind
+    /// Estimate the queue really started from (a body day without recent heart rate falls back to
+    /// time only); nil for queues recorded before TODO 4.4.
+    var stateMode: QueueKind?
     /// The explanation shown to the user (fixed sentences, never an emotion word).
     var reason: String
     /// Unordered (SwiftData): sort by `QueueItem.position`. Deleted with the queue.
@@ -21,6 +25,7 @@ final class QueueRecord {
         situation: Situation,
         startEnergy: Double,
         kind: QueueKind,
+        stateMode: QueueKind? = nil,
         reason: String,
         items: [QueueItem]
     ) {
@@ -29,6 +34,7 @@ final class QueueRecord {
         self.situation = situation
         self.startEnergy = startEnergy
         self.kind = kind
+        self.stateMode = stateMode
         self.reason = reason
         self.items = items
     }

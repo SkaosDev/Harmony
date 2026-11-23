@@ -1,0 +1,100 @@
+{
+  "days" : 4,
+  "format" : "harmony-pilot-1",
+  "queues" : [
+    {
+      "day" : 1,
+      "events" : [
+        { "event" : "finish", "position" : 0, "seconds" : 200 },
+        { "event" : "skip", "position" : 1, "seconds" : 12 },
+        { "event" : "like", "position" : 2 },
+        { "event" : "finish", "position" : 2, "seconds" : 180 }
+      ],
+      "fit" : "yes",
+      "hour" : 8,
+      "items" : [
+        { "origin" : "muse", "position" : 0, "suggestion" : false },
+        { "origin" : "llm", "position" : 1, "suggestion" : false },
+        { "origin" : "muse", "position" : 2, "suggestion" : false }
+      ],
+      "kind" : "body",
+      "situation" : "wakeUp",
+      "stateMode" : "body"
+    },
+    {
+      "day" : 1,
+      "events" : [
+        { "event" : "finish", "position" : 0, "seconds" : 210 },
+        { "event" : "skip", "position" : 1, "seconds" : 8 },
+        { "event" : "skip", "position" : 2, "seconds" : 20 }
+      ],
+      "fit" : "no",
+      "hour" : 22,
+      "items" : [
+        { "origin" : "muse", "position" : 0, "suggestion" : false },
+        { "origin" : "muse", "position" : 1, "suggestion" : true },
+        { "origin" : "llm", "position" : 2, "suggestion" : false }
+      ],
+      "kind" : "body",
+      "situation" : "windDown",
+      "stateMode" : "body"
+    },
+    {
+      "day" : 2,
+      "events" : [
+        { "event" : "skip", "position" : 0, "seconds" : 5 },
+        { "event" : "finish", "position" : 1, "seconds" : 190 },
+        { "event" : "finish", "position" : 2, "seconds" : 230 }
+      ],
+      "hour" : 14,
+      "items" : [
+        { "origin" : "llm", "position" : 0, "suggestion" : false },
+        { "origin" : "neutral", "position" : 1, "suggestion" : false },
+        { "origin" : "muse", "position" : 2, "suggestion" : false }
+      ],
+      "kind" : "timeOnly",
+      "situation" : "lowEnergy",
+      "stateMode" : "timeOnly"
+    },
+    {
+      "day" : 3,
+      "events" : [
+        { "event" : "finish", "position" : 0, "seconds" : 200 },
+        { "event" : "finish", "position" : 1, "seconds" : 150 },
+        { "event" : "finish", "position" : 2, "seconds" : 170 }
+      ],
+      "fit" : "yes",
+      "hour" : 9,
+      "items" : [
+        { "origin" : "muse", "position" : 0, "suggestion" : false },
+        { "origin" : "muse", "position" : 1, "suggestion" : false },
+        { "origin" : "muse", "position" : 2, "suggestion" : true }
+      ],
+      "kind" : "timeOnly",
+      "situation" : "wakeUp",
+      "stateMode" : "timeOnly"
+    },
+    {
+      "day" : 4,
+      "events" : [
+        { "event" : "skip", "position" : 0, "seconds" : 3 },
+        { "event" : "finish", "position" : 1, "seconds" : 200 }
+      ],
+      "fit" : "no",
+      "hour" : 7,
+      "items" : [
+        { "origin" : "llm", "position" : 0, "suggestion" : false },
+        { "origin" : "muse", "position" : 1, "suggestion" : false },
+        { "origin" : "muse", "position" : 2, "suggestion" : false }
+      ],
+      "kind" : "body",
+      "situation" : "stress",
+      "stateMode" : "timeOnly"
+    }
+  ],
+  "watch" : {
+    "hours" : 92,
+    "hoursWithHR" : 60,
+    "nightsKnown" : 2
+  }
+}

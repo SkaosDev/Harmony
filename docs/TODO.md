@@ -202,23 +202,23 @@
 ## Phase 4 — Pilote et rapport final (7 déc. → fin du semestre)
 
 ### 4.A Préparer le pilote
-- [ ] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`.
-- [ ] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK.
-- [ ] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun.
-- [ ] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`.
-- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié.
+- [x] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`. *(23 nov. : `docs/pilot-protocol.md`, en anglais ; un seul participant, Clément, du 7 au 20 déc. (PROJECT.md §3) ; plan d'analyse fixé avant les données ; section check-ins laissée à 6.14.)*
+- [x] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK. *(Pilote à une personne, décision de Clément du 23 nov. : une seule installation, par Xcode sur l'iPhone 16 de Clément ; l'app y tourne, 23 nov.)*
+- [x] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun. *(Pilote à une personne, décision de Clément du 23 nov. : seul le compte de Clément, déjà dans le dashboard et la liste blanche du Worker ; connexion et scores LLM OK, 23 nov.)*
+- [x] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`. *(23 nov. : `Core/Pilot/PilotSchedule.swift`, blocs de 2 jours (7/7 sur 14 jours) ; `QueueRecord.kind` = type tiré, `stateMode` = estimation utilisée ; tests `PilotScheduleTests`, `QueueMakerTests`, `CurrentStateTests` ; test manuel de Clément sur l'iPhone 16 (pilote lancé dans Debug, files jouées, type lu dans Debug › Last queue) : OK. Migration de la base vérifiée sur simulateur et sur l'iPhone.)*
+- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié. *(23 nov., partiel : export `harmony-pilot-1` dans Debug › Pilot (`Core/Pilot/PilotExport.swift`), files, feedbacks et couverture montre, sans ID, titre, valeur santé ni date ; test contre `ml/fixtures/pilot_export_example.json`. Paires v2 et `PromptLog` : après 6.7/6.8.)*
 
 ### 4.B Mener et analyser
-- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes.
-- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » par type de file. — ✔ tableau de résultats.
-- [ ] **4.8** Fréquence du repli MuSe et taux de skip des suggestions. — ✔ chiffres notés.
-- [ ] **4.9** Couverture réelle des données montre (nuits inconnues, FC manquante). — ✔ chiffres notés.
+- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes. *(Liste du point du jour 7 dans `docs/pilot-protocol.md` §8.)*
+- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » par type de file. — ✔ tableau de résultats. *(Script prêt : `ml/pilot_analysis.py`, testé sur l'export synthétique ; chiffres après le pilote.)*
+- [ ] **4.8** Fréquence du repli MuSe et taux de skip des suggestions. — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
+- [ ] **4.9** Couverture réelle des données montre (nuits inconnues, FC manquante). — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
 
 ### 4.C Rapport et démo finale
-- [ ] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`.
-- [ ] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport.
-- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport.
-- [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe.
+- [x] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`. *(23 nov. : section Design de `docs/main.tex` (figure d'architecture, table des modules, répartition tirée de Git, à confirmer par l'équipe)  ; compilé avec tectonic, 10 pages.)*
+- [x] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport. *(23 nov. : section Use Cases, UC1–UC3  ; compilé avec tectonic.)*
+- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport. *(23 nov., partiel : modèle, scores, performances, limites, discussion ; résultats du pilote en `\tbd`.)*
+- [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe. *(Dépend de la couche personnelle, Phase 6.)*
 
 ---
 

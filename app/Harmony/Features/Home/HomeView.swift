@@ -144,15 +144,21 @@ struct HomeView: View {
         }
     }
 
+    /// The state is computed again at each tap: Home can stay open for hours (heart rate and time
+    /// of day). On a pilot time-only day the queue starts from the time of day only (TODO 4.4);
+    /// the badge keeps the real state.
     private func start(_ situation: Situation, museOnly: Bool = false) async {
         let tap = ContinuousClock.now
         do {
-            if state == nil { await computeState() }
+            await computeState()
             guard let state else { throw CocoaError(.featureUnsupported) }
+            let kind = PilotSchedule.stored()?.kind(on: state.date) ?? .body
+            let queueState = kind == .timeOnly ? try await CurrentState.timeOnly(estimator: StateEstimator.bundled(), now: state.date)
+                                               : state
             let music = try DemoMode.musicProvider(demoMode)
             let maker = QueueMaker(context: context, catalog: try? MuseCatalog.bundled(), music: music)
-            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: state)
-                                 : try await maker.prepare(situation, state: state)
+            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: queueState, kind: kind)
+                                 : try await maker.prepare(situation, state: queueState, kind: kind)
             guard !queue.entries.isEmpty else {
                 problem = "No song fits this moment yet."
                 return

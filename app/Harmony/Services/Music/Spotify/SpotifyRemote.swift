@@ -120,11 +120,13 @@ final class SpotifyRemote: NSObject, Playback {
 
     // MARK: Playback (TODO 3.11)
 
-    /// Puts the queue in the "Harmony" playlist, then plays it from its first song, shuffle and
-    /// repeat off. If Spotify is not running, it is woken up on the playlist.
+    /// Puts the queue in a new "Harmony" playlist, then plays it from its first song, shuffle and
+    /// repeat off. If Spotify is not running, it is woken up on the playlist. The older playlists
+    /// leave the library meanwhile, without holding up the music.
     func start(spotifyIds: [String]) async throws {
         guard let first = spotifyIds.first else { return }
         let uri = Self.playlistURI(try await playlist.fill(with: spotifyIds))
+        Task { await playlist.removeOthers() }
         if !appRemote.isConnected {
             do {
                 try await connect()

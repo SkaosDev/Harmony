@@ -2,10 +2,10 @@ import Foundation
 
 /// The private "Harmony" playlist that holds the queue being played (TODO 3.11, PROJECT.md §9).
 /// Spotify's own queue cannot be cleared through any API: every queue added to it stayed in front
-/// of the next ones. Each queue gets a new playlist instead, and App Remote plays it; the previous
-/// one leaves the library. A playlist whose songs were replaced was sometimes played with its
+/// of the next ones. Each queue gets a new playlist instead, and App Remote plays it; the older
+/// ones leave the library. A playlist whose songs were replaced was sometimes played with its
 /// former songs (test of 23 Nov.), while the Spotify app has to load a playlist it has never seen.
-/// Scopes `playlist-modify-private`, `user-library-modify`.
+/// Scopes `playlist-modify-private`, `playlist-modify-public`, `playlist-read-private`.
 struct SpotifyPlaylist {
     /// `UserDefaults` key of the current playlist's ID.
     static let idKey = "spotifyPlaylistId"
@@ -15,22 +15,40 @@ struct SpotifyPlaylist {
     let api: SpotifyAPI
     var defaults: UserDefaults = .standard
 
-    /// Makes a new playlist holding `spotifyIds`, in this order, and takes the previous one out of
-    /// the library; returns the new playlist's ID.
+    /// Makes a new playlist holding `spotifyIds`, in this order; returns its ID.
     func fill(with spotifyIds: [String]) async throws -> String {
-        let previous = defaults.string(forKey: Self.idKey)
         let id = try await create()
         try await replace(id, with: spotifyIds.map(SpotifyRemote.uri))
         defaults.set(id, forKey: Self.idKey)
-        if let previous {
-            do {
-                let uri = SpotifyRemote.playlistURI(previous)
-                try await api.delete("me/library?uris=\(uri.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? uri)")
-            } catch {
-                print("Previous Harmony playlist not removed: \(error)")
-            }
-        }
         return id
+    }
+
+    /// Takes every playlist of the app but the current one out of the library: `GET /me/playlists`,
+    /// then `DELETE /me/library`, 40 at a time (Spotify's maximum). Those a failed removal left
+    /// behind leave too. A playlist is the app's only if its name and its description are the
+    /// app's: the user may have a playlist called "Harmony".
+    func removeOthers() async {
+        do {
+            var ids: [String] = []
+            var next: String? = "me/playlists?limit=50"
+            while let url = next {
+                let page = try await api.get(url, as: SpotifyPage<Listed?>.self)
+                ids += page.items.compactMap { $0 }
+                    .filter { $0.name == Self.name && $0.description == Self.description }
+                    .map(\.id)
+                next = page.next
+            }
+            // Read only now: a newer queue may have started meanwhile.
+            let current = defaults.string(forKey: Self.idKey)
+            let uris = ids.filter { $0 != current }
+                .map { SpotifyRemote.playlistURI($0).addingPercentEncoding(withAllowedCharacters: .alphanumerics)! }
+            for start in stride(from: 0, to: uris.count, by: 40) {
+                try await api.delete("me/library?uris=\(uris[start..<min(start + 40, uris.count)].joined(separator: ","))")
+            }
+            print("Old Harmony playlists removed: \(uris.count)")
+        } catch {
+            print("Old Harmony playlists not removed: \(error)")
+        }
     }
 
     /// `DELETE /playlists/{id}/items`.
@@ -59,6 +77,13 @@ struct SpotifyPlaylist {
 
     private struct Created: Decodable {
         let id: String
+    }
+
+    /// A playlist of `GET /me/playlists` (Spotify may send null in place of one).
+    private struct Listed: Decodable {
+        let id: String
+        let name: String?
+        let description: String?
     }
 
     private struct Removal: Encodable {

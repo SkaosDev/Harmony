@@ -145,6 +145,7 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 | D7 : 3 stratégies de file par situation, S1 « progressif » (règle §8 actuelle), S2 « demi-pas », S3 « correspondance longue » ; à faire valider par le customer | Définies pour être implémentables telles quelles ; toutes partent de `e0` et respectent les règles §8 (design v2 §4.6) |
 | D9 : questions facultatives, désactivables, jamais bloquantes (N1, NFR5 ≤ 2 taps) | Besoin N1 « zéro effort » ; l'absence de réponse n'est jamais une réponse « basse » (design v2 §5.3) |
 | Périmètre du pilote « collecte seule » : couche personnelle en ombre, énergie seulement, 2 notifications/jour, aucun nouvel écran sur Home, file inchangée ; bandit, état 2-D et ligne énergie sur Home après le cours | Charge face à M3 (~3–4 jours après la simulation 6.5) ; le pilote mesure quand même la courbe commune vs personnelle sur de vrais utilisateurs Apple Watch (design v2 §15) |
+| Pilote à une personne : Clément, du 7 au 20 déc. 2026 (décision de Clément, 23 nov. 2026) ; protocole et consentement : `docs/pilot-protocol.md` (TODO 4.1) | Reste dans les 5 comptes Spotify ; appareil et compte déjà en place, donc 4.2 et 4.3 sans objet. Test de faisabilité seulement : participant développeur (pas d'aveugle), intervalles par bootstrap sur les **jours** et non sur les personnes ; plan d'analyse fixé avant les données |
 | LifeSnaps (Fitbit Sense, CC BY 4.0) = test externe secondaire seulement, jamais dans l'entraînement ; facultatif, après le cours (§5.5) | Signaux de nuit sans gain, effet de l'heure inversé par rapport à EmoPhone (design v2 §2) |
 
 ---
@@ -1156,6 +1157,21 @@ suggéré automatiquement (modèle trop faible sur le stress).
   l'animation d'ouverture du lecteur (~0,35 s). Aucune de ces files n'a eu besoin du repli MuSe :
   le pire cas, jusqu'à 15 `GET /tracks/{id}` à la suite (3 essais × 5 places), n'est pas mesuré.
   La musique démarre ensuite, sans bloquer l'écran (playlist puis App Remote : ~3 s sur un essai).
+  Mesure faite avant le recalcul de l'état à chaque tap (TODO 4.4), qui ajoute une estimation
+  (0,13–0,15 s, §12).
+- **Pilote (TODO 4.4–4.5, 23 nov. ; protocole `docs/pilot-protocol.md`)** : tirage par blocs de
+  2 jours (`Core/Pilot/PilotSchedule.swift`) : dans chaque bloc, l'ordre body / time only vient
+  d'une graine tirée au démarrage, le 2e jour prend l'autre type (7/7 sur 14 jours). Jour de
+  départ et graine dans UserDefaults (`pilot.startDay`, `pilot.seed`, effacés par « Delete
+  everything ») ; Debug › Pilot pour démarrer, arrêter, voir le jour et le type du jour. Un jour
+  « time only », la file part de `CurrentState.timeOnly` (heure seule, même si la montre a une FC
+  récente) ; le badge de Home garde l'état réel. L'état est recalculé à chaque tap (Home peut rester
+  ouvert des heures). `QueueRecord.kind` = type tiré (`.body` hors pilote), `QueueRecord.stateMode`
+  = estimation réellement utilisée (un jour body sans FC récente part de l'heure seule ; nil pour
+  les files d'avant). Export anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug ›
+  Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
+  `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Les paires v2 et les
+  comptes `PromptLog` (4.5) viendront avec 6.7/6.8, dans un nouveau format.
 
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
@@ -1181,7 +1197,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   lecture et file. Supprimé : `GET /tracks` (plusieurs titres d'un coup). Sauvegarder un titre :
   `PUT /me/library` avec des URI. `GET /me` ne renvoie plus e-mail ni pays. `GET /search` : 10
   résultats max par page.
-- **Scopes demandés** (TODO 1.22, tous accordés au test du 10 nov.) — un par usage :
+- **Scopes demandés** (TODO 1.22, tous accordés au test du 10 nov. ; les trois scopes de
+  playlist le 23 nov. : un jeton plus ancien ne les a pas, il faut se reconnecter, Debug › Spotify
+  › Disconnect puis Connect) — un par usage :
 
   | Scope | Pour | Testé |
   |---|---|---|
@@ -1190,7 +1208,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
   | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
   | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
-  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items` ; l'ancienne sort par `DELETE /me/library`) | oui (23 nov.) |
+  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items`) | oui (23 nov.) |
+  | `playlist-read-private` | `GET /me/playlists` : retrouver les anciennes playlists « Harmony » (privées) | oui (23 nov.) |
+  | `playlist-modify-public` | `DELETE /me/library` d'une playlist : sans lui, Spotify répond 403 (référence de l'API ; vu le 23 nov.) | oui (23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1234,8 +1254,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   iPhone du 23 nov. a montré que chaque file lancée y restait, devant les suivantes (7 files
   lancées : les morceaux des anciennes passaient avant ceux de la nouvelle, l'écran restait sur le
   premier titre, le morceau retiré passait quand même, « Did it fit? » n'arrivait jamais). Désormais
-  chaque file est une **nouvelle** playlist privée « Harmony » ; la précédente sort de la
-  bibliothèque (`DELETE /me/library?uris=spotify:playlist:…`). Une seule playlist réécrite à chaque
+  chaque file est une **nouvelle** playlist privée « Harmony » ; pendant que la musique démarre,
+  les anciennes sortent de la bibliothèque (`SpotifyPlaylist.removeOthers` : `GET /me/playlists`,
+  puis `DELETE /me/library?uris=spotify:playlist:…`, 40 par appel). Seules sortent celles dont le
+  nom **et** la description sont ceux de l'app (l'utilisateur peut avoir sa propre playlist
+  « Harmony ») ; une suppression ratée est rattrapée à la file suivante. Bug du 23 nov. corrigé le
+  même jour : le scope `playlist-modify-public` manquait (403 à chaque file) ; sur l'iPhone, après
+  reconnexion, 67 anciennes playlists sont sorties d'un coup, puis une par file. Une seule playlist réécrite à chaque
   file a été essayée d'abord (même jour) : au changement de file, l'app Spotify rejouait parfois
   l'ancien contenu de la playlist, d'où un morceau d'avant, une pochette qui ne correspondait pas et
   des redémarrages ; une playlist neuve, Spotify doit la charger. App Remote coupe ensuite
@@ -1400,11 +1425,20 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément ; textes
   relus par Cyprien.
 
+- *Pilote et rapport, 23 nov. 2026 (TODO 4.1, 4.4–4.12)* : protocole et consentement
+  (`docs/pilot-protocol.md`, un seul participant : Clément, du 7 au 20 déc., §3) ; tirage quotidien
+  body / time only par blocs de 2 jours et export anonyme dans Debug (§8) ; script d'analyse
+  `ml/pilot_analysis.py` testé sur un export synthétique ; rapport : sections Design (architecture,
+  modules, répartition des tâches tirée de Git), Use Cases et Evaluation and Discussion dans
+  `docs/main.tex` (résultats du pilote en `\tbd`). 4.2 et 4.3 cochées : une installation, un compte.
+- *Playlists « Harmony », 23 nov.* : l'ancienne playlist ne sortait pas de la bibliothèque (403,
+  scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
+  file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.
+
 **Pas encore fait**
 - Démo M3 au customer (3.24).
-- Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
-  « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
-  vérifiée). À corriger avant le pilote.
+- Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
+  rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
 - Pilote et modèle d'état v2 (Phase 6).
 
 ## 13. Risques et questions ouvertes
@@ -1413,7 +1447,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 |---|---|---|
 | Qui a un Mac ? (un seul MacBook Air déclaré) | Le développement iOS ne peut se faire que sur Mac | Décider tout de suite qui code l'app où |
 | HealthKit avec compte gratuit | Bloque la lecture sur un vrai iPhone | Acheter l'Apple Developer Program en premier |
-| Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Vérifier TestFlight vs. installation Xcode (UDID) avant M3 |
+| Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Sans objet : pilote à une personne, l'app est déjà sur l'iPhone de Clément (§3, 23 nov.) |
 | Spotify PKCE/App Remote | Bloque M1 | Prototype d'auth dès la première semaine |
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
 | Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurée (2.35) : 11,4 % sur 2 045 titres, 88,6 % notés par le LLM ; premier scoring 158 s → à lancer en arrière-plan à l'onboarding (3.16) |

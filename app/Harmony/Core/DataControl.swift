@@ -17,7 +17,7 @@ enum DataControl {
     /// `UserDefaults` keys the app writes; deleting everything removes them.
     static var storedKeys: [String] {
         [LibrarySync.importDateKey, RootView.onboardedKey, SpotifyPlaylist.idKey]
-            + HealthSignal.allCases.map(HealthKitProvider.anchorKey)
+            + HealthSignal.allCases.map(HealthKitProvider.anchorKey) + PilotSchedule.keys
     }
 
     static func counts(in context: ModelContext) throws -> Counts {
@@ -48,7 +48,8 @@ enum DataControl {
             },
             queues: try context.fetch(FetchDescriptor<QueueRecord>(sortBy: [SortDescriptor(\.createdAt)])).map { queue in
                 .init(id: queue.id, createdAt: queue.createdAt, situation: queue.situation.rawValue,
-                      startEnergy: queue.startEnergy, kind: queue.kind.rawValue, reason: queue.reason,
+                      startEnergy: queue.startEnergy, kind: queue.kind.rawValue, stateMode: queue.stateMode?.rawValue,
+                      reason: queue.reason,
                       items: queue.items.sorted { $0.position < $1.position }.map {
                           .init(position: $0.position, spotifyId: $0.spotifyId, targetEnergy: $0.targetEnergy,
                                 isSuggestion: $0.isSuggestion)
@@ -67,7 +68,7 @@ enum DataControl {
     }
 
     /// Deletes everything (FR13): the 8 tables, the Spotify tokens (`signOut`), the HealthKit
-    /// anchors, the import date and the onboarding flag. The app then starts again at the
+    /// anchors, the import date, the onboarding flag and the pilot draw. The app then starts again at the
     /// onboarding.
     static func deleteAll(in context: ModelContext, defaults: UserDefaults = .standard,
                           signOut: () throws -> Void) throws {
@@ -103,7 +104,8 @@ enum DataControl {
             let position: Int, spotifyId: String, targetEnergy: Double, isSuggestion: Bool
         }
         struct QueueRow: Encodable {
-            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, kind: String, reason: String
+            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, kind: String, stateMode: String?
+            let reason: String
             let items: [ItemRow]
         }
         struct FeedbackRow: Encodable {
