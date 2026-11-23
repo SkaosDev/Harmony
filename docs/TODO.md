@@ -151,7 +151,7 @@
 - [x] **2.31** Décider si le LLM est assez fiable (sinon : n'utiliser que MuSe + valeur neutre). — ✔ décision écrite.
 
 ### 2.APP-b Scores dans l'app (R/C)
-- [ ] **2.32** Embarquer `muse.sqlite` ; recherche par ID Spotify puis titre + premier artiste. — ✔ tests sur 20 cas (même normalisation que 1.40).
+- [x] **2.32** Embarquer `muse.sqlite` ; recherche par ID Spotify puis titre + premier artiste. — ✔ tests sur 20 cas (même normalisation que 1.40).
 - [ ] **2.33** `WorkerClient` : lots de 50, jeton Spotify dans l'en-tête. — ✔ test avec serveur simulé.
 - [ ] **2.34** `SongScorer` : MuSe → Worker → neutre, cache dans `SongScore`. — ✔ un morceau n'est jamais envoyé deux fois.
 - [ ] **2.35** Mesurer la couverture MuSe sur les bibliothèques de l'équipe. — ✔ % noté dans PROJECT.md §5.2.

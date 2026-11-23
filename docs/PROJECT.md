@@ -314,6 +314,19 @@ a réduit le fichier de 15 532 032 octets (table avec rowid, page 4 Kio) à 14 1
 sans suffire. Une compression exigeant une extension SQLite ou une représentation qui modifie le
 schéma nécessite une décision d'équipe avant d'être retenue.
 
+**Dans l'app (TODO 2.32, 23 nov. 2026)** — décision : la table est **versionnée** dans
+`app/Harmony/Resources/muse.sqlite` (14 155 776 octets, licence CC BY 4.0, crédit dans `README.md`
+et `app/README.md`), pour que tout clone construise l'app avec MuSe ; `data/` reste ignoré. Pour la
+régénérer : `python ml/muse_build.py --out app/Harmony/Resources/muse.sqlite` (même contenu que la
+copie de `data/muse/`, vérifié par empreinte des lignes). Lecture seule avec SQLite
+(`Core/Scoring/MuseCatalog.swift`) : d'abord `spotify_id` (jamais un ID vide), puis `match_key`
+calculée par `Core/Scoring/SongKey.swift`, portage Swift de `ml/normalize.py`. Vérifié : mêmes clés
+que Python sur les 31 cas partagés, sur les 89 269 lignes MuSe et sur chaque point de code Unicode
+(titre `a<c>b`). Le *case folding* de Foundation diffère de `casefold` de Python sur 181 points de
+code (cherokee, variantes cyrilliques U+1C80–U+1C88) : corrigé dans `SongKey`. À noter : comme en
+Python, l'apostrophe ASCII devient une espace mais l'apostrophe typographique `’` devient `'`, donc
+« Don’t » ne retrouve pas « Don't » (MuSe : 6 595 titres avec `'`, 62 avec `’`).
+
 ### 5.3 UC Irvine (test secondaire, autre marque)
 - Labbaf et al., Data in Brief 54 (2024), Dryad doi:10.7280/D1WH6T. 21 étudiants, Samsung + Oura.
   Les données brutes et les tables dérivées restent locales dans `data/`, même si le dépôt est CC0.

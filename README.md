@@ -156,7 +156,8 @@ latexmk -pdf main.tex
   dataset authors for this project. The data files must not be redistributed, so they
   stay in `data/` on team computers and are ignored by Git.
 - **UC Irvine** (Dryad, doi:10.7280/D1WH6T): same rule, kept in `data/`.
-- **MuSe** (Zenodo, doi:10.5281/zenodo.4281165, CC BY 4.0): may be redistributed;
-  the reduced table used by the app will live in `app/` once built.
+- **MuSe** (Akiki & Burghardt 2021, doi:10.5334/johd.33, v3 on Kaggle, CC BY 4.0): may be
+  redistributed with credit; the reduced table used by the app is versioned in
+  `app/Harmony/Resources/muse.sqlite` (built by `ml/muse_build.py`).
 
 Before each submission, check that `git ls-files data/` lists nothing but `data/README.md`.
