@@ -3,16 +3,16 @@
 **Source de vérité :** le canvas claude.ai « Harmony — brand identity + screens »
 https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319 (privé, compte de Clément).
 
-Ce dossier en est une **copie** (version `1794122035-ef17`, copiée le 8 nov. 2026) pour que toute
+Ce dossier en est une **copie** (version `1795420183-0ba4`, copiée le 23 nov. 2026) pour que toute
 l'équipe, et son Claude Code, puisse lire le design sans accès au canvas.
 L'app doit reproduire ces écrans **à l'identique** : couleurs, police, tailles, espacements,
 rayons, textes, icônes.
 
 ## Lire un écran
 
-- Un fichier `.dc.html` = un écran iPhone de 390 × 844 pt. Tout est en styles en ligne : les
-  valeurs exactes (px → pt, 1 pour 1) se lisent directement dans le fichier. Toujours partir du
-  fichier, jamais de mémoire ni du résumé ci-dessous.
+- Un fichier `.dc.html` = un écran iPhone de 390 × 844 pt (sauf l'icône, 1024 × 1024). Tout est
+  en styles en ligne : les valeurs exactes (px → pt, 1 pour 1) se lisent directement dans le
+  fichier. Toujours partir du fichier, jamais de mémoire ni du résumé ci-dessous.
 - Ces fichiers ont besoin du moteur du canvas (`support.js`, absent ici) pour s'afficher
   correctement : pour **voir** un écran, ouvrir le canvas ; pour **coder**, lire le fichier.
 - Les liens `<a href="V2-….dc.html">` donnent la navigation entre écrans.
@@ -22,6 +22,7 @@ rayons, textes, icônes.
 
 | Fichier | Titre | Tâche TODO |
 |---|---|---|
+| `V2-Icone.dc.html` | 0.1 App icon | 3.19c (copie SVG : `AppIcon.svg`) |
 | `V2-Main.dc.html` | 1.1 Launch | 3.16 |
 | `V2-Onb1-Bienvenue.dc.html` | 2.1 Welcome | 3.16 |
 | `V2-Onb2-Comment.dc.html` | 2.2 How it works | 3.16 |
