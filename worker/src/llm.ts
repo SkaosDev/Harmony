@@ -11,7 +11,10 @@ export async function scoreSongs(songs: Song[], apiKey: string): Promise<(Score 
     max_tokens: config.max_tokens,
     system: prompt,
     messages: [{ role: "user", content: userMessage(songs) }],
-    output_config: { format: { type: "json_schema", schema: config.output_schema } },
+    output_config: {
+      effort: config.effort as Anthropic.OutputConfig["effort"],
+      format: { type: "json_schema", schema: config.output_schema },
+    },
   });
   if (message.stop_reason !== "end_turn") throw new Error(`LLM stop_reason ${message.stop_reason}`);
   const text = message.content.find((block) => block.type === "text")?.text ?? "";

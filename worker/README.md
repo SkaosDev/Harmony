@@ -13,7 +13,7 @@ Needs Node 18+. From this folder:
 | `npm run check` | type-check (run `npm run types` after changing `wrangler.jsonc`) |
 
 `GET /health` answers `{"ok":true}`. `POST /score` scores up to 50 songs (titles and artists
-only) with Claude Haiku 4.5; the full contract (auth, limits, error codes) is in
+only) with Claude Haiku 5.5; the full contract (auth, limits, error codes) is in
 `docs/PROJECT.md` §7.1. The prompt is `ml/prompts/score.txt`, shared with `ml/llm_check.py`.
 
 ## Secrets

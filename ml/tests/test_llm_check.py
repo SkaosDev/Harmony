@@ -32,11 +32,13 @@ class SharedCasesTests(unittest.TestCase):
 class RequestTests(unittest.TestCase):
     def test_request_uses_the_shared_prompt_and_schema(self):
         params = L.request_params([{"title": "T", "artists": ["A"]}])
-        self.assertEqual(params["model"], "claude-haiku-4-5")
+        self.assertEqual(params["model"], "claude-haiku-5-5")
+        self.assertEqual(params["output_config"]["effort"], "low")     # few thinking tokens
         self.assertEqual(params["system"], L.load_prompt())
         self.assertEqual(params["messages"], [{"role": "user", "content": "0\tT\tA"}])
         self.assertEqual(params["output_config"]["format"]["schema"], L.load_config()["output_schema"])
-        self.assertNotIn("thinking", params)          # fewest tokens: Haiku 4.5 without thinking
+        self.assertNotIn("thinking", params)          # adaptive thinking (the default), set by effort
+        self.assertNotIn("temperature", params)       # sampling parameters are refused on Haiku 5.5
 
 
 def synthetic_db(path: Path, n: int = 120) -> None:

@@ -26,8 +26,9 @@ ROOT = Path(__file__).resolve().parents[1]
 PROMPTS = ROOT / "ml" / "prompts"
 _CONTROL = re.compile(r"[\x00-\x1f\x7f]+")
 BATCH = 50
-# Claude Haiku 4.5 through the Batch API: half of US$1 / US$5 per million input / output tokens.
-PRICE_IN, PRICE_OUT = 0.50 / 1e6, 2.50 / 1e6
+# Claude Haiku 5.5 through the Batch API: half of US$0.10 / US$0.50 per million input / output
+# tokens (prompts under 100K tokens). Output tokens include thinking.
+PRICE_IN, PRICE_OUT = 0.05 / 1e6, 0.25 / 1e6
 # TODO 2.31 rule, written before the run: a score is used only if both hold (PROJECT.md §7).
 RULE_SPEARMAN, RULE_MAE_PCT = 0.4, 0.25
 
@@ -60,7 +61,8 @@ def request_params(songs: list[dict]) -> dict:
         "max_tokens": config["max_tokens"],
         "system": load_prompt(),
         "messages": [{"role": "user", "content": user_message(songs)}],
-        "output_config": {"format": {"type": "json_schema", "schema": config["output_schema"]}},
+        "output_config": {"effort": config["effort"],
+                          "format": {"type": "json_schema", "schema": config["output_schema"]}},
     }
 
 

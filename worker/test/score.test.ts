@@ -32,7 +32,7 @@ describe("POST /score with the LLM", () => {
       max_tokens: config.max_tokens,
       system: prompt,
       messages: [{ role: "user", content: userMessage(songs(2)) }],
-      output_config: { format: { type: "json_schema", schema: config.output_schema } },
+      output_config: { effort: "low", format: { type: "json_schema", schema: config.output_schema } },
     });
   });
 

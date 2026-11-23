@@ -27,7 +27,7 @@ export function anthropicAnswer(
       id: "msg_test",
       type: "message",
       role: "assistant",
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-5-5",
       content: [{ type: "text", text }],
       stop_reason: stopReason,
       stop_sequence: null,

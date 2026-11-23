@@ -698,16 +698,19 @@ pilote mesurera (§13).
 5. **Contrôle hors ligne** : le même prompt sur 2 000 morceaux MuSe (scores cachés au LLM) →
    corrélation et erreur moyenne, via l'API Batch (moitié prix).
 
-LLM : **Claude Haiku 4.5 (`claude-haiku-4-5`)**, choix d'équipe du 23 nov. 2026 (le rapport
-`main.tex` cite encore Haiku 5.5, à mettre à jour par l'équipe). Attention : l'API est facturée à
-part de l'abonnement Claude Pro (compte Console + crédit à acheter).
+LLM : **Claude Haiku 5.5 (`claude-haiku-5-5`)**, comme dans le rapport. Essai 1 fait avec Claude
+Haiku 4.5 (choix d'équipe du 23 nov. 2026, abandonné le même jour après le contrôle ci-dessous).
+Attention : l'API est facturée à part de l'abonnement Claude Pro (compte Console + crédit à
+acheter).
 
 **Requête partagée (TODO 2.29)** — une seule source, lue par le Worker et par `ml/llm_check.py` :
-`ml/prompts/score.txt` (prompt système, ~150 tokens) et `ml/prompts/score_config.json` (modèle,
-`max_tokens` 1024, schéma de sortie). Cas communs Python ↔ TypeScript :
+`ml/prompts/score.txt` (prompt système) et `ml/prompts/score_config.json` (modèle, `max_tokens`,
+effort, schéma de sortie). Cas communs Python ↔ TypeScript :
 `ml/fixtures/score_cases.json`. Pour consommer le moins de tokens possible :
-- pas de réflexion (*thinking*, désactivée par défaut sur Haiku 4.5), pas de cache (le prompt est
-  sous le minimum de 4 096 tokens de Haiku 4.5) ;
+- Haiku 5.5 : réflexion (*thinking*) adaptative par défaut, limitée par `effort: "low"` ;
+  `max_tokens` 4 096 car la réflexion compte dedans ; pas de `temperature` (refusée) ; pas de cache
+  (prompt sous le minimum de 512 tokens). Un refus (`stop_reason: "refusal"`) = échec de la requête.
+  (Essai 1, Haiku 4.5 : sans réflexion, `max_tokens` 1 024.)
 - entrée compacte, une ligne par morceau : `index<TAB>titre<TAB>artiste1, artiste2` (caractères de
   contrôle → espace) ;
 - sortie en *structured output* (JSON garanti) : `{"s":[[index, énergie, positivité], …]}` en
@@ -716,9 +719,11 @@ part de l'abonnement Claude Pro (compte Console + crédit à acheter).
 - lecture : pour chaque index, la paire n'est gardée que si exactement un triplet porte cet index
   et que les deux valeurs sont des entiers 0–100, sinon `null` (→ neutre). Réponse coupée
   (`stop_reason` ≠ `end_turn`) → échec de la requête.
-- Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot.
+- Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot
+  avec Haiku 4.5, ~0,0004 $ avec Haiku 5.5 (dix fois moins cher par token).
 
-**Contrôle hors ligne (TODO 2.30, 23 nov. 2026)** — `python ml/llm_check.py` : 2 000 morceaux tirés
+**Essai 1 — contrôle hors ligne (TODO 2.30, 23 nov. 2026, Claude Haiku 4.5, prompt v1)** —
+`python ml/llm_check.py` : 2 000 morceaux tirés
 de `muse.sqlite` (graine 0), titres et artistes seulement, 40 requêtes Batch de 50 (batch
 `msgbatch_01QKvLVUu7B4pUDXrs9QC8Cu`). 40/40 réussies, aucune coupée, aucun `null`.
 Tokens réels : 42 434 en entrée, 12 320 en sortie (21,2 et 6,2 par morceau), **0,052 $** au prix
@@ -735,7 +740,7 @@ convertis en centiles, l'erreur est plus grande que celle de la valeur neutre 0,
 MuSe n'est pas une vérité parfaite (28,6 % des morceaux n'ont qu'un tag d'émotion, §5.2), donc
 la corrélation mesurée est un plancher de l'accord réel.
 
-**Décision (TODO 2.31, 23 nov. 2026)** — règle écrite avant le contrôle : un score n'est utilisé
+**Décision sur l'essai 1 (TODO 2.31, 23 nov. 2026)** — règle écrite avant le contrôle : un score n'est utilisé
 que si Spearman ≥ 0,4 **et** MAE après conversion en centiles < 0,25, chaque score jugé seul.
 Énergie (0,277 ; 0,275) et positivité (0,336 ; 0,263) échouent sur les deux critères → **le LLM
 n'est pas utilisé : MuSe, sinon valeur neutre 0,5 (`origin = neutral`)**. Pas de réglage du prompt
@@ -743,6 +748,19 @@ après coup pour passer la règle. Le Worker reste déployé mais l'app ne l'app
 2.33 (`WorkerClient`) et 2.34 (`SongScorer` : MuSe → Worker → neutre) sont à redéfinir en équipe.
 Un nouvel essai (autre modèle ou autre prompt) serait une nouvelle expérience, avec sa règle écrite
 avant, sur un autre tirage de MuSe.
+
+**Essai 2 — écrit avant de le lancer (23 nov. 2026)** : décision d'équipe de passer à Claude
+Haiku 5.5 avec un prompt v2 tiré des leçons de l'essai 1.
+- Leçons de l'essai 1 : (1) scores resserrés (écart-type 0,13–0,17 contre 0,29) malgré « use the
+  whole range » ; (2) énergie trop haute (moyenne 0,61 contre 0,50) ; (3) classement faible.
+- Prompt v2 (`ml/prompts/score.txt`) : décrit ce qui est noté comme les tags d'humeur que les
+  auditeurs donnent (source des scores MuSe : tags Last.fm) avec des mots pour chaque bout de
+  chaque échelle ; définit le score comme un rang centile dans un mélange large de genres, avec des
+  repères (« ~20 % sous 20, ~20 % au-dessus de 80 ») ; rappelle que beaucoup de morceaux sont plus
+  calmes et plus tristes que les tubes ; note chaque morceau seul (pas relativement aux autres
+  lignes du lot). Format d'entrée et de sortie inchangé.
+- Protocole : nouveau tirage de 2 000 morceaux (`--seed 1`, dossier `data/llm_check_v2/`), un seul
+  lancement, pas de retouche du prompt après avoir vu les résultats. Même règle qu'à l'essai 1.
 
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
