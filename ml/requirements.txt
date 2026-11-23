@@ -5,3 +5,5 @@ pandas>=2.2
 scikit-learn==1.5.2
 # Core ML export (ml/export.py --coreml): macOS only; 8.x reads scikit-learn 1.5.
 coremltools>=8,<9; sys_platform == "darwin"
+# LLM song-score check (ml/llm_check.py, TODO 2.30).
+anthropic==2.12.0

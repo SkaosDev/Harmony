@@ -45,7 +45,7 @@ real implementation and a **demo** one (synthetic data), so the app runs entirel
 | `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | to do |
 | `PlayerController` + `FeedbackStore` | playback, skip / like / "did it fit?" | to do |
 | `DataControl` | see, export, delete all data | to do |
-| Worker (`worker/`) | `POST /score`, Spotify-token auth, daily limit | to do |
+| Worker (`worker/`) | `POST /score`, Spotify-token auth, daily limit | done, deployed (Claude Haiku 5.5) |
 
 ### Data flow in one sentence
 

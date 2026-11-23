@@ -1,0 +1,5 @@
+# Copy to .dev.vars (ignored by Git) for `npm run dev`. Never commit real values.
+# Anthropic API key (Console). Never in the app or in Git.
+ANTHROPIC_API_KEY=
+# Spotify user IDs allowed to call /score, comma-separated (GET /v1/me -> "id").
+ALLOWED_SPOTIFY_IDS=

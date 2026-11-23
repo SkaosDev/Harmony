@@ -1,0 +1,37 @@
+{
+  "model": "claude-haiku-5-5",
+  "max_tokens": 8192,
+  "effort": "low",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "s": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "integer"
+            },
+            "e": {
+              "type": "integer"
+            },
+            "p": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "i",
+            "e",
+            "p"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "s"
+    ],
+    "additionalProperties": false
+  }
+}

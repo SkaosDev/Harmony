@@ -138,17 +138,17 @@
 - [x] **2.22** Écran Debug : features et état actuels. — ✔ valeurs visibles sur un vrai iPhone.
 
 ### 2.CLOUD Worker (C)
-- [ ] **2.23** Créer `worker/` (TypeScript, wrangler). — ✔ `wrangler dev` répond sur `/health`.
-- [ ] **2.24** Route `POST /score` : valide l'entrée (≤ 50 titres, champs texte courts). — ✔ tests : entrée invalide → 400.
-- [ ] **2.25** Authentification : jeton Spotify → `GET /v1/me` → ID dans la liste blanche. — ✔ jeton inconnu → 401.
-- [ ] **2.26** Appel LLM avec la clé en secret (`wrangler secret put`), réponse JSON validée. — ✔ 50 titres → 50 paires de scores entre 0 et 1.
-- [ ] **2.27** Limite par utilisateur et par jour. — ✔ dépassement → 429.
-- [ ] **2.28** Déployer. — ✔ URL publique répond ; clé absente du dépôt (`git grep` ne trouve rien).
+- [x] **2.23** Créer `worker/` (TypeScript, wrangler). — ✔ `wrangler dev` répond sur `/health`.
+- [x] **2.24** Route `POST /score` : valide l'entrée (≤ 50 titres, champs texte courts). — ✔ tests : entrée invalide → 400.
+- [x] **2.25** Authentification : jeton Spotify → `GET /v1/me` → ID dans la liste blanche. — ✔ jeton inconnu → 401.
+- [x] **2.26** Appel LLM avec la clé en secret (`wrangler secret put`), réponse JSON validée. — ✔ 50 titres → 50 paires de scores entre 0 et 1.
+- [x] **2.27** Limite par utilisateur et par jour. — ✔ dépassement → 429.
+- [x] **2.28** Déployer. — ✔ URL publique répond ; clé absente du dépôt (`git grep` ne trouve rien).
 
 ### 2.ML-d Contrôle du LLM (L)
-- [ ] **2.29** Écrire le prompt (2 nombres par morceau, JSON strict) dans `ml/prompts/score.txt`, partagé avec le Worker. — ✔ un seul fichier source.
-- [ ] **2.30** `ml/llm_check.py` : 2 000 morceaux MuSe via l'API Batch, scores cachés au LLM. — ✔ corrélation et erreur moyenne pour énergie et positivité.
-- [ ] **2.31** Décider si le LLM est assez fiable (sinon : n'utiliser que MuSe + valeur neutre). — ✔ décision écrite.
+- [x] **2.29** Écrire le prompt (2 nombres par morceau, JSON strict) dans `ml/prompts/score.txt`, partagé avec le Worker. — ✔ un seul fichier source.
+- [x] **2.30** `ml/llm_check.py` : 2 000 morceaux MuSe via l'API Batch, scores cachés au LLM. — ✔ corrélation et erreur moyenne pour énergie et positivité.
+- [x] **2.31** Décider si le LLM est assez fiable (sinon : n'utiliser que MuSe + valeur neutre). — ✔ décision écrite.
 
 ### 2.APP-b Scores dans l'app (R/C)
 - [ ] **2.32** Embarquer `muse.sqlite` ; recherche par ID Spotify puis titre + premier artiste. — ✔ tests sur 20 cas (même normalisation que 1.40).

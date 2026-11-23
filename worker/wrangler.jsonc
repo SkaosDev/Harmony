@@ -1,0 +1,16 @@
+// Harmony Worker: the only cloud part (PROJECT.md §7.1). Holds the LLM key, checks the Spotify
+// user, limits requests. Secrets (never here): ANTHROPIC_API_KEY, ALLOWED_SPOTIFY_IDS.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "harmony-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-23",
+  "compatibility_flags": ["nodejs_compat"],
+  // Daily request counter per Spotify user (TODO 2.27).
+  "kv_namespaces": [{ "binding": "LIMITS", "id": "c62fa1b3ed424e1d9f34594dd77ffb60" }],
+  "secrets": { "required": ["ANTHROPIC_API_KEY", "ALLOWED_SPOTIFY_IDS"] },
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  }
+}

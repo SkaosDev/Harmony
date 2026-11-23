@@ -123,6 +123,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
 | Pas de leader | Décision d'équipe |
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
+| Décision 2.31 (23 nov. 2026) : scores LLM **utilisés** pour les morceaux absents de MuSe (MuSe → LLM → neutre), **par décision d'équipe malgré la règle non atteinte** | La référence MuSe est trop peu taguée pour juger le LLM (65 % des morceaux ont ≤ 3 tags ; sur les morceaux à 4–9 tags, l'accord monte à 0,39–0,44). Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 
 ---
@@ -697,17 +698,219 @@ pilote mesurera (§13).
 5. **Contrôle hors ligne** : le même prompt sur 2 000 morceaux MuSe (scores cachés au LLM) →
    corrélation et erreur moyenne, via l'API Batch (moitié prix).
 
-LLM prévu : Claude Haiku 5.5 (`claude-haiku-5-5`), < 1 $ au total d'après l'estimation du
-rapport. Attention : l'API est facturée à part de l'abonnement Claude Pro (compte Console +
-crédit à acheter).
+LLM : **Claude Haiku 5.5 (`claude-haiku-5-5`)**, comme dans le rapport. Essai 1 fait avec Claude
+Haiku 4.5 (choix d'équipe du 23 nov. 2026, abandonné le même jour après le contrôle ci-dessous).
+Attention : l'API est facturée à part de l'abonnement Claude Pro (compte Console + crédit à
+acheter).
+
+**Requête partagée (TODO 2.29)** — une seule source, lue par le Worker et par `ml/llm_check.py` :
+`ml/prompts/score.txt` (prompt système) et `ml/prompts/score_config.json` (modèle, `max_tokens`,
+effort, schéma de sortie). Cas communs Python ↔ TypeScript :
+`ml/fixtures/score_cases.json`. Pour consommer le moins de tokens possible :
+- Haiku 5.5 : réflexion (*thinking*) adaptative par défaut, limitée par `effort: "low"` ;
+  `max_tokens` 4 096 car la réflexion compte dedans ; pas de `temperature` (refusée) ; pas de cache
+  (prompt sous le minimum de 512 tokens). Un refus (`stop_reason: "refusal"`) = échec de la requête.
+  (Essai 1, Haiku 4.5 : sans réflexion, `max_tokens` 1 024.)
+- entrée compacte, une ligne par morceau : `index<TAB>titre<TAB>artiste1, artiste2` (caractères de
+  contrôle → espace) ;
+- sortie en *structured output* (JSON garanti) : `{"s":[{"i":index,"e":énergie,"p":positivité}, …]}`
+  en **entiers 0–100**, divisés par 100 chez nous (objets depuis l'essai 3 : le schéma impose les
+  trois clés, donc l'index ; essais 1–2 en triplets `[index, énergie, positivité]`, cf. leurs
+  commits). « 50 = un morceau typique (la moitié des morceaux
+  en dessous) », pour coller à l'échelle en centiles de MuSe (§5.2) ;
+- lecture : pour chaque index, la paire n'est gardée que si exactement un objet porte cet index,
+  avec les seules clés `i`, `e`, `p`, et que les deux valeurs sont des entiers 0–100, sinon `null` (→ neutre). Réponse coupée
+  (`stop_reason` ≠ `end_turn`) → échec de la requête.
+- Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot
+  avec Haiku 4.5, ~0,0004 $ avec Haiku 5.5 (dix fois moins cher par token).
+
+**Essai 1 — contrôle hors ligne (TODO 2.30, 23 nov. 2026, Claude Haiku 4.5, prompt v1)** —
+`python ml/llm_check.py` : 2 000 morceaux tirés
+de `muse.sqlite` (graine 0), titres et artistes seulement, 40 requêtes Batch de 50 (batch
+`msgbatch_01QKvLVUu7B4pUDXrs9QC8Cu`). 40/40 réussies, aucune coupée, aucun `null`.
+Tokens réels : 42 434 en entrée, 12 320 en sortie (21,2 et 6,2 par morceau), **0,052 $** au prix
+Batch (~0,0026 $ par lot de 50 hors Batch).
+
+| Score | Pearson | Spearman | MAE brute | MAE en centiles | Moyenne / ÉT LLM | Moyenne / ÉT MuSe |
+|---|---|---|---|---|---|---|
+| Énergie | 0,275 | 0,277 | 0,245 | 0,275 | 0,606 / 0,125 | 0,502 / 0,286 |
+| Positivité | 0,339 | 0,336 | 0,232 | 0,263 | 0,554 / 0,169 | 0,501 / 0,288 |
+
+Lecture : le LLM range les morceaux un peu dans le même sens que MuSe, mais faiblement ; ses
+scores sont resserrés (écart-type 0,13–0,17 contre 0,29) et trop hauts en énergie. Une fois
+convertis en centiles, l'erreur est plus grande que celle de la valeur neutre 0,5 (0,25). Limite :
+MuSe n'est pas une vérité parfaite (28,6 % des morceaux n'ont qu'un tag d'émotion, §5.2), donc
+la corrélation mesurée est un plancher de l'accord réel.
+
+**Décision sur l'essai 1 (TODO 2.31, 23 nov. 2026)** — règle écrite avant le contrôle : un score n'est utilisé
+que si Spearman ≥ 0,4 **et** MAE après conversion en centiles < 0,25, chaque score jugé seul.
+Énergie (0,277 ; 0,275) et positivité (0,336 ; 0,263) échouent sur les deux critères → **le LLM
+n'est pas utilisé : MuSe, sinon valeur neutre 0,5 (`origin = neutral`)**. Pas de réglage du prompt
+après coup pour passer la règle. Le Worker reste déployé mais l'app ne l'appelle pas ; les tâches
+2.33 (`WorkerClient`) et 2.34 (`SongScorer` : MuSe → Worker → neutre) sont à redéfinir en équipe.
+Un nouvel essai (autre modèle ou autre prompt) serait une nouvelle expérience, avec sa règle écrite
+avant, sur un autre tirage de MuSe.
+
+**Essai 2 — écrit avant de le lancer (23 nov. 2026)** : décision d'équipe de passer à Claude
+Haiku 5.5 avec un prompt v2 tiré des leçons de l'essai 1.
+- Leçons de l'essai 1 : (1) scores resserrés (écart-type 0,13–0,17 contre 0,29) malgré « use the
+  whole range » ; (2) énergie trop haute (moyenne 0,61 contre 0,50) ; (3) classement faible.
+- Prompt v2 (`ml/prompts/score.txt`) : décrit ce qui est noté comme les tags d'humeur que les
+  auditeurs donnent (source des scores MuSe : tags Last.fm) avec des mots pour chaque bout de
+  chaque échelle ; définit le score comme un rang centile dans un mélange large de genres, avec des
+  repères (« ~20 % sous 20, ~20 % au-dessus de 80 ») ; rappelle que beaucoup de morceaux sont plus
+  calmes et plus tristes que les tubes ; note chaque morceau seul (pas relativement aux autres
+  lignes du lot). Format d'entrée et de sortie inchangé.
+- Protocole : nouveau tirage de 2 000 morceaux (`--seed 1`, dossier `data/llm_check_v2/`), un seul
+  lancement, pas de retouche du prompt après avoir vu les résultats. Même règle qu'à l'essai 1.
+
+**Essai 2 — résultats (23 nov. 2026)** : batch `msgbatch_01PUDVqh21SKGjp8K5Y5q3Tc`, 40/40 requêtes
+réussies, aucune coupée, aucun `null`. Tokens : 64 777 en entrée, 14 360 en sortie, réflexion
+comprise (32,4 et 7,2 par morceau), **0,0068 $** au prix Batch.
+
+| Essai | Score | Pearson | Spearman | MAE brute | MAE en centiles | Moyenne / ÉT LLM | Moyenne / ÉT MuSe |
+|---|---|---|---|---|---|---|---|
+| 1 (Haiku 4.5, v1, graine 0) | Énergie | 0,275 | 0,277 | 0,245 | 0,275 | 0,606 / 0,125 | 0,502 / 0,286 |
+| 1 | Positivité | 0,339 | 0,336 | 0,232 | 0,263 | 0,554 / 0,169 | 0,501 / 0,288 |
+| 2 (Haiku 5.5, v2, graine 1) | Énergie | 0,280 | 0,279 | 0,254 | 0,273 | 0,476 / 0,237 | 0,510 / 0,288 |
+| 2 | Positivité | 0,324 | 0,324 | 0,251 | 0,266 | 0,444 / 0,232 | 0,504 / 0,290 |
+
+Lecture : le prompt v2 a corrigé ce qu'il visait, l'échelle (écart-type 0,24 au lieu de 0,13–0,17,
+plus de biais d'énergie) ; il n'a pas changé le classement (Spearman 0,28 et 0,32, comme à
+l'essai 1). Deux modèles et deux prompts donnent le même accord : la limite semble venir de
+l'information disponible (titre + artiste) et de la référence (tags MuSe bruités), pas du prompt.
+Haiku 5.5 coûte 7,6 fois moins cher que Haiku 4.5 pour ce contrôle.
+
+**Décision sur l'essai 2 (TODO 2.31)** : même règle, mêmes échecs (énergie 0,279 ; 0,273 —
+positivité 0,324 ; 0,266) → la décision de l'essai 1 est confirmée : **pas de scores LLM, MuSe puis
+valeur neutre 0,5**. Le Worker reste déployé (Haiku 5.5, prompt v2), non appelé par l'app.
+
+**Essai 3 — écrit avant de le lancer (23 nov. 2026)** : décision d'équipe d'ajouter des morceaux de
+référence au prompt, **règle 2.31 inchangée**.
+- Diagnostic des essais 1–2 (agrégats sur les 4 000 morceaux) : l'accord monte avec le nombre de
+  tags MuSe (Spearman énergie / positivité 0,21 / 0,28 sur 1 tag, 0,38 / 0,47–0,49 sur ≥ 10 tags ;
+  65 % des morceaux ont ≤ 3 tags) ; dans un même genre, le classement est faible (0,15–0,39) ;
+  dans MuSe l'énergie et la positivité vont ensemble (corrélation 0,35–0,38), pas chez le LLM. Par
+  simulation, une MAE en centiles < 0,25 demande un Spearman ≈ 0,42 : les deux critères de la
+  règle demandent en pratique la même chose.
+- Prompt v3 = v2 + **48 morceaux de référence** avec leurs scores MuSe (0–100).
+  `python ml/llm_anchors.py` (graine 0) prend, dans chaque case d'une grille 4 × 4 des quartiles
+  énergie × positivité, 3 morceaux MuSe avec ≥ 10 tags (référence fiable), de genres différents
+  dans la case et d'artistes tous différents. Liste non retouchée à la main (un test vérifie que
+  le prompt contient exactement la sortie du script). MuSe est sous CC BY 4.0 (cité dans le script).
+- Le prompt (~900 tokens) dépasse le minimum de cache de Haiku 5.5 (512) : prompt système mis en
+  cache (`cache_control`) dans le Worker et dans le contrôle. `max_tokens` 8 192 (plafond ; la
+  réflexion compte dedans).
+- Échantillons : un tirage (graine 2) parmi les morceaux MuSe hors morceaux de référence et hors
+  échantillons des essais 1–2 ; les 1 000 premiers = **dev**, les 2 000 suivants = **test**,
+  disjoints par construction (test unitaire).
+- Dev : deux variantes, effort `low` et `medium`. `medium` n'est gardé que si la moyenne de ses
+  deux Spearman dépasse celle de `low` d'au moins 0,02 ; sinon `low` (moins cher, plus rapide).
+  Le choix est écrit dans `score_config.json` et commité avant le test.
+- Test : un seul lancement avec la variante choisie et la règle 2.31 telle quelle (Spearman ≥ 0,4
+  et MAE en centiles < 0,25, chaque score jugé seul). Pas de retouche du prompt après.
+- Chiffres secondaires, sans effet sur la décision : Spearman par nombre de tags MuSe ; MAE des
+  scores ramenés vers 0,5 (0,5 + k × (centile − 0,5)), k choisi sur le dev pour chaque score.
+
+**Essai 3 — dev, 1er passage et écart au protocole (23 nov. 2026)** : batches
+`msgbatch_014eCRhzR3iL7fYAab3Z7PRL` (`low`) et `msgbatch_01NjHLMNLe6f8rXTyp85k6Cy` (`medium`).
+- `low` : 4 requêtes sur 20 ont répondu des paires `[énergie, positivité]` sans index (copie du
+  format des lignes de référence), rejetées par la lecture stricte → **20 % de `null`**. Spearman
+  sur les 800 morceaux notés : énergie 0,279, positivité 0,370. `medium` : aucun `null`, 0,315 et
+  0,340 ; 3,4 fois plus de tokens de sortie (22,8 par morceau, réflexion comprise).
+- La règle de choix écrite avant (`medium` si + 0,02 de Spearman moyen) donnerait `low` (+ 0,003
+  pour `medium`), mais elle n'avait pas prévu une panne de format qui laisse 20 % des morceaux au
+  neutre (en production, tout un lot de 50).
+- Écart décidé avant de relancer : le schéma de sortie passe aux objets `{"i","e","p"}` (le schéma
+  ne permet pas d'imposer la longueur d'un tableau, mais impose des clés requises), donc l'index ne
+  peut plus manquer ; ~13 tokens de sortie par morceau au lieu de ~7, coût négligeable. Le dev est
+  relancé pour les deux variantes sur les mêmes 1 000 morceaux, avec la même règle de choix ;
+  l'échantillon test (2 000) reste intact.
+
+**Essai 3 — dev, 2e passage (format objets, 23 nov. 2026)** : batches
+`msgbatch_01YPAjL4t51VHy3RQNWd4u7R` (`low`) et `msgbatch_01MVtz2LUNa84FfUSjFW5jTS` (`medium`),
+20/20 requêtes réussies chacun, **aucun `null`**.
+
+| Effort | Spearman énergie | Spearman positivité | Moyenne | Sortie / morceau | Coût |
+|---|---|---|---|---|---|
+| `low` | 0,291 | 0,347 | 0,319 | 16,2 tokens | 0,0053 $ |
+| `medium` | 0,300 | 0,345 | 0,323 | 39,4 tokens | 0,0110 $ |
+
+Choix par la règle écrite avant : `medium` ne gagne que 0,004 (< 0,02) → **`low`** (déjà dans
+`score_config.json`). Facteurs de rapprochement vers 0,5 choisis sur le dev (chiffre secondaire) :
+k = 0,45 (énergie), 0,50 (positivité). Test : `python ml/llm_check.py --part test --shrink 0.45
+0.50 --out data/llm_check_v3_test`.
+
+**Essai 3 — test (23 nov. 2026)** : batch `msgbatch_012GbFPRyyZ5ayDE2VTk6mpw`, 2 000 morceaux jamais
+vus, effort `low`, 40/40 requêtes réussies, aucun `null`. Tokens : 39 338 en entrée, 70 640 lus
+dans le cache (le prompt de référence), 32 360 en sortie (16,2 par morceau, réflexion comprise) ;
+**0,0104 $**.
+
+| Essai | Score | Spearman | MAE en centiles | Moyenne / ÉT LLM |
+|---|---|---|---|---|
+| 1 (Haiku 4.5, v1) | Énergie | 0,277 | 0,275 | 0,606 / 0,125 |
+| 1 | Positivité | 0,336 | 0,263 | 0,554 / 0,169 |
+| 2 (Haiku 5.5, v2) | Énergie | 0,279 | 0,273 | 0,476 / 0,237 |
+| 2 | Positivité | 0,324 | 0,266 | 0,444 / 0,232 |
+| 3 (Haiku 5.5, v3 + 48 références) | Énergie | 0,258 | 0,280 | 0,501 / 0,228 |
+| 3 | Positivité | 0,316 | 0,267 | 0,461 / 0,235 |
+
+Chiffres secondaires (sans effet sur la décision) : Spearman par nombre de tags MuSe — énergie
+0,18 (1 tag, n = 556), 0,20 (2–3), 0,39 (4–9), 0,26 (≥ 10, n = 187) ; positivité 0,19, 0,29, 0,44,
+0,50. Scores ramenés vers 0,5 avec les k du dev (0,45 ; 0,50) : MAE en centiles 0,238 et 0,233,
+sous la valeur neutre (0,250).
+
+**Décision sur l'essai 3 (TODO 2.31)** : même règle, mêmes échecs → **pas de scores LLM, MuSe puis
+valeur neutre 0,5**. Les morceaux de référence n'ont rien apporté sur le test (écart avec l'essai 2
+dans le bruit : erreur type ≈ 0,02). Trois essais, deux modèles, trois prompts donnent le même
+accord (0,26–0,34) : la limite vient de ce que le LLM reçoit (titre + artiste) et du bruit de MuSe,
+pas de la rédaction du prompt ; d'autres retouches du prompt ne sont pas prévues. Seule piste
+restante, à décider en équipe avec une nouvelle règle écrite avant et un nouveau tirage : utiliser
+les scores ramenés vers 0,5, qui font un peu mieux que le neutre (0,233–0,238 contre 0,250) mais
+restent proches du milieu. Le Worker est redéployé avec le prompt v3 (format objets, cache), non
+appelé par l'app.
+
+**Décision finale (23 nov. 2026, équipe) : le LLM est utilisé malgré tout.** La règle 2.31 n'est
+atteinte dans aucun des trois essais ; l'équipe passe outre, en connaissance de cause, parce que la
+référence elle-même est trop peu fiable pour juger le LLM : 65 % des morceaux MuSe ont ≤ 3 tags, et
+l'accord monte avec le nombre de tags (essai 3 : 0,39–0,44 sur les morceaux à 4–9 tags, contre
+0,18–0,19 sur ceux à 1 tag). Le contrôle mesure donc autant le bruit de MuSe que l'erreur du LLM.
+- Ordre dans l'app (2.34, comme prévu au départ) : MuSe → Worker (Claude Haiku 5.5, prompt v3,
+  effort `low`) → neutre 0,5 si le Worker échoue ou rend `null` (`origin` = `muse`, `llm` ou
+  `neutral`). 2.33 et 2.34 restent tels quels dans `docs/TODO.md`.
+- Échelle : pas de conversion en centiles dans l'app ; les scores du LLM sont déjà sur une échelle
+  proche de MuSe (essai 3 : moyenne 0,50 / 0,46, écart-type 0,23 contre 0,29).
+- Pour le rapport : écrire que la règle fixée avant n'est pas atteinte (chiffres des trois essais
+  ci-dessus) et que l'utilisation est un choix d'équipe motivé par la qualité de la référence, pas
+  un résultat validé. Le retour « ça collait ? » et les sauts (`FeedbackStore`) restent le moyen de
+  juger ces scores en usage.
 
 ### 7.1 Le Worker (seul composant cloud)
-- Route unique, par ex. `POST /score` avec `{songs: [{title, artists}]}` (≤ 50).
-- **Authentification sans comptes à nous** : l'app envoie son jeton d'accès Spotify ; le Worker
-  appelle `GET https://api.spotify.com/v1/me` et n'accepte que les ID Spotify de la liste blanche
-  (les ≤ 5 comptes du pilote). Proposition à valider en équipe.
-- Clé LLM : `wrangler secret put …`, jamais dans le code. Limite simple : taille des lots,
-  nombre de requêtes par utilisateur et par jour.
+Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
+Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
+- `GET /health` → 200 `{"ok":true}`.
+- `POST /score`, en-tête `Authorization: Bearer <jeton d'accès Spotify>`, corps
+  `{"songs":[{"title":"…","artists":["…"]}]}` : 1 à 50 morceaux, titre de 1 à 200 caractères,
+  1 à 10 artistes de 1 à 100 caractères, corps ≤ 64 Ko (lecture arrêtée au-delà), aucun autre
+  champ (TODO 2.24).
+- Réponse 200 `{"scores":[{"energy":0.42,"positivity":0.71} | null, …]}`, même ordre et même
+  longueur que `songs` ; `null` = pas de paire valide pour ce morceau → neutre dans l'app.
+- Codes : 400 entrée invalide · 401 jeton absent ou refusé par Spotify · 403 compte hors liste ·
+  429 limite du jour (`Retry-After` jusqu'à 00:00 UTC) · 502 Spotify ou LLM en échec (réessayer
+  plus tard, ne pas mettre en cache comme neutre) · 404/405 autres routes et méthodes.
+- **Authentification sans comptes à nous** (TODO 2.25) : le Worker appelle
+  `GET https://api.spotify.com/v1/me` avec le jeton de l'app et n'accepte que les ID Spotify du
+  secret `ALLOWED_SPOTIFY_IDS` (liste séparée par des virgules, hors du dépôt public).
+- Clé LLM : secret `ANTHROPIC_API_KEY`, jamais dans le code ni dans Git (`git grep` vérifié).
+- **Limite** (TODO 2.27) : 50 requêtes (≤ 2 500 morceaux) par utilisateur et par jour UTC,
+  compteur dans Workers KV (`count:<id>:<date>`, expire après 2 jours) ; les requêtes refusées
+  (400/401/403) ne comptent pas. KV n'est pas atomique : des requêtes simultanées d'un même
+  compte autorisé peuvent dépasser un peu la limite. Accepté (5 comptes connus, ~0,0035 $ par
+  requête) ; un Durable Object serait la version stricte si besoin.
+- Mesures du 23 nov. 2026 (vrai jeton Spotify, 50 titres connus) : 50 paires entre 0 et 1, aucun
+  `null` ; 4,3 s en local, 5,1 s une fois déployé (Haiku 4.5) ; 4,4 s déployé avec Haiku 5.5 et le
+  prompt v2, toujours 50 paires valides ; 5,4 s avec le prompt v3 (48 références, format objets). Ça tient dans l'offre gratuite (10 ms de CPU
+  par requête, l'attente réseau ne compte pas). Un faux jeton → 401 venant du vrai Spotify.
 - Offre gratuite Cloudflare : 100 000 requêtes/jour, largement suffisant.
 
 ---
@@ -859,6 +1062,18 @@ suggéré automatiquement (modèle trop faible sur le stress).
   heure seule à moins de 1e-6 de Python, sur simulateur et sur iPhone. Sur iPhone avec les vraies
   données Santé (dimanche après-midi, montre portée) : mode « Body », 13 features connues, calcul
   en 0,13–0,15 s.
+
+- *Worker et prompt LLM, 23 nov. 2026 (TODO 2.23–2.29)* : `worker/` déployé sur Cloudflare
+  (`POST /score`, authentification par jeton Spotify + liste blanche, 50 requêtes/jour/utilisateur
+  dans KV, Claude Haiku 4.5 en sortie JSON compacte) ; prompt partagé `ml/prompts/` et cas communs
+  Python ↔ TypeScript (§7, §7.1). Contrôle hors ligne sur 2 000 morceaux MuSe (2.30) : accord trop
+  faible → décision 2.31 : pas de scores LLM, MuSe puis neutre (§3, §7) ; 2.33/2.34 à redéfinir.
+  Essai 2 (Haiku 5.5, prompt v2, nouveau tirage) : échelle corrigée, classement inchangé ;
+  décision confirmée. Worker redéployé avec Haiku 5.5.
+  Essai 3 (48 morceaux de référence MuSe dans le prompt, dev/test, format de sortie en objets) :
+  0,258 et 0,316 sur le test → décision confirmée à nouveau ; pistes de prompt épuisées (§7).
+  Décision finale d'équipe : le LLM est utilisé malgré la règle non atteinte (référence MuSe trop
+  peu taguée) ; 2.33/2.34 restent comme prévu (MuSe → Worker → neutre).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
