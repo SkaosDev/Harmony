@@ -1200,9 +1200,16 @@ suggéré automatiquement (modèle trop faible sur le stress).
 
   D'où la règle de l'app : on essaie d'abord le jeton Web API ; si la connexion est refusée, on
   réveille Spotify sur le premier morceau, puis on ajoute les autres à sa file.
-  `enqueueTrackUri` envoyé juste après `play` est refusé (`error.request_execution_failed`,
-  -3000), parfois même une fois le premier morceau en lecture : on attend que Spotify annonce le
-  premier morceau (5 s max), puis chaque ajout est réessayé jusqu'à 3 fois, à 1 s d'écart. La connexion tombe
+  Ajouts à la file (`enqueueTrackUri`), tests du 23 nov. :
+  - envoyé avant que le `play` ait pris effet, un ajout est refusé (`error.request_execution_failed`,
+    -3000), perdu ou doublé → on attend un état reçu **après** le `play` qui montre le premier
+    morceau à son début (< 5 s ; 5 s d'attente max) ;
+  - un ajout envoyé juste après un autre peut être perdu alors que Spotify répond OK → les ajouts
+    partent à 1 s d'écart ; un ajout refusé est réessayé jusqu'à 3 fois, à 1 s d'écart.
+
+  Limite connue : ni App Remote ni le Web API ne savent vider la file de Spotify. Si l'on lance une
+  nouvelle file avant la fin de la précédente, les morceaux restants de l'ancienne restent dans
+  « À suivre » et passent avant ceux de la nouvelle. La connexion tombe
   quand Harmony passe en arrière-plan : on se déconnecte et on se reconnecte au retour (TODO 3.12).
   Événements vérifiés sur l'iPhone le 23 nov. (écran Debug › Last queue) : la file apparaît dans
   Spotify, like (`PUT /me/library`, le titre arrive dans les Titres likés), skip avant 30 s,

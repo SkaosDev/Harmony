@@ -31,6 +31,9 @@ final class SpotifyRemote: NSObject, Playback {
     static let startWindow: TimeInterval = 5
     static let enqueueTries = 3
     static let enqueueRetryDelay: Duration = .seconds(1)
+    /// A song added right after another one can be lost although Spotify answers OK (test of
+    /// 23 Nov.): the songs are added `enqueueSpacing` apart.
+    static let enqueueSpacing: Duration = .seconds(1)
 
     var onChange: ((PlaybackState) -> Void)?
     /// The last player state, and how many came since the connection.
@@ -145,7 +148,8 @@ final class SpotifyRemote: NSObject, Playback {
             if stateCount > mark, let state = lastState, state.spotifyId == first, state.position < Self.startWindow { break }
             try await Task.sleep(for: .milliseconds(100))
         }
-        for id in ids {
+        for (index, id) in ids.enumerated() {
+            if index > 0 { try await Task.sleep(for: Self.enqueueSpacing) }
             for attempt in 1...Self.enqueueTries {
                 do {
                     try await command("enqueue \(id)") { $0.enqueueTrackUri(Self.uri(id), callback: $1) }
