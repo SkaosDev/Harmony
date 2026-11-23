@@ -1,0 +1,55 @@
+D-1 + D-2: 31301 answers, 191 participants, 5 folds
+z_hr_30 known: 0.516 of answers
+  base rate arousal_high = 0.464 (z_hr_30 known: 0.443, unknown: 0.487)
+  base rate valence_high = 0.566 (z_hr_30 known: 0.551, unknown: 0.581)
+  base rate stress_high = 0.462 (z_hr_30 known: 0.473, unknown: 0.451)
+
+=== Q1: target x inputs (LR C=1), fold mean +/- sd ===
+
+[arousal_high]
+  time only (3)      AUROC 0.534 +/- 0.009  BA 0.506 +/- 0.008
+  13 features        AUROC 0.563 +/- 0.012  BA 0.537 +/- 0.007
+    paired 13 - time AUROC +0.029 +/- 0.005 (5/5 folds >0); BA +0.031 +/- 0.014 (5/5 folds >0)
+  Q2 body mode (test rows with z_hr_30 known):
+    13-feat model (trained on all rows)   AUROC 0.573 +/- 0.013
+    13-feat model (trained on body rows)  AUROC 0.572 +/- 0.012
+    time-only model on same rows          AUROC 0.524 +/- 0.008
+      paired 13(all) - time   +0.049 +/- 0.013 (5/5 folds >0)
+      paired 13(body) - 13(all) -0.001 +/- 0.002 (2/5 folds >0)
+  Q2 rows with z_hr_30 unknown: time-only AUROC 0.547 +/- 0.016; 13-feat AUROC 0.550 +/- 0.020
+  Q2 app mixed (13 if z_hr_30 known else time) AUROC 0.561 +/- 0.011  BA 0.518 +/- 0.006
+      paired mixed - 13 on all  -0.002 +/- 0.005 (1/5 folds >0)
+      paired mixed - time       +0.027 +/- 0.007 (5/5 folds >0)
+  Q2 mixed with body-trained 13-feat model AUROC 0.562 +/- 0.012; paired vs mixed +0.001 +/- 0.002 (4/5 folds >0)
+
+[valence_high]
+  time only (3)      AUROC 0.534 +/- 0.004  BA 0.500 +/- 0.000
+  13 features        AUROC 0.542 +/- 0.017  BA 0.512 +/- 0.002
+    paired 13 - time AUROC +0.008 +/- 0.013 (3/5 folds >0); BA +0.012 +/- 0.002 (5/5 folds >0)
+  Q2 body mode (test rows with z_hr_30 known):
+    13-feat model (trained on all rows)   AUROC 0.553 +/- 0.012
+    13-feat model (trained on body rows)  AUROC 0.553 +/- 0.011
+    time-only model on same rows          AUROC 0.536 +/- 0.016
+      paired 13(all) - time   +0.018 +/- 0.016 (4/5 folds >0)
+      paired 13(body) - 13(all) -0.001 +/- 0.004 (3/5 folds >0)
+  Q2 rows with z_hr_30 unknown: time-only AUROC 0.534 +/- 0.016; 13-feat AUROC 0.527 +/- 0.015
+  Q2 app mixed (13 if z_hr_30 known else time) AUROC 0.544 +/- 0.013  BA 0.511 +/- 0.001
+      paired mixed - 13 on all  +0.002 +/- 0.007 (3/5 folds >0)
+      paired mixed - time       +0.010 +/- 0.010 (4/5 folds >0)
+  Q2 mixed with body-trained 13-feat model AUROC 0.543 +/- 0.013; paired vs mixed -0.001 +/- 0.003 (2/5 folds >0)
+
+[stress_high]
+  time only (3)      AUROC 0.543 +/- 0.012  BA 0.509 +/- 0.010
+  13 features        AUROC 0.540 +/- 0.011  BA 0.516 +/- 0.005
+    paired 13 - time AUROC -0.002 +/- 0.003 (1/5 folds >0); BA +0.007 +/- 0.011 (3/5 folds >0)
+  Q2 body mode (test rows with z_hr_30 known):
+    13-feat model (trained on all rows)   AUROC 0.541 +/- 0.020
+    13-feat model (trained on body rows)  AUROC 0.542 +/- 0.018
+    time-only model on same rows          AUROC 0.544 +/- 0.020
+      paired 13(all) - time   -0.003 +/- 0.001 (0/5 folds >0)
+      paired 13(body) - 13(all) +0.001 +/- 0.002 (3/5 folds >0)
+  Q2 rows with z_hr_30 unknown: time-only AUROC 0.542 +/- 0.019; 13-feat AUROC 0.541 +/- 0.012
+  Q2 app mixed (13 if z_hr_30 known else time) AUROC 0.540 +/- 0.012  BA 0.513 +/- 0.005
+      paired mixed - 13 on all  +0.000 +/- 0.003 (1/5 folds >0)
+      paired mixed - time       -0.002 +/- 0.001 (0/5 folds >0)
+  Q2 mixed with body-trained 13-feat model AUROC 0.542 +/- 0.011; paired vs mixed +0.001 +/- 0.002 (3/5 folds >0)

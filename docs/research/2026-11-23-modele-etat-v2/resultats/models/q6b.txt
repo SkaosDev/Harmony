@@ -1,0 +1,20 @@
+
+[13 features] Spearman(p_A, p_V) 0.713; true labels phi 0.225
+  AUROC p_V for valence_high | arousal low 0.530 +/- 0.026; | arousal high 0.536 +/- 0.018
+  AUROC p_A for arousal_high | valence low 0.558 +/- 0.016; | valence high 0.555 +/- 0.022
+  off-diagonal AUROC (logit p_V - logit p_A) calm-positive vs tense, rows A!=V: 0.538 +/- 0.028
+  precision P(true q | predicted q), base-rate thresholds (true share in brackets):
+    predicted lowA-lowV    (pred share 0.368): precision 0.333 [base 0.288]
+    predicted lowA-highV   (pred share 0.111): precision 0.258 [base 0.248]
+    predicted highA-lowV   (pred share 0.137): precision 0.160 [base 0.146]
+    predicted highA-highV  (pred share 0.384): precision 0.368 [base 0.318]
+
+[time only] Spearman(p_A, p_V) 0.551; true labels phi 0.225
+  AUROC p_V for valence_high | arousal low 0.523 +/- 0.011; | arousal high 0.542 +/- 0.016
+  AUROC p_A for arousal_high | valence low 0.527 +/- 0.014; | valence high 0.534 +/- 0.016
+  off-diagonal AUROC (logit p_V - logit p_A) calm-positive vs tense, rows A!=V: 0.544 +/- 0.017
+  precision P(true q | predicted q), base-rate thresholds (true share in brackets):
+    predicted lowA-lowV    (pred share 0.346): precision 0.311 [base 0.288]
+    predicted lowA-highV   (pred share 0.066): precision 0.247 [base 0.248]
+    predicted highA-lowV   (pred share 0.186): precision 0.169 [base 0.146]
+    predicted highA-highV  (pred share 0.402): precision 0.351 [base 0.318]

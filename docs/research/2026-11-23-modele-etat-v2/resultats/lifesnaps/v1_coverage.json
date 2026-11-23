@@ -1,0 +1,21 @@
+{
+ "answers": 5028,
+ "answers_with_hr_participant": 5028,
+ "unknown_share": {
+  "hour_sin": 0.0,
+  "hour_cos": 0.0,
+  "weekend": 0.0,
+  "z_hr_15": 0.246,
+  "z_hr_30": 0.238,
+  "z_hr_60": 0.226,
+  "zb_hr_30": 0.249,
+  "z_log_steps_15": 0.234,
+  "z_log_steps_30": 0.226,
+  "z_log_steps_60": 0.215,
+  "z_sleep_min": 0.286,
+  "hours_since_wake": 0.219,
+  "sleep_unknown": 0.0
+ },
+ "sleep_unknown_share": 0.219,
+ "seconds": 3
+}

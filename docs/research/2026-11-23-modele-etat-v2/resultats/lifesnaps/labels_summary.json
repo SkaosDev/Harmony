@@ -1,0 +1,99 @@
+{
+ "context_mood_scheduled": 11526,
+ "participants_scheduled": 63,
+ "timestamp_patterns": {
+  "9999-99-99T99:99:99": 5037
+ },
+ "completed": 5037,
+ "mood_counts_completed": {
+  "RESTED/RELAXED": 1179,
+  "TIRED": 1126,
+  "NEUTRAL": 822,
+  "HAPPY": 789,
+  "TENSE/ANXIOUS": 620,
+  "ALERT": 345,
+  "SAD": 147,
+  "SURPRISE": 2,
+  "ANGER": 2,
+  "SADNESS": 2,
+  "FEAR": 1,
+  "JOY": 1
+ },
+ "usable_mood_answers": 5028,
+ "participants_with_usable_answers": 63,
+ "answers_per_participant": {
+  "count": 63.0,
+  "mean": 79.8,
+  "std": 64.1,
+  "min": 1.0,
+  "10%": 6.2,
+  "25%": 20.0,
+  "50%": 65.0,
+  "75%": 147.0,
+  "90%": 165.0,
+  "max": 200.0
+ },
+ "participants_with_>=40_answers": 39,
+ "participants_with_>=100_answers": 23,
+ "answers_per_participant_day": 2.2,
+ "distinct_days_per_participant_median": 40.0,
+ "hour_of_day_counts": {
+  "0": 21,
+  "1": 1,
+  "2": 3,
+  "9": 24,
+  "10": 625,
+  "11": 422,
+  "12": 421,
+  "13": 227,
+  "14": 153,
+  "15": 619,
+  "16": 283,
+  "17": 225,
+  "18": 274,
+  "19": 222,
+  "20": 570,
+  "21": 393,
+  "22": 389,
+  "23": 156
+ },
+ "act_high_share": 0.491,
+ "val_high_share": 0.534,
+ "act_strict_n_and_share": [
+  3270,
+  0.295
+ ],
+ "val_strict_n_and_share": [
+  2735,
+  0.72
+ ],
+ "participants_single_category": 4,
+ "distinct_categories_per_participant_median": 6.0,
+ "date_range_months": [
+  "2021-04",
+  "2021-05",
+  "2021-06",
+  "2021-07",
+  "2021-11",
+  "2021-12",
+  "2022-01"
+ ],
+ "mean_within_person_share": {
+  "ALERT": 0.057,
+  "HAPPY": 0.161,
+  "NEUTRAL": 0.148,
+  "RESTED/RELAXED": 0.239,
+  "SAD": 0.049,
+  "TENSE/ANXIOUS": 0.147,
+  "TIRED": 0.199
+ },
+ "sd_between_person_share": {
+  "ALERT": 0.083,
+  "HAPPY": 0.159,
+  "NEUTRAL": 0.193,
+  "RESTED/RELAXED": 0.187,
+  "SAD": 0.136,
+  "TENSE/ANXIOUS": 0.166,
+  "TIRED": 0.134
+ }
+}

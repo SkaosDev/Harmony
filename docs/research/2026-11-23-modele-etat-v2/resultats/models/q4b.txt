@@ -1,0 +1,19 @@
+share with >= 5 earlier answers: 0.969
+
+[arousal_high] LR 13 features AUROC 0.563 +/- 0.012
+  + answered valence        AUROC 0.642 +/- 0.025  paired vs 13 +0.079 +/- 0.020 (5/5 folds >0)
+  + answered valence_pastc  AUROC 0.644 +/- 0.029  paired vs 13 +0.082 +/- 0.023 (5/5 folds >0)
+  + answered stress         AUROC 0.560 +/- 0.011  paired vs 13 -0.003 +/- 0.002 (2/5 folds >0)
+  + answered stress_pastc   AUROC 0.560 +/- 0.012  paired vs 13 -0.003 +/- 0.004 (1/5 folds >0)
+
+[valence_high] LR 13 features AUROC 0.542 +/- 0.017
+  + answered arousal        AUROC 0.610 +/- 0.032  paired vs 13 +0.068 +/- 0.037 (5/5 folds >0)
+  + answered arousal_pastc  AUROC 0.626 +/- 0.020  paired vs 13 +0.084 +/- 0.023 (5/5 folds >0)
+  + answered stress         AUROC 0.677 +/- 0.022  paired vs 13 +0.135 +/- 0.020 (5/5 folds >0)
+  + answered stress_pastc   AUROC 0.679 +/- 0.016  paired vs 13 +0.138 +/- 0.006 (5/5 folds >0)
+
+[stress_high] LR 13 features AUROC 0.540 +/- 0.011
+  + answered arousal        AUROC 0.545 +/- 0.015  paired vs 13 +0.005 +/- 0.008 (3/5 folds >0)
+  + answered arousal_pastc  AUROC 0.538 +/- 0.014  paired vs 13 -0.003 +/- 0.004 (2/5 folds >0)
+  + answered valence        AUROC 0.687 +/- 0.034  paired vs 13 +0.147 +/- 0.032 (5/5 folds >0)
+  + answered valence_pastc  AUROC 0.693 +/- 0.019  paired vs 13 +0.153 +/- 0.014 (5/5 folds >0)

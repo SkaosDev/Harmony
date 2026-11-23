@@ -1,0 +1,100 @@
+== label-level AUROC of single night signal
+act_high ~ z_rmssd               n= 2399 p=36 auc=0.500 [0.473, 0.527]
+act_high ~ z_nremhr              n= 2399 p=36 auc=0.493 [0.466, 0.519]
+act_high ~ z_rhr_prev            n= 4039 p=60 auc=0.494 [0.467, 0.521]
+act_high ~ z_deep_share          n= 3488 p=52 auc=0.506 [0.487, 0.527]
+act_high ~ z_rem_share           n= 3488 p=52 auc=0.515 [0.496, 0.532]
+act_high ~ z_efficiency          n= 3659 p=53 auc=0.502 [0.483, 0.522]
+act_high ~ z_temp                n= 3563 p=52 auc=0.496 [0.475, 0.516]
+act_high ~ z_br                  n= 2418 p=37 auc=0.473 [0.448, 0.499]
+act_high ~ z_spo2                n= 1467 p=23 auc=0.499 [0.463, 0.533]
+act_high ~ z_sleep_min_meas      n= 3659 p=53 auc=0.507 [0.483, 0.532]
+val_high ~ z_rmssd               n= 2399 p=36 auc=0.495 [0.465, 0.525]
+val_high ~ z_nremhr              n= 2399 p=36 auc=0.487 [0.463, 0.509]
+val_high ~ z_rhr_prev            n= 4039 p=60 auc=0.503 [0.479, 0.526]
+val_high ~ z_deep_share          n= 3488 p=52 auc=0.528 [0.506, 0.549]
+val_high ~ z_rem_share           n= 3488 p=52 auc=0.524 [0.501, 0.546]
+val_high ~ z_efficiency          n= 3659 p=53 auc=0.499 [0.476, 0.52]
+val_high ~ z_temp                n= 3563 p=52 auc=0.490 [0.471, 0.51]
+val_high ~ z_br                  n= 2418 p=37 auc=0.496 [0.464, 0.523]
+val_high ~ z_spo2                n= 1467 p=23 auc=0.520 [0.488, 0.553]
+val_high ~ z_sleep_min_meas      n= 3659 p=53 auc=0.528 [0.501, 0.559]
+== day-level within-person Spearman
+arousal_c ~ z_rmssd                days= 1068 p=36 rho=+0.021 [-0.041, 0.082] | persons>=10d=27 mean=0.013 sd=0.179
+arousal_c ~ z_nremhr               days= 1068 p=36 rho=-0.048 [-0.116, 0.018] | persons>=10d=27 mean=-0.019 sd=0.185
+arousal_c ~ z_rhr_prev             days= 1813 p=60 rho=-0.049 [-0.097, -0.001] | persons>=10d=46 mean=-0.057 sd=0.207
+arousal_c ~ z_deep_share           days= 1538 p=52 rho=-0.014 [-0.06, 0.032] | persons>=10d=40 mean=-0.03 sd=0.182
+arousal_c ~ z_rem_share            days= 1538 p=52 rho=+0.039 [-0.016, 0.09] | persons>=10d=40 mean=0.006 sd=0.244
+arousal_c ~ z_efficiency           days= 1610 p=53 rho=+0.011 [-0.052, 0.073] | persons>=10d=42 mean=-0.01 sd=0.219
+arousal_c ~ z_temp                 days= 1572 p=52 rho=-0.036 [-0.08, 0.011] | persons>=10d=41 mean=-0.002 sd=0.166
+arousal_c ~ z_br                   days= 1078 p=37 rho=-0.087 [-0.148, -0.025] | persons>=10d=27 mean=-0.063 sd=0.219
+arousal_c ~ z_spo2                 days=  625 p=23 rho=-0.039 [-0.14, 0.053] | persons>=10d=14 mean=-0.027 sd=0.207
+arousal_c ~ z_sleep_min_meas       days= 1610 p=53 rho=-0.013 [-0.071, 0.043] | persons>=10d=42 mean=0.014 sd=0.2
+valence_c ~ z_rmssd                days= 1068 p=36 rho=-0.011 [-0.074, 0.05] | persons>=10d=26 mean=-0.009 sd=0.201
+valence_c ~ z_nremhr               days= 1068 p=36 rho=+0.004 [-0.046, 0.05] | persons>=10d=26 mean=-0.005 sd=0.186
+valence_c ~ z_rhr_prev             days= 1813 p=60 rho=+0.016 [-0.03, 0.058] | persons>=10d=46 mean=-0.011 sd=0.232
+valence_c ~ z_deep_share           days= 1538 p=52 rho=+0.047 [-0.001, 0.094] | persons>=10d=40 mean=0.031 sd=0.193
+valence_c ~ z_rem_share            days= 1538 p=52 rho=+0.040 [-0.018, 0.093] | persons>=10d=40 mean=0.024 sd=0.203
+valence_c ~ z_efficiency           days= 1610 p=53 rho=+0.003 [-0.053, 0.053] | persons>=10d=42 mean=-0.016 sd=0.218
+valence_c ~ z_temp                 days= 1572 p=52 rho=-0.038 [-0.089, 0.018] | persons>=10d=41 mean=-0.062 sd=0.189
+valence_c ~ z_br                   days= 1078 p=37 rho=+0.008 [-0.061, 0.075] | persons>=10d=26 mean=-0.068 sd=0.281
+valence_c ~ z_spo2                 days=  625 p=23 rho=+0.029 [-0.048, 0.097] | persons>=10d=14 mean=0.016 sd=0.173
+valence_c ~ z_sleep_min_meas       days= 1610 p=53 rho=+0.096 [0.029, 0.16] | persons>=10d=42 mean=0.105 sd=0.275
+== grouped CV
+-- act_high: labels=4882 participants=60 pos=0.491
+   (i) time only                              AUROC 0.588 ± 0.026  BA 0.575 ± 0.020
+   (ii) time + HR + steps                     AUROC 0.597 ± 0.017  BA 0.576 ± 0.013
+   (ii) Harmony v1, 13 (estimated sleep)      AUROC 0.600 ± 0.017  BA 0.576 ± 0.016
+   (ii') Harmony v1, measured sleep           AUROC 0.595 ± 0.017  BA 0.574 ± 0.013
+   (iii) (ii') + extended night signals       AUROC 0.594 ± 0.016  BA 0.572 ± 0.018
+   (iv) time + extended night signals         AUROC 0.583 ± 0.025  BA 0.575 ± 0.021
+   diff (ii) time + HR + steps - (i) time only: +0.009 ± 0.010 (folds > 0: 4/5)
+   diff (ii) Harmony v1, 13 (estimated sleep) - (i) time only: +0.012 ± 0.011 (folds > 0: 4/5)
+   diff (ii') Harmony v1, measured sleep - (ii) Harmony v1, 13 (estimated sleep): -0.005 ± 0.004 (folds > 0: 1/5)
+   diff (iii) (ii') + extended night signals - (ii') Harmony v1, measured sleep: -0.001 ± 0.004 (folds > 0: 3/5)
+   diff (iv) time + extended night signals - (i) time only: -0.005 ± 0.006 (folds > 0: 1/5)
+-- val_high: labels=4882 participants=60 pos=0.538
+   (i) time only                              AUROC 0.554 ± 0.010  BA 0.532 ± 0.008
+   (ii) time + HR + steps                     AUROC 0.546 ± 0.016  BA 0.527 ± 0.006
+   (ii) Harmony v1, 13 (estimated sleep)      AUROC 0.557 ± 0.022  BA 0.536 ± 0.009
+   (ii') Harmony v1, measured sleep           AUROC 0.550 ± 0.017  BA 0.525 ± 0.011
+   (iii) (ii') + extended night signals       AUROC 0.552 ± 0.014  BA 0.530 ± 0.009
+   (iv) time + extended night signals         AUROC 0.556 ± 0.008  BA 0.538 ± 0.013
+   diff (ii) time + HR + steps - (i) time only: -0.008 ± 0.009 (folds > 0: 0/5)
+   diff (ii) Harmony v1, 13 (estimated sleep) - (i) time only: +0.003 ± 0.020 (folds > 0: 3/5)
+   diff (ii') Harmony v1, measured sleep - (ii) Harmony v1, 13 (estimated sleep): -0.007 ± 0.016 (folds > 0: 1/5)
+   diff (iii) (ii') + extended night signals - (ii') Harmony v1, measured sleep: +0.002 ± 0.005 (folds > 0: 2/5)
+   diff (iv) time + extended night signals - (i) time only: +0.002 ± 0.011 (folds > 0: 2/5)
+-- act_strict: labels=3198 participants=58 pos=0.301
+   (i) time only                              AUROC 0.680 ± 0.025  BA 0.500 ± 0.000
+   (ii) time + HR + steps                     AUROC 0.689 ± 0.022  BA 0.535 ± 0.012
+   (ii) Harmony v1, 13 (estimated sleep)      AUROC 0.684 ± 0.025  BA 0.543 ± 0.012
+   (ii') Harmony v1, measured sleep           AUROC 0.684 ± 0.025  BA 0.541 ± 0.014
+   (iii) (ii') + extended night signals       AUROC 0.679 ± 0.019  BA 0.546 ± 0.010
+   (iv) time + extended night signals         AUROC 0.668 ± 0.026  BA 0.519 ± 0.021
+   diff (ii) time + HR + steps - (i) time only: +0.009 ± 0.019 (folds > 0: 3/5)
+   diff (ii) Harmony v1, 13 (estimated sleep) - (i) time only: +0.004 ± 0.020 (folds > 0: 3/5)
+   diff (ii') Harmony v1, measured sleep - (ii) Harmony v1, 13 (estimated sleep): +0.000 ± 0.006 (folds > 0: 3/5)
+   diff (iii) (ii') + extended night signals - (ii') Harmony v1, measured sleep: -0.005 ± 0.007 (folds > 0: 2/5)
+   diff (iv) time + extended night signals - (i) time only: -0.012 ± 0.007 (folds > 0: 0/5)
+-- val_strict: labels=2666 participants=59 pos=0.715
+   (i) time only                              AUROC 0.638 ± 0.020  BA 0.500 ± 0.000
+   (ii) time + HR + steps                     AUROC 0.647 ± 0.026  BA 0.511 ± 0.006
+   (ii) Harmony v1, 13 (estimated sleep)      AUROC 0.641 ± 0.030  BA 0.509 ± 0.010
+   (ii') Harmony v1, measured sleep           AUROC 0.641 ± 0.029  BA 0.507 ± 0.008
+   (iii) (ii') + extended night signals       AUROC 0.632 ± 0.027  BA 0.513 ± 0.007
+   (iv) time + extended night signals         AUROC 0.626 ± 0.032  BA 0.497 ± 0.002
+   diff (ii) time + HR + steps - (i) time only: +0.009 ± 0.017 (folds > 0: 4/5)
+   diff (ii) Harmony v1, 13 (estimated sleep) - (i) time only: +0.003 ± 0.018 (folds > 0: 3/5)
+   diff (ii') Harmony v1, measured sleep - (ii) Harmony v1, 13 (estimated sleep): -0.000 ± 0.007 (folds > 0: 3/5)
+   diff (iii) (ii') + extended night signals - (ii') Harmony v1, measured sleep: -0.009 ± 0.015 (folds > 0: 2/5)
+   diff (iv) time + extended night signals - (i) time only: -0.012 ± 0.024 (folds > 0: 2/5)
+== frozen EmoPhone
+   labels: 4882
+   participants: 60
+   frozen 13-feature model (estimated sleep, as trained): {'auroc': 0.471, 'ci95': [0.446, 0.497], 'bal_acc': 0.504, 'auroc_same_5_folds': '0.471 ± 0.036'}
+   frozen 13-feature model, measured Fitbit sleep in the 3 sleep slots: {'auroc': 0.475, 'ci95': [0.447, 0.502], 'bal_acc': 0.504, 'auroc_same_5_folds': '0.475 ± 0.035'}
+   frozen time_only block: {'auroc': 0.416, 'ci95': [0.387, 0.45], 'bal_acc': 0.5, 'auroc_same_5_folds': '0.417 ± 0.031'}
+== personalisation
+   act_high: {'participants_with_40_labels': 38, 'population': {'mean_person_auroc': '0.592 ± 0.130', 'pooled_auroc': 0.585}, 'personal only': {'mean_person_auroc': '0.568 ± 0.102', 'pooled_auroc': 0.617}, 'blend k=30': {'mean_person_auroc': '0.583 ± 0.097', 'pooled_auroc': 0.626}}
+   val_high: {'participants_with_40_labels': 38, 'population': {'mean_person_auroc': '0.558 ± 0.091', 'pooled_auroc': 0.541}, 'personal only': {'mean_person_auroc': '0.536 ± 0.108', 'pooled_auroc': 0.626}, 'blend k=30': {'mean_person_auroc': '0.544 ± 0.109', 'pooled_auroc': 0.631}}
