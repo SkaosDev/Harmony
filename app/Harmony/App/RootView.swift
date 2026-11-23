@@ -39,6 +39,10 @@ struct RootView: View {
             }
         }
         .onChange(of: demoMode) { updateHealth() }
+        // "Did it fit?" at the end of every queue, whatever the screen (TODO 3.15).
+        .fullScreenCover(isPresented: .constant(player.phase == .ended)) {
+            FeedbackView { player.answer(fits: $0) }
+        }
     }
 
     /// Apple Health cannot be read while the phone is locked, so this runs when the app comes to

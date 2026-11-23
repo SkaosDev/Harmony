@@ -40,7 +40,7 @@ struct PlayerDebugSection: View {
             if let index = player.currentIndex, let queue = player.queue {
                 LabeledContent("Song", value: "\(index + 1) / \(queue.entries.count)  \(queue.songs[index].title)")
             }
-            if player.phase == .playing || player.phase == .ended {
+            if player.phase == .playing {
                 Button(player.state?.isPaused == true ? "Resume" : "Pause") { Task { await player.togglePause() } }
                 Button("Next") { Task { await player.next() } }
                 Button("Like") { Task { await player.like() } }
@@ -49,11 +49,6 @@ struct PlayerDebugSection: View {
             if player.phase == .cannotPlay {
                 Button("Try again") { Task { await player.retry() } }
                 Button("Open in Spotify") { player.openInSpotify() }
-            }
-            if player.phase == .ended {
-                Button("Did it fit? Yes") { player.answer(fits: true) }
-                Button("Did it fit? Nope") { player.answer(fits: false) }
-                Button("Did it fit? Skip") { player.answer(fits: nil) }
             }
             if let problem = player.problem {
                 Text(problem).foregroundStyle(.red)

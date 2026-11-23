@@ -10,6 +10,10 @@ enum Theme {
     static let blue = Color(hex: 0x509BF5)
     static let stress = Color(hex: 0xE8115B)
     static let wakeUp = Color(hex: 0xE8A21A)
+    /// Answer tiles (`V2-Feedback`).
+    static let tile = Color(hex: 0x282828)
+    /// Border of the outline buttons.
+    static let outline = Color(hex: 0x727272)
 
     /// Helvetica Neue, as in the design. Weights 700 and 800 both map to Bold
     /// (the heaviest weight of Helvetica Neue on iOS).
