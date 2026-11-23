@@ -15,9 +15,15 @@
   de la fréquence cardiaque, des pas, du sommeil (Apple Watch) et de l'heure, si la personne est
   *plus ou moins activée que d'habitude*. Des règles simples construisent une file qui part de
   l'état actuel et va progressivement vers le but de la situation.
-- **Données d'entraînement** : EmoPhone (297 étudiants coréens, Fitbit, humeur notée ~7 fois par jour).
-- **Résultat actuel** : AUROC 0,573 sur la vague D-1 (personnes jamais vues), au niveau des
-  meilleurs modèles publiés, mais modeste dans l'absolu. On le dit honnêtement.
+- **Modèle d'état v2 (décidé le 23 nov. 2026, pas encore implémenté)** : des questions facultatives
+  en un geste (« Energy right now? ») ajustent ce modèle commun à chacun, sur l'iPhone (couche
+  personnelle), et la file s'adapte aux skips et aux likes. Design :
+  `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` ; tâches : TODO Phase 6 (§6.8).
+- **Données d'entraînement** : EmoPhone (282 étudiants coréens, 297 participants-vagues, Fitbit,
+  humeur notée ~7 fois par jour).
+- **Résultat actuel** : AUROC 0,573 sur la vague D-1 (personnes jamais vues), proche du meilleur
+  résultat publié sur cette vague (0,576, avec une cible et un protocole un peu différents), mais
+  modeste dans l'absolu. On le dit honnêtement.
 - **Où ça tourne** : tout sur le téléphone, sauf un petit **Cloudflare Worker** qui garde la clé
   de l'API LLM.
 
@@ -88,6 +94,9 @@ l'historique et l'heure, jamais selon le corps. Endel utilise le corps, mais gé
    (« nuit courte, matin : d'abord calme, puis plus d'énergie ») et trois actions : passer, aimer,
    « ça collait ? ».
 4. **Réglages** : liste des données stockées, export, suppression totale.
+5. **Questions facultatives (modèle v2, §6.8)** : pendant le pilote, deux notifications par jour
+   (« Quick check: energy right now? », réponse en un geste, « Not now » possible) ; la ligne
+   « Energy right now? » sur Home vient après le cours. Désactivables ; l'app marche sans.
 
 ### 2.5 Exemple
 23 h 30, l'utilisateur tape *Wind-down*. Sa fréquence cardiaque est au-dessus de son habitude du
@@ -100,6 +109,9 @@ https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319, copié dan
 (voir son `README.md`). L'app les reproduit **à l'identique**. Navigation : 3 onglets
 (Home, Library, Settings) ; le lecteur et la file s'ouvrent depuis Home ; l'écran Debug n'est
 pas dans le design (accessible depuis Settings, en build Debug seulement).
+Les éléments des questions du modèle v2 (notification, étape d'onboarding, réglage « Questions »,
+« Reset what Harmony learned », check-ins dans My Data…) ne sont pas encore dessinés : ils passent
+d'abord par le canvas (design v2 §5.4, TODO 6.6).
 
 ---
 
@@ -110,14 +122,14 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Pas de caméra, pas de reconnaissance faciale | Trop contraignant, pas utilisable au lit ou en mouvement |
 | Pas de musique générée | Besoin N2 |
 | Pas d'*audio features* Spotify (valence, energy) | Supprimées pour les nouvelles apps le 27 nov. 2024 |
-| Pas d'entraînement sur chaque utilisateur | Mauvais premier jour ; on compare plutôt chacun à sa propre moyenne |
-| Modèle entraîné sur EmoPhone | 297 personnes, étiquettes « du moment », étudiants coréens |
-| Sortie = plus/moins activé que d'habitude, jamais une émotion | Honnêteté, pas de prétention médicale |
-| Entrées du modèle : heure, FC, pas, sommeil | Choix d'équipe. Sur D-1, pas et sommeil n'apportent pas de gain mesurable (voir §6.5) ; on les garde, et on repasse au modèle heure + FC si les vagues D-2/D-3 et le pilote ne montrent rien |
-| Modèle final : 4 entrées (13 features v1), entraîné sur D-1 + D-2 + D-3 (TODO 2.13, 20 nov. 2026) | Features v1 : bat l'heure seule et heure + FC en validation croisée D-1 + D-2 (AUROC 0,563 contre 0,535 et 0,554) et sur D-3 tenue à part (0,576 contre 0,534 et 0,570) ; gain de pas + sommeil petit mais de même sens sur les deux évaluations (§6.5). Repli heure + FC toujours possible si le pilote (sommeil Apple Watch mesuré, pas estimé) ne montre rien |
+| Pas de modèle par utilisateur appris de zéro ; un ajustement personnel (2 nombres) appris sur l'iPhone à partir des réponses aux questions ; jour 1 = modèle commun (D1, 23 nov. 2026, reformule « pas d'entraînement sur chaque utilisateur ») | Mauvais premier jour ; on compare plutôt chacun à sa propre moyenne. Sans réponse, le décalage vaut exactement 0 : le premier jour reste celui du modèle commun. En simulation EmoPhone, les réponses font passer l'AUROC énergie de 0,555 à 0,666 (design v2 §2, §4.4) |
+| Modèle entraîné sur EmoPhone | 282 personnes (297 participants-vagues), étiquettes « du moment », étudiants coréens |
+| Sortie = plus/moins activé que d'habitude, jamais une émotion ; + un agrément **interne** (plus/moins agréable que d'habitude), utilisé seulement si l'utilisateur répond à la question d'agrément, jamais affiché comme émotion (D2, 23 nov. 2026) | Honnêteté, pas de prétention médicale. La valence tirée des seuls capteurs se replie sur l'énergie (corrélation 0,71) ; avec les réponses, 0,529 → 0,704 en simulation (design v2 §2, §4.2) |
+| Entrées du modèle : heure, FC, pas, sommeil ; + réponses de l'utilisateur pour la couche personnelle (23 nov. 2026) | Choix d'équipe. Sur D-1, pas et sommeil n'apportent pas de gain mesurable (voir §6.5) ; on les garde, et on repasse au modèle heure + FC si les vagues D-2/D-3 et le pilote ne montrent rien. Le modèle commun v2 garde les mêmes signaux (fenêtres brutes de FC et de pas, §6.8) |
+| Modèle final : 4 entrées (13 features v1), entraîné sur D-1 + D-2 + D-3 (TODO 2.13, 20 nov. 2026). Passe à 17 features **seulement** si le critère écrit avant les résultats (TODO 6.2) est satisfait (D3, 23 nov. 2026) | Features v1 : bat l'heure seule et heure + FC en validation croisée D-1 + D-2 (AUROC 0,563 contre 0,535 et 0,554) et sur D-3 tenue à part (0,576 contre 0,534 et 0,570) ; gain de pas + sommeil petit mais de même sens sur les deux évaluations (§6.5). Repli heure + FC toujours possible si le pilote (sommeil Apple Watch mesuré, pas estimé) ne montre rien. Les 4 valeurs brutes de v2 donnent un gain de valence robuste et un gain d'énergie incertain (design v2 §2) |
 | HRV lue mais hors modèle | Absente d'EmoPhone ; sert seulement à l'explication |
 | Météo retirée | Localisations EmoPhone anonymisées ; plafond mesuré à 0,53 AUROC pour tout effet partagé |
-| Évaluation par personnes entières tenues à part | Un split aléatoire donne des résultats trop optimistes |
+| Évaluation par personnes entières tenues à part ; couche personnelle : évaluation **chronologique** (chaque réponse prédite avec le passé seulement), hyper-paramètres réglés sur des personnes tenues à part (D8, 23 nov. 2026) | Un split aléatoire donne des résultats trop optimistes. Le modèle commun garde la validation croisée par personnes et une seule confirmation sur D-3 par changement |
 | Un seul composant cloud : Cloudflare Worker | La clé API LLM ne doit jamais être dans l'app |
 | MuSe v3 (Kaggle), scores en rang centile, ID Spotify en double retirés | Seule version avec un genre ; échelle brute trop resserrée ; ID partagés souvent faux (§5.2) |
 | Spotify en mode développement (5 utilisateurs) | Le quota étendu est réservé aux entreprises ; l'app est un démonstrateur |
@@ -125,6 +137,14 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | Critère UC Irvine (écrit avant les résultats) | Sur les mêmes 5 groupes par participant d'UC Irvine, le modèle 13 features entraîné sur UC Irvine remplace le modèle EmoPhone seulement si (1) son AUROC moyenne dépasse d'au moins +0,02 celle du modèle EmoPhone (fixe, `model_params.json`), (2) sa balanced accuracy moyenne n'est pas plus basse, et (3) son AUROC moyenne dépasse celle de « heure seule » entraînée sur UC Irvine. Sinon on garde le modèle EmoPhone. |
 | Décision 2.31 (23 nov. 2026) : scores LLM **utilisés** pour les morceaux absents de MuSe (MuSe → LLM → neutre), **par décision d'équipe malgré la règle non atteinte** | La référence MuSe est trop peu taguée pour juger le LLM (65 % des morceaux ont ≤ 3 tags ; sur les morceaux à 4–9 tags, l'accord monte à 0,39–0,44). Règle écrite avant le contrôle (Spearman ≥ 0,4 et MAE en centiles < 0,25, par score). Essai 1 (Claude Haiku 4.5, prompt v1) : Spearman 0,277 (énergie) et 0,336 (positivité), MAE en centiles 0,275 et 0,263. Essai 2 (Claude Haiku 5.5, prompt v2, nouveau tirage) : 0,279 et 0,324 ; 0,273 et 0,266. Essai 3 (Claude Haiku 5.5, prompt v3 avec 48 morceaux de référence, échantillon test jamais vu) : 0,258 et 0,316 ; 0,280 et 0,267. Les trois font pire que la valeur neutre (§7) |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
+| **Modèle d'état v2 (23 nov. 2026)** : A « modèle commun soigné » + B « Harmony apprend de toi » retenus ; C (HRV, respiration, température, lumière, bruit, modèles plus gros) écarté. Design : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` ; preuves : `docs/research/2026-11-23-modele-etat-v2/` | Plus de capacité ou plus d'entrées montre ne change presque rien ; les réponses de l'utilisateur sont le seul levier à gain important (design v2 §2–§3). Lignes D1–D9 ci-dessus et ci-dessous |
+| D4 : couche personnelle en mode **ombre** pendant le pilote (calculée et journalisée, ne pilote pas la file ; toutes les files en stratégie S1) ; mode **actif** pour la démo finale | Garde propre l'A/B « corps vs heure seule » (4.4) et mesure une vraie courbe d'apprentissage (design v2 §4.5, §4.6) |
+| D5 : consentement écrit du pilote incluant les questions, les notifications et les journaux locaux ; export limité aux agrégats et aux paires (probabilité, étiquette, jour d'utilisation) | Les check-ins sont traités comme des données de santé (§11) ; App Store 5.1.3 (design v2 §6, §15) |
+| D6 : pas de smileys dans les questions | Zone grise « émotion nommée » (design v2 §5.1) |
+| D7 : 3 stratégies de file par situation, S1 « progressif » (règle §8 actuelle), S2 « demi-pas », S3 « correspondance longue » ; à faire valider par le customer | Définies pour être implémentables telles quelles ; toutes partent de `e0` et respectent les règles §8 (design v2 §4.6) |
+| D9 : questions facultatives, désactivables, jamais bloquantes (N1, NFR5 ≤ 2 taps) | Besoin N1 « zéro effort » ; l'absence de réponse n'est jamais une réponse « basse » (design v2 §5.3) |
+| Périmètre du pilote « collecte seule » : couche personnelle en ombre, énergie seulement, 2 notifications/jour, aucun nouvel écran sur Home, file inchangée ; bandit, état 2-D et ligne énergie sur Home après le cours | Charge face à M3 (~3–4 jours après la simulation 6.5) ; le pilote mesure quand même la courbe commune vs personnelle sur de vrais utilisateurs Apple Watch (design v2 §15) |
+| LifeSnaps (Fitbit Sense, CC BY 4.0) = test externe secondaire seulement, jamais dans l'entraînement ; facultatif, après le cours (§5.5) | Signaux de nuit sans gain, effet de l'heure inversé par rapport à EmoPhone (design v2 §2) |
 
 ---
 
@@ -148,6 +168,12 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
  Ordinateurs de l'équipe : entraînement Python sur EmoPhone ──► StateModel (+ paramètres JSON) ──► embarqué dans l'app
 ```
 
+**Modèle d'état v2 (décidé le 23 nov. 2026, §3)** : trois modèles, tous sur l'iPhone. (1) Le modèle
+commun « corps » ci-dessus, figé, donne l'estimation du jour 1 ; (2) une couche personnelle (deux
+décalages, énergie et agrément) apprise des réponses aux questions en un geste, qui oublie en
+~2 jours ; (3) un bandit de file qui choisit entre 3 stratégies selon « Did it fit? », les skips et
+les likes (après le pilote). Le Worker est inchangé. Schéma et détails : design v2 §4.
+
 ### 4.2 Ce qui tourne où
 
 | Où | Quoi | Données |
@@ -170,6 +196,7 @@ pas dans le design (accessible depuis Settings, en build Debug seulement).
 | `QueueBuilder` + `Explainer` | file et raison | FR8, FR11 |
 | `PlayerController` + `FeedbackStore` | lecture, skip/like/fit | FR9, FR10 |
 | `DataControl` | voir, exporter, supprimer | FR13 |
+| Modèle v2 (noms laissés au builder) : check-ins et notifications, couche personnelle, rang `e0`, bandit de file | questions facultatives, décalages `b_E`/`b_V`, départ de file, choix de stratégie (design v2 §4–§6, TODO Phase 6) | FR7, FR8, FR13, NFR5 |
 
 Le cœur (`SongScorer`, `FeatureBuilder`, `StateEstimator`, `QueueBuilder`) ne connaît **que** les
 deux protocoles : il ne doit jamais appeler Spotify ou HealthKit directement (FR14, testabilité).
@@ -204,7 +231,8 @@ Harmony/
   Les fichiers restent sur les ordinateurs de l'équipe, jamais sur GitHub, jamais dans l'app,
   jamais collés dans un chat.
 - **Contenu** : 3 vagues (D-1 2020, D-2 2021, D-3 2022), ~4 semaines chacune, étudiants d'une
-  université coréenne, téléphones Android + **Fitbit Inspire HR**. 297 participants retenus.
+  université coréenne, téléphones Android + **Fitbit Inspire HR**. 297 enregistrements
+  participant-vague retenus, soit **282 personnes** distinctes (EmoPhone v2, §3.1).
 - **Fichiers d'une vague** (vérifié sur D-1) : `EsmResponse.csv` (réponses d'humeur),
   `UserInfo.csv` (profil, questionnaires — **ne pas utiliser**, données sensibles hors sujet),
   `Sensor/D1_Sensor_Pxxx.tar.gz` (un CSV par capteur et par participant).
@@ -213,36 +241,42 @@ Harmony/
   `actualTriggerTime` (ms UTC), `arousal` (−3..+3), `stress`.
 - **Pièges connus** :
   - horodatages en ms **UTC** → heure locale = +9 h (Corée) ;
-  - **pas de sommeil mesuré** et **pas de HRV** ;
+  - **pas de sommeil mesuré** et **pas de HRV** dans les données publiées (une ceinture Polar H10 a
+    servi sur des sous-périodes de D-1/D-2, sans être publiée : EmoPhone v2, annexe A.3.2) ;
   - localisation brouillée ; la colonne `altitude` de `Location.csv` semble contenir de vraies
     latitudes → **ne jamais l'utiliser** (et le signaler aux auteurs) ;
-  - D-3 : stress et dérangement notés 0..+6 au lieu de −3..+3, et 8 adjectifs PANAS en plus ;
+  - D-3 : stress et dérangement notés 0..+6 au lieu de −3..+3, et 8 adjectifs en plus (items
+    propres à EmoPhone, pas le PANAS/PANAS-X d'origine : EmoPhone v2, §3.4) ;
   - 10 participants de D-1 ont des fichiers capteurs mais aucune réponse (exclus au contrôle qualité) ;
   - la montre n'était pas portée sur ~34 % des nuits.
 
 ### Différences entre vagues (TODO 1.35)
 Exploration du 10 nov. 2026 : D-1/D-2/D-3 ont respectivement 10 259/21 042/21 838 réponses
 et 92/99/106 participants répondants. D-2 ajoute `intendedTriggerTime`, `valenceChange` et
-`arousalChange`, remplaçant `change` ; D-3 ajoute `intendedTriggerTime` et les huit adjectifs
-PANAS (happy, relaxed, cheerful, content, sad, anxious, depressed, angry), et ne contient plus
+`arousalChange`, remplaçant `change` ; D-3 ajoute `intendedTriggerTime` et huit adjectifs
+(happy, relaxed, cheerful, content, sad, anxious, depressed, angry ; items propres à EmoPhone, pas
+le PANAS d'origine), et ne contient plus
 attention, mental, duration ni les items de changement. Valence et arousal restent sur −3..+3
 dans les trois vagues. En D-3, stress, dérangement et les huit adjectifs sont sur 0..+6.
 
 Les archives capteurs sont au nombre de 102/112/106 ; 10/13/0 ont un fichier capteur mais aucune
 réponse, et 0/0/0 participants répondants n'ont pas d'archive. Les colonnes Fitbit restent
 `timestamp,value`. D-2 ajoute `KeyEvent.csv`, `Proximity.csv` et quatre fichiers `Fitness-*` ;
-D-3 a `KeyEvent.csv` mais pas `Proximity.csv` ni ces fichiers `Fitness-*`. Les médianes des
+D-3 a `KeyEvent.csv` et les quatre `Fitness-*` (non vides), mais ni `Proximity.csv` ni `Light.csv`
+(correction du 23 nov. 2026, inventaire des 106 archives D-3 ; archive de recherche v2, rapport 1).
+Les médianes des
 médianes d'intervalle FC sont 0,08 min (101 participants avec mesures), 0,08 min (77) et 0,08 min
 (106), soit environ 5 s. Les réponses couvrent le 8 fév.–2 avr. 2020, le 7 déc. 2020–27 janv. 2021
 et le 24 nov. 2021–11 janv. 2022 (heures KST, timestamps en ms UTC).
 
 ### Identité des participants entre vagues (TODO 1.36)
 L'article dit « All three cohorts were drawn from the same university student population »
-(annexe A.2), mais ne précise pas si des personnes reviennent d'une vague à l'autre. Les `pcode`
-sont numérotés par vague ; 82/78/86 codes sont communs à D-1/D-2, D-1/D-3 et D-2/D-3, sans
-permettre d'identifier les mêmes personnes. Il faut demander confirmation à l'équipe EmoPhone.
-En attendant, tout entraînement combinant des vagues utilise un identifiant `vague + pcode`
-(ex. `D1_P050`) pour éviter de fusionner des personnes distinctes.
+(annexe A.2). Les `pcode` sont numérotés par vague ; 82/78/86 codes sont communs à D-1/D-2, D-1/D-3
+et D-2/D-3, sans permettre d'identifier les mêmes personnes. **Réponse (EmoPhone v2, §3.1 et
+annexe C.3, relevée le 23 nov. 2026)** : 282 personnes distinctes, dont 14 qui reviennent (13 dans
+deux vagues, une dans les trois), identifiées par une table d'inscription non publiée ; les retirer
+change l'AUROC entre vagues d'au plus 0,0022. On garde donc l'identifiant `vague + pcode`
+(ex. `D1_P050`) pour tout entraînement combinant des vagues.
 
 ### 5.2 MuSe (scores des morceaux)
 - Akiki & Burghardt 2021 (doi:10.5334/johd.33), **CC BY 4.0** (redistribuable avec citation).
@@ -418,9 +452,21 @@ notés par le LLM gardent leur score (cache).
   Oura ont un `bedtime_end_timestamp`, donc un sommeil et un réveil mesurés seraient utilisables.
 
 ### 5.4 Ce qui ne doit jamais aller sur Git
-Données brutes EmoPhone/UC Irvine, tables de features dérivées par participant, clés API,
-fichiers `.env`, `.dev.vars`, données de santé réelles d'un membre. Les **résultats agrégés** sont autorisés. Le **modèle entraîné** (quelques coefficients) est
+Données brutes EmoPhone/UC Irvine/LifeSnaps, tables de features dérivées par participant, clés API,
+fichiers `.env`, `.dev.vars`, données de santé réelles d'un membre (check-ins compris). Les **résultats agrégés** sont autorisés. Le **modèle entraîné** (quelques coefficients) est
 prévu dans l'app et sur GitHub : les auteurs d'EmoPhone ont confirmé par écrit que c'est autorisé (TODO 2.14b, novembre 2026 ; réponse conservée par l'équipe, hors dépôt).
+
+### 5.5 LifeSnaps (test externe secondaire, facultatif)
+- **Source** : Zenodo 7229547 (v4), **CC BY 4.0** ; 71 participants en Europe, Fitbit Sense,
+  humeur choisie dans une liste 3 fois par jour (5 028 réponses utilisables, 63 participants).
+- **Usage décidé (§3, 23 nov. 2026)** : test externe secondaire seulement, jamais dans
+  l'entraînement, facultatif et après le cours ; partie FC et partie heure seule notées séparément.
+- **Déjà mesuré** (tour de recherche du 23 nov. 2026) : les signaux de nuit n'apportent rien
+  (−0,001 à −0,004 d'AUROC) ; le modèle EmoPhone figé fait 0,471 (effet de l'heure inversé),
+  ses termes FC seuls 0,530. Détails : `docs/research/2026-11-23-modele-etat-v2/notes/tour2/lifesnaps.md`.
+- Téléchargement : `docs/research/2026-11-23-modele-etat-v2/scripts/lifesnaps/download.sh`, en
+  remplaçant `DEST` par `data/lifesnaps/` (ignoré par Git) ; ne rien exécuter depuis le dossier
+  téléchargé.
 
 ---
 
@@ -671,6 +717,29 @@ et le sommeil estimé n'est pas corrélé au sommeil Oura (§5.3). Décision : m
 (§3) ; l'Apple Watch et les étudiants de Hanyang restent une troisième population, que seul le
 pilote mesurera (§13).
 
+**Tour de recherche « modèle d'état v2 » (23 nov. 2026)** — D-1 + D-2 (31 301 réponses,
+191 participants-vagues), 5 groupes de participants entiers de `ml/train.py`, réglages dans les
+groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties agrégées :
+`docs/research/2026-11-23-modele-etat-v2/` ; résumé : design v2 §2. Rien n'a changé dans l'app.
+- **Mode « corps »** (`z_hr_30` connu, 51,6 % des réponses) : AUROC énergie 0,573 contre 0,524 pour
+  l'heure seule sur les mêmes réponses.
+- **Familles de modèles** (LR réglée, interactions, gradient boosting, MLP, ensembles) : aucune ne
+  bat la régression logistique simple de plus que l'écart entre groupes. Sorties multiples :
+  ≤ +0,004 ; stress pas mieux que l'heure seule (0,540 contre 0,543).
+- **Nouvelles entrées** (contexte de journée, veille, FC au repos, METs, type d'activité) : ≈ 0
+  chacune. Les **4 valeurs brutes** `raw_hr_30/60`, `raw_log_steps_30/60` (17 features, §6.8) :
+  valence 0,559 (+0,017 ± 0,009, 5 groupes sur 5) ; énergie +0,008 ± 0,010 (4 sur 5 ; +0,003 en
+  sélection imbriquée, non robuste).
+- **`e0` par rang** : étale `e0` de 0,36–0,55 à 0,03–0,98, AUROC −0,005 ± 0,010 (non significatif).
+- **Personnalisation simulée** (2 réponses/jour, étiquette « passé seulement ») : énergie 0,555 →
+  0,666 sur la période (jours 4–7 : 0,640 contre 0,571 pour le modèle commun) ; agrément 0,529 →
+  0,704. Simulé sur des étudiants EmoPhone : le gain arrivera probablement plus tard dans l'app.
+- **Reproductibilité** : `train.folds()` redonne les mêmes moyennes (0,534 / 0,554 / 0,563) d'une
+  machine à l'autre, mais pas les mêmes écarts-types (heure seule : 0,009 sur le Mac de Clément
+  contre 0,017 ci-dessus),
+  car les égalités du nombre de réponses sont départagées par un tri non stable. À corriger avant
+  toute nouvelle comparaison (TODO 6.1).
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (TODO 5.6–5.8). Le critère
@@ -679,8 +748,11 @@ pilote mesurera (§13).
    UC Irvine n'est pas intégré à l'app (TODO 5.9, abandon explicite, 22 nov. 2026).
 3. Toujours comparer à la référence « heure seule » ; si le modèle ne la bat pas, l'app
    utilise le mode heure seule.
-4. La documentation ne précise pas si des personnes reviennent d'une vague à l'autre (§5.1) ;
-   demander confirmation. En combinant des vagues, grouper par `vague + pcode` jusque-là.
+4. 14 personnes reviennent d'une vague à l'autre, sans identifiant publié ; effet ≤ 0,0022 d'AUROC
+   (§5.1). En combinant des vagues, grouper par `vague + pcode`.
+5. **Modèle v2** (§6.8) : critères d'adoption écrits avant les résultats (TODO 6.2), D-3 une seule
+   fois par changement, code figé avant. La couche personnelle est évaluée chronologiquement
+   (chaque réponse prédite avec le passé seulement), jamais par un découpage aléatoire (§3, D8).
 
 ### 6.7 Export vers l'app
 - Coefficients, moyennes, écarts-types, médianes d'imputation et **ordre des features** dans
@@ -717,6 +789,38 @@ pilote mesurera (§13).
   référence ou sans FC sur 30 min, et le pilote (4.4) le compare au modèle complet. Les
   fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
+
+### 6.8 Modèle d'état v2 (décidé le 23 nov. 2026, non implémenté)
+
+Source détaillée : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` (formules, données,
+paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touche le contrat §6.
+
+- **Le contrat en vigueur reste v1** (13 features, §6.4). Le candidat ci-dessous ne devient le
+  contrat que si le critère écrit avant les résultats (TODO 6.2) est satisfait en 6.3 ; il faut
+  alors réentraîner, exporter `model_params.json` v3 et régénérer les fixtures golden (6.4).
+- **Candidat v2 : 17 features** = les 13 de v1 puis, dans cet ordre, `raw_hr_30`, `raw_hr_60`,
+  `raw_log_steps_30`, `raw_log_steps_60`. `raw_hr_w` = `hr_w` de v1 **avant** z-score (moyenne des FC
+  rééchantillonnées de `(t − w, t]`, valable dès 1 mesure, sinon inconnue) ; `raw_log_steps_w` =
+  `log_steps_w` de v1 avant z-score (0 si montre portée sans pas ; inconnu si ni FC ni pas). Mêmes
+  règles d'inconnu et d'imputation par médiane d'entraînement que v1.
+- **Mode « corps » en v2** : corps si `raw_hr_30` est connu (au moins une FC rééchantillonnée dans
+  les 30 dernières minutes), sinon heure seule ; les z-scores inconnus sont imputés par la médiane.
+  En v1, la règle reste « corps si `z_hr_30` connu » (§6.7). Le tirage du pilote (TODO 4.4) et le
+  champ `estimateMode` suivent la règle du modèle livré.
+- **A priori d'agrément** `z_V` : par défaut la constante `logit(0,566)` (taux de base de « valence
+  au-dessus de la moyenne personnelle » sur D-1 + D-2) ; un modèle valence (bloc `valence` de
+  `model_params.json`) seulement s'il passe son critère (6.2). Jamais utilisé seul pour la file.
+- **`e0` sans réponse** : rang de la prédiction courante parmi les prédictions de la même personne
+  sur la grille de référence (§6.4 : toutes les 30 min, 08:00–23:30, 14 jours précédents, montre
+  portée), dès 32 points de grille ; sinon la probabilité brute (design v2 §4.3).
+- **Couche personnelle** : un décalage de logit `b_E` (et `b_V` si l'utilisateur répond à
+  l'agrément) appris des check-ins des 14 derniers jours, oubli de constante ~2 jours, a priori
+  gaussien ; `b = 0` sans réponse. Étiquette d'un check-in = réponse au-dessus de la moyenne des
+  réponses de la personne sur les 14 jours précédents (au moins 5). Formule : design v2 §4.4.
+  **Les hyper-paramètres (`T`, `τ_E`, `τ_V`, seuil) et les fixtures golden viennent de la simulation
+  de la règle exacte de l'app (TODO 6.5), avant tout code Swift.**
+- **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
+  (§3, D4 et périmètre « collecte seule »).
 
 ---
 
@@ -992,6 +1096,19 @@ Suggestion de situation (FR5) : Wake-up dans les 2 h après la fin du sommeil ; 
 21 h ; Low energy entre 13 h et 17 h si état < 0,4 ; sinon aucune suggestion. Stress jamais
 suggéré automatiquement (modèle trop faible sur le stress).
 
+**Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
+- **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
+  probabilité brute, tassée entre ≈ 0,36 et 0,55 ; avec ≥ 5 check-ins énergie étiquetés dans les
+  14 jours et en mode actif, `σ(z_E + b_E)`. Le seuil « état < 0,4 » de la suggestion s'applique à
+  ce même `e0`. Le rang entre dans le pilote si le constructeur de file est prêt (TODO 6.11).
+- **Stratégies** (D7) : S1 « progressif » = la règle ci-dessus ; S2 « demi-pas » et S3
+  « correspondance longue » partent aussi de `e0` et vont vers `g` de façon monotone. Pendant le
+  pilote, toutes les files sont en S1 (journalisé) ; le bandit S1/S2/S3 vient après (TODO 6.12b).
+  Récompense : « Did it fit? », skips < 30 s, likes ; jamais une étiquette d'état.
+- **Positivité** : quand l'utilisateur répond à l'agrément, un terme de distance de `v0` vers le but
+  de la situation remplace la pénalité fixe de +0,2 (après le cours, forme à fixer avec le customer).
+- Les règles ci-dessus restent vraies (wind-down ne finit jamais plus énergique qu'il ne commence).
+
 ---
 
 ## 9. Spotify — ce qu'il faut savoir
@@ -1090,6 +1207,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Le LLM ne reçoit que titres et artistes.
 - L'utilisateur peut tout voir, exporter, supprimer (FR13).
 - Pas de nom d'émotion affiché, pas de promesse médicale (NFR7).
+- **Check-ins (modèle v2, §6.8)** : traités comme des données de santé ; stockés sur le téléphone,
+  inclus dans l'export et la suppression totale, « Reset what Harmony learned » les efface. Au
+  pilote, seuls des paires (probabilité, étiquette, jour d'utilisation) et des comptes sortent, avec
+  consentement écrit (§3, D5) ; ni réponse brute horodatée ni donnée HealthKit. Notifications au
+  texte neutre, sans valeur de santé.
 
 ---
 
@@ -1140,6 +1262,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   toutes les lignes MuSe), `WorkerClient`, `SongScorer` (MuSe → Worker → neutre, cache
   `SongScore`), section « Song scores » de l'écran Debug. Sur la bibliothèque de Clément
   (2 045 titres) : 11,4 % trouvés dans MuSe, 88,6 % notés par le LLM, premier scoring en 158 s (§5.2).
+- *Modèle d'état v2, 23 nov. 2026* : deux tours de recherche (EmoPhone exploité ? autres jeux ?
+  personnalisation ?) archivés dans `docs/research/2026-11-23-modele-etat-v2/` (rapports, notes,
+  scripts, résultats agrégés, aucune donnée) ; résultats clés en §6.5. Design A + B
+  (`docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md`) ; décisions D1–D9 et périmètre du
+  pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
+  Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
+  **Rien n'est implémenté.**
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
@@ -1159,6 +1288,12 @@ suggéré automatiquement (modèle trop faible sur le stress).
 | Gain réel de pas + sommeil | Modèle plus complexe sans gain | Tester sur D-2/D-3 et au pilote ; repli heure + FC |
 | Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Comparer files « corps » et « heure seule » au pilote (4.4, 4.7) ; mode heure seule si aucun gain |
 | Coût Claude Pro (160 $) annoncé dans le rapport | Doit correspondre à la réalité | Confirmer qui s'abonne |
+| Charge du modèle v2 face à M3 (6 déc.) : build du pilote « collecte seule » ~3–4 jours après la simulation 6.5 | Check-ins absents du pilote, ou M3 en retard | Faire d'abord le sous-ensemble « build du pilote » de la Phase 6 ; s'il ne tient pas, le pilote garde le modèle actuel et B passe après le cours |
+| Transfert de la simulation : étudiants EmoPhone payés (~7 réponses/jour), référence « habitude » plus riche que dans l'app | Gain de la couche personnelle surestimé ou plus tardif | Simuler la règle exacte de l'app avant tout code Swift (6.5) ; toujours dire « simulé sur EmoPhone » |
+| Taux de réponse sans paiement, fatigue, tension avec N1 | Trop peu d'étiquettes (cible 30–60 par personne en 2 semaines) | Questions en un geste, 2 par jour au plus, facultatives ; taux mesuré au pilote |
+| Notifications relayées sur l'Apple Watch sans app watchOS, réponse téléphone verrouillé | Réponses perdues | Tester sur un vrai iPhone verrouillé et une vraie montre avant le pilote (6.10) |
+| Éthique : le pilote enregistre des auto-évaluations liées à la santé (App Store 5.1.3) | Pilote contesté | Consentement écrit couvrant les questions (D5) ; demander à l'enseignant si un avis éthique est requis (6.14) |
+| `sleep_unknown` a l'un des plus gros coefficients : il reflète l'habitude EmoPhone de ne pas porter la montre la nuit | Signal présenté à tort comme « du corps » | Ne pas le présenter comme un signal corporel |
 
 ---
 
@@ -1201,6 +1336,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
 
 ## 15. Références utiles
 - Rapport : `docs/main.tex` (références [1]–[19]).
+- Modèle d'état v2 : design `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` ;
+  preuves `docs/research/2026-11-23-modele-etat-v2/` (voir son `README.md`).
+- LifeSnaps : https://zenodo.org/records/7229547 (CC BY 4.0)
 - EmoPhone : https://arxiv.org/abs/2609.16581 — doi:10.7910/DVN/QGRVU8
 - MuSe : doi:10.5281/zenodo.4281165
 - Spotify Web API, changements fév. 2026 : https://developer.spotify.com/documentation/web-api/references/changes/february-2026
