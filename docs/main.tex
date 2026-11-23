@@ -1,5 +1,6 @@
 % CSE 406 Software Engineering -- Group G02 "FireStarter"
 % Submission B: Specification document. Sections I-III revise Submission A; IV-V are new.
+% Final report (TODO 4.10-4.12): Sections VI-VIII (design, use cases, evaluation) added on Nov. 23, 2026.
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 
@@ -12,7 +13,7 @@
 \usepackage{tabularx}
 \usepackage{fancyvrb}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
 \usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
 
@@ -336,7 +337,7 @@ Hardware and software tools & already owned or free \\ \hline
 \end{itemize}
 
 \subsection{Task Distribution}
-The detailed task distribution will be given in the design phase, once the modules and their interfaces are fixed. Until then, the work follows the roles of Table~\ref{tab:roles}.
+The task distribution of the work done is given in Section~\ref{sec:tasks} (Table~\ref{tab:tasks}).
 
 %=====================================================================
 \section{Specifications}\label{sec:spec}
@@ -583,6 +584,175 @@ user taps a situation -> State model (Core ML)
 [Spotify app] <- play / queue     skip, like -> feedback
 \end{code}
 \end{minipage}\par
+
+%=====================================================================
+\section{Design}\label{sec:design}
+%=====================================================================
+Sections~\ref{sec:design} to~\ref{sec:eval} describe the system as built on Nov.\ 23, 2026 (code in the repository). Where the build differs from the plan of Section~\ref{sec:spec}, the difference is stated.
+
+\subsection{Architecture}
+Fig.~\ref{fig:architecture} shows the parts of the system and where they run. Everything that touches health data runs on the iPhone; the only cloud part is the Cloudflare Worker, which receives song titles and artists.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}
+\tikzset{wide/.style={box, minimum width=7.8cm, minimum height=0.6cm}, part/.style={box, minimum width=2.4cm, text width=2.3cm}, both/.style={thick, {Stealth[length=2mm]}-{Stealth[length=2mm]}}}
+\node[wide, dashed] (ml) at (0,1.35) {Team computers (Python)\\{\tiny EmoPhone, MuSe $\rightarrow$ Core ML model, parameters, MuSe table}};
+\node[wide] (ui) at (0,0) {SwiftUI screens: onboarding, Home, player, Library, Settings};
+\node[part] (st) at (-2.7,-1.15) {State\\{\tiny features, Core ML}};
+\node[part] (qu) at (0,-1.15) {Queue\\{\tiny targets, songs, reason}};
+\node[part] (sc) at (2.7,-1.15) {Song scores\\{\tiny MuSe, LLM, cache}};
+\node[wide] (db) at (0,-2.25) {SwiftData store (8 tables), Keychain (tokens)};
+\node[part] (hk) at (-2.7,-3.35) {Health provider\\{\tiny HealthKit or demo}};
+\node[part] (mp) at (0,-3.35) {Music provider\\{\tiny Web API, App Remote}};
+\node[part] (wc) at (2.7,-3.35) {Worker client};
+\node[draw, thick, rounded corners=3pt, fit=(ui) (hk) (wc), inner sep=3pt] (phone) {};
+\node[font=\scriptsize\bfseries, anchor=north west] at (phone.north west) {iPhone};
+\node[part] (aw) at (-2.7,-4.75) {Apple Watch\\{\tiny via Apple Health}};
+\node[part] (sp) at (0,-4.75) {Spotify\\{\tiny account and app}};
+\node[part] (cw) at (2.7,-4.75) {Cloudflare Worker\\{\tiny key, allowlist, limit}};
+\draw[flow] (ml) -- node[lbl, right]{shipped in the app} (ui);
+\draw[both] (ui) -- (qu);
+\draw[flow] (st) -- (qu);
+\draw[flow] (sc) -- (qu);
+\draw[flow] (aw) -- (hk);
+\draw[both] (sp) -- (mp);
+\draw[both] (cw) -- node[lbl, right]{titles, artists} (wc);
+\end{tikzpicture}
+\caption{Architecture. The core (state, queue, song scores) only sees the two provider interfaces; the Worker calls the LLM API with the key it holds.}
+\label{fig:architecture}
+\end{figure}
+
+\textbf{Layers.} The app has four folders: \texttt{Features} (SwiftUI views), \texttt{Core} (models and pure logic), \texttt{Services} (connectors to Spotify, Apple Health and the Worker) and \texttt{Resources} (Core ML model, its parameters, the MuSe table, demo data). The core never calls Spotify or HealthKit directly: it sees two protocols, \texttt{MusicProvider} and \texttt{HealthProvider}, each with a real and a demo implementation (FR12, FR14, NFR8).
+
+\textbf{Main flows.} (1) When the app becomes active, the summary store reads the new HealthKit samples with anchored queries and keeps hourly and nightly summaries only. (2) At each tap on a situation, the state is computed again: the heart rate, steps and sleep of the last 14 days are read into memory, turned into the 13 features of Requirement~4 against the person's own averages, then given to Core ML (or to the time-of-day model if the watch gave no heart rate in the last 30 minutes); the raw samples are then dropped. (3) The queue maker builds the queue from the local tables and the MuSe table, checks at most two MuSe suggestions on Spotify and writes the reason. (4) The player controller plays the queue in Spotify and records skips, likes, finished songs and the ``Did it fit?'' answer. (5) New songs are scored in the background: MuSe first, then the Worker in batches of 50, else a neutral score.
+
+\textbf{Changes from the specification.} The personal averages are computed in memory at each estimate instead of being stored in a \texttt{baselines} table. The queue is played as a private Spotify playlist named ``Harmony'', created for each queue and played through App Remote, instead of one song plus the Spotify queue. Songs scored by the LLM get no penalty in the song choice (team decision, Nov.\ 23): with any fixed penalty, almost only MuSe songs were chosen. Each queue also records the kind of queue drawn for the pilot and the estimate it really used (Section~\ref{sec:pilot}).
+
+\subsection{Module Structure}
+Table~\ref{tab:modules} lists the modules and the requirements they cover. The app has 80 Swift files and 38 test files; on Nov.\ 23, 2026, the 299 Swift tests and the 62 Python tests pass. Shared ``golden'' files check that Swift computes the same features and probabilities as Python (difference below $10^{-6}$), the same song keys, and reads the same pilot export.
+
+\begin{table}[!t]
+\centering
+\caption{Module Structure}
+\label{tab:modules}
+\scriptsize
+\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}p{1.8cm}|X|>{\raggedright\arraybackslash}p{1.2cm}|}
+\hline
+\textbf{Module} & \textbf{Main types or files} & \textbf{Req.} \\ \hline
+\texttt{App} & \texttt{HarmonyApp}, \texttt{RootView}, tab bar, theme, \texttt{DemoMode} & FR12, NFR5 \\ \hline
+\texttt{Features} & Onboarding, Home, Player (with \texttt{PlayerController}), Library, Settings; Debug screen in Debug builds only & FR5, FR9--11, FR13, NFR6 \\ \hline
+\texttt{Core/Models} & \texttt{Track}, \texttt{SongScore}, \texttt{HourSummary}, \texttt{NightSummary}, \texttt{QueueRecord}, \texttt{QueueItem}, \texttt{FeedbackEvent}, \texttt{Consent} (SwiftData) & NFR1 \\ \hline
+\texttt{Core/Summaries} & \texttt{HealthSummaries} (hours, nights, 60\,\% rule), \texttt{SummaryStore} & FR3, NFR4 \\ \hline
+\texttt{Core/State} & \texttt{BaselineCalculator}, \texttt{FeatureBuilder}, \texttt{StateEstimator}, \texttt{CurrentState}, \texttt{ModelParams} & FR4, FR7 \\ \hline
+\texttt{Core/Scoring} & \texttt{MuseCatalog}, \texttt{SongKey}, \texttt{SongScorer}, \texttt{LibraryFigures} & FR6 \\ \hline
+\texttt{Core/Queue} & \texttt{QueueTargets}, \texttt{TrackPicker}, \texttt{QueueBuilder}, \texttt{QueueHistory}, \texttt{SuggestionCheck}, \texttt{Explainer}, \texttt{SituationSuggester}, \texttt{QueueMaker}, \texttt{PlaybackTracker} & FR5, FR8, FR10, FR11 \\ \hline
+\texttt{Core/Pilot} & \texttt{PilotSchedule}, \texttt{PilotExport} & pilot \\ \hline
+\texttt{Core} & \texttt{DataControl}, \texttt{LibrarySync}, \texttt{UserMessage} & FR2, FR13 \\ \hline
+\texttt{Services/Music} & \texttt{MusicProvider}; Spotify: \texttt{SpotifyAuth}, \texttt{PKCE}, \texttt{KeychainTokenStore}, \texttt{SpotifyAPI}, \texttt{SpotifyProvider}, \texttt{SpotifyPlaylist}, \texttt{SpotifyRemote}; demo provider & FR1, FR2, FR9, FR14, NFR2 \\ \hline
+\texttt{Services/Health} & \texttt{HealthProvider}, \texttt{HealthKitProvider}, \texttt{DemoHealthProvider} & FR3, FR12, FR14 \\ \hline
+\texttt{Services} & \texttt{WorkerClient} & FR6 \\ \hline
+\texttt{worker/} (TypeScript) & \texttt{POST /score}: input check, Spotify token and allowlist, 50 requests per user and day, LLM call with a cached prompt & FR6, NFR1, NFR2 \\ \hline
+\texttt{ml/} (Python) & \texttt{features}, \texttt{build\_features}, \texttt{train}, \texttt{export}, \texttt{export\_coreml}, \texttt{make\_fixtures}, \texttt{muse\_build}, \texttt{normalize}, \texttt{llm\_check}, \texttt{pilot\_analysis} & FR6, FR7, NFR8, NFR9 \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Task Distribution}\label{sec:tasks}
+Table~\ref{tab:tasks} gives the work actually done, from the authors of the commits in the repository and the task numbers of \texttt{docs/TODO.md} (Nov.\ 23, 2026). The roles of Table~\ref{tab:roles} were the plan.
+
+\begin{table}[!t]
+\centering
+\caption{Task Distribution (Work Done)}
+\label{tab:tasks}
+\scriptsize
+\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}p{1.25cm}|X|}
+\hline
+\textbf{Member} & \textbf{Main tasks} \\ \hline
+Clément & iPhone app: data model, Spotify sign-in, import and playback, HealthKit, state estimate on the phone, song scores, queue, screens, tests and quality checks; Cloudflare Worker and LLM prompt and check; export of the model to Core ML and golden files; state model v2 research and design; pilot tools; repository, documents, Apple and Spotify accounts. \\ \hline
+Lucas & Model features in Python: personal averages, heart-rate resampling, sleep estimate, feature tables of the three waves. \\ \hline
+Riad & Model training and evaluation: grouped cross-validation, time-of-day baseline, comparison of inputs, single test on the held-out wave, final model. \\ \hline
+Cyprien & Data: comparison of the EmoPhone waves, MuSe table, title and artist normalisation, UC Irvine evaluation. Customer: review of every text of the app (no emotion word, no medical claim). \\ \hline
+\end{tabularx}
+\end{table}
+
+%=====================================================================
+\section{Use Cases}\label{sec:usecases}
+%=====================================================================
+\textbf{UC1 -- First launch.} \emph{Actor:} new user with a Spotify Premium account and an Apple Watch. \emph{Result:} library imported and scored, Home ready.
+\begin{enumerate}
+\item The launch screen opens the welcome and ``How it works'' pages.
+\item ``Connect Spotify'' opens Spotify's sign-in page (OAuth with PKCE); the tokens go to the Keychain.
+\item The health page explains each signal in one sentence; the iOS sheet asks for heart rate, steps, heart-rate variability and sleep; each answer is stored as a consent.
+\item The library is imported: saved songs by pages of 50, then top tracks and recent plays, merged by Spotify ID (2,045 songs in 14.3\,s on an iPhone 16).
+\item Home opens while the songs are scored in the background (MuSe, then the Worker, else neutral).
+\end{enumerate}
+
+\textbf{UC2 -- One queue.} \emph{Actor:} user in the morning. \emph{Result:} a short queue plays in Spotify and the feedback is stored.
+\begin{enumerate}
+\item The app becomes active; the new watch samples are summarised by hour and by night.
+\item Home shows the four situations; Wake-up is marked ``For you'' (within two hours after waking up).
+\item The user taps Wake-up (second tap after launch, NFR5). The state is computed from the last 14 days, e.g.\ 0.30 after a short night.
+\item The queue maker sets five targets from 0.30 to the goal 0.7 (two matching songs first), picks the closest songs (no song of a queue from the last 72\,h, no song skipped twice in this situation) and writes the reason ``Short night, morning: calm songs first, then more energy.''
+\item The player opens with the queue, the cover art and the Spotify logo; the queue plays as the ``Harmony'' playlist through App Remote, or opens in Spotify if App Remote fails.
+\item A song left before 30\,s is a skip, a song played to its end is finished, a like saves the song in Spotify; after the last song the user answers ``Did it fit?''.
+\end{enumerate}
+
+\textbf{UC3 -- Deleting the data.} \emph{Actor:} any user. \emph{Result:} nothing of the user is left on the phone.
+\begin{enumerate}
+\item Settings $\rightarrow$ My data shows the numbers of songs, scores, health summaries, queues and feedback events.
+\item ``Export as JSON'' gives the whole store as one file through the share sheet (FR13).
+\item ``Delete everything'' asks for a confirmation, then empties the 8 tables, removes the Spotify tokens from the Keychain and the stored keys (HealthKit anchors, import date, pilot draw), and the app starts again at the onboarding. A test checks that every table is empty afterwards.
+\end{enumerate}
+
+%=====================================================================
+\section{Evaluation and Discussion}\label{sec:eval}
+%=====================================================================
+\subsection{State Model}
+The final model keeps the 13 features of Requirement~4 and a logistic regression. Table~\ref{tab:eval} gives the evaluation, always on people the model has not seen. In cross-validation on waves 1 and 2 (191 participant-waves) and in the single test on wave 3 (106 participants), held out until the code was frozen, the model beats the time-of-day baseline and the time + heart-rate model; steps and sleep add a small gain in the same direction on both. On UC Irvine (24 participants, Samsung watch and Oura ring), the model does not transfer (0.496): the Apple Watch and Hanyang students are a third population that only the pilot measures. The final model is trained on the three waves; the app computes the same probabilities as Python (difference below $10^{-6}$ on ten synthetic cases).
+
+\begin{table}[!t]
+\centering
+\caption{State Model Evaluation (People Kept Apart)}
+\label{tab:eval}
+\scriptsize
+\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{1.45cm}|>{\raggedright\arraybackslash}p{1.0cm}|}
+\hline
+\textbf{Test and inputs} & \textbf{AUROC} & \textbf{Bal.\ acc.} \\ \hline
+\multicolumn{3}{|l|}{\textit{Waves 1+2, 5 folds by participant (31,301 answers)}} \\ \hline
+Time of day only & 0.535 $\pm$ 0.017 & 0.505 \\ \hline
+Time + heart rate & 0.554 $\pm$ 0.012 & 0.516 \\ \hline
+\textbf{Time + heart rate + steps + sleep} & \textbf{0.563 $\pm$ 0.010} & \textbf{0.540} \\ \hline
+\multicolumn{3}{|l|}{\textit{Wave 3 held out, tested once (21,838 answers)}} \\ \hline
+Time of day only & 0.534 & 0.511 \\ \hline
+Time + heart rate & 0.570 & 0.537 \\ \hline
+\textbf{Time + heart rate + steps + sleep} & \textbf{0.576} & \textbf{0.541} \\ \hline
+\multicolumn{3}{|l|}{\textit{UC Irvine, final model tested once (3,949 answers)}} \\ \hline
+Time + heart rate + steps + sleep & 0.496 & 0.499 \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Song Scores}
+The MuSe table keeps 89,269 songs. On a team member's library of 2,045 songs, 11.4\,\% are found in MuSe and 88.6\,\% are scored by the LLM; the first scoring takes 158\,s, in the background. The offline check on 2,000 MuSe songs, with the MuSe scores hidden from the LLM, gives Spearman correlations of 0.26--0.28 for energy and 0.32--0.34 for positivity over three trials (two models, three prompts), below the rule written before the check (0.4), and a mean error in percentiles (0.26--0.28) larger than that of a constant neutral score (0.25). The team still uses the LLM for songs missing from MuSe, because the MuSe reference itself is weak: 65\,\% of its songs have at most three tags.
+
+\subsection{App Performance}
+On the iPhone 16, a queue is on screen 0.28 to 0.37\,s after the tap (median 0.34\,s over 12 queues, library of 2,459 songs; NFR3: under 2\,s), measured before the state was computed again at each tap (TODO 4.4), which adds the time of one state estimate (0.13--0.15\,s measured on the same phone). Music starts two taps after launch (NFR5). Without a watch, without network or without the Spotify app, the app does not crash and says what happens in one sentence; without recent heart rate it falls back on the time of day (NFR4).
+
+\subsection{Pilot}\label{sec:pilot}
+The pilot follows the protocol written before any data (\texttt{docs/pilot-protocol.md}): one participant, a team member, from Dec.\ 7 to Dec.\ 20, 2026. Each day is either a \emph{body} day (queues start from the state estimate) or a \emph{time-only} day (queues start from the time of day only), drawn at random in blocks of two days so that 14 days give 7 of each. The phone exports one anonymous file: for each queue, the pilot day and hour, the situation, the kind drawn and the estimate really used, the score origin of each song, the skip, like and finish events and the ``Did it fit?'' answer, plus watch-coverage counts; no song name, health value or date. Measures: skip rate before 30\,s and share of ``yes'' by kind, with 95\,\% intervals by bootstrap over days; MuSe suggestions; nights with known sleep and hours with a heart rate.
+
+\textbf{Results.} \tbd{to be filled after the pilot with \texttt{ml/pilot\_analysis.py}: skip rate and ``yes'' share for body and time-only queues with their intervals; MuSe suggestions; watch coverage.}
+
+\subsection{Limitations}
+\begin{itemize}
+\item \textbf{Modest accuracy.} An AUROC of 0.56--0.58 is close to the best published result on EmoPhone but low in absolute terms, and the probabilities stay between about 0.36 and 0.55, so queues often start from a similar point.
+\item \textbf{Transfer.} The model is trained on Fitbit data of Korean students; on another population and other devices (UC Irvine) it does not transfer.
+\item \textbf{Sleep unknown.} The ``sleep unknown'' input has one of the largest weights; it reflects the habit of EmoPhone participants of not wearing the watch at night, not a signal of the body.
+\item \textbf{Song scores.} Most songs are scored by the LLM, whose agreement with MuSe is weak.
+\item \textbf{Pilot.} One participant, who is also a developer of the app and can guess the kind of queue: a feasibility test, not a proof; results hold for this participant only.
+\end{itemize}
+
+\subsection{Discussion}
+The watch gives an estimate from the first day, without asking anything, but more watch inputs or larger models barely change it: on waves 1 and 2, no model family beats the simple logistic regression by more than the variation between folds. In a simulation on EmoPhone, short answers of the user (``energy right now?'', two a day) raise the AUROC of a personal layer from 0.555 to 0.666 over the study, so the next version adds optional one-tap questions that adjust the shared model on the phone. These figures are simulated on EmoPhone students and must be confirmed on real users.
 
 %=====================================================================
 \enlargethispage{3\baselineskip}
