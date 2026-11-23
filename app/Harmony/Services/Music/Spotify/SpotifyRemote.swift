@@ -23,8 +23,16 @@ final class SpotifyRemote: NSObject, Playback {
     static let connectTimeout: Duration = .seconds(10)
     /// Longest wait for the Spotify app to open, play and come back.
     static let wakeTimeout: Duration = .seconds(60)
+    /// Spotify refuses a song added to its queue right after `play`
+    /// (`error.request_execution_failed`, test of 23 Nov.): wait for the first song to play, then
+    /// try each song up to `enqueueTries` times, `enqueueRetryDelay` apart.
+    static let firstSongTimeout: Duration = .seconds(5)
+    static let enqueueTries = 3
+    static let enqueueRetryDelay: Duration = .seconds(1)
 
     var onChange: ((PlaybackState) -> Void)?
+    /// Song of the last player state.
+    private var playingId: String?
 
     private let auth: SpotifyAuth
     private var connecting: CheckedContinuation<Void, Error>?
@@ -116,24 +124,43 @@ final class SpotifyRemote: NSObject, Playback {
                 try await connect()
             } catch {
                 try await wake(playing: Self.uri(first))
-                for id in rest { try await command { $0.enqueueTrackUri(Self.uri(id), callback: $1) } }
+                try await enqueue(rest, after: first)
                 return
             }
         }
-        try await command { $0.play(Self.uri(first), callback: $1) }
-        for id in rest { try await command { $0.enqueueTrackUri(Self.uri(id), callback: $1) } }
+        try await command("play \(first)") { $0.play(Self.uri(first), callback: $1) }
+        try await enqueue(rest, after: first)
+    }
+
+    private func enqueue(_ ids: some Collection<String>, after first: String) async throws {
+        let clock = ContinuousClock()
+        let deadline = clock.now + Self.firstSongTimeout
+        while playingId != first, clock.now < deadline {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        for id in ids {
+            for attempt in 1...Self.enqueueTries {
+                do {
+                    try await command("enqueue \(id)") { $0.enqueueTrackUri(Self.uri(id), callback: $1) }
+                    break
+                } catch {
+                    if attempt == Self.enqueueTries { throw error }
+                    try await Task.sleep(for: Self.enqueueRetryDelay)
+                }
+            }
+        }
     }
 
     func pause() async throws {
-        try await command { $0.pause($1) }
+        try await command("pause") { $0.pause($1) }
     }
 
     func resume() async throws {
-        try await command { $0.resume($1) }
+        try await command("resume") { $0.resume($1) }
     }
 
     func skipToNext() async throws {
-        try await command { $0.skip(toNext: $1) }
+        try await command("next") { $0.skip(toNext: $1) }
     }
 
     /// With the last token (Web API or the one Spotify gave): App Remote drops the connection
@@ -157,12 +184,13 @@ final class SpotifyRemote: NSObject, Playback {
     }
 
     /// Sends a player command and waits for Spotify's answer.
-    private func command(_ send: (any SPTAppRemotePlayerAPI, @escaping SPTAppRemoteCallback) -> Void) async throws {
+    private func command(_ name: String, _ send: (any SPTAppRemotePlayerAPI, @escaping SPTAppRemoteCallback) -> Void) async throws {
         guard appRemote.isConnected, let api = appRemote.playerAPI else { throw Failure.connection("not connected") }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             send(api) { @Sendable _, error in
                 if let error {
-                    continuation.resume(throwing: Failure.command(error.localizedDescription))
+                    print("App Remote \(name) failed: \(error as NSError)")
+                    continuation.resume(throwing: Failure.command("\(name): \(error.localizedDescription)"))
                 } else {
                     continuation.resume()
                 }
@@ -177,7 +205,10 @@ extension SpotifyRemote: SPTAppRemotePlayerStateDelegate {
                                   position: Double(playerState.playbackPosition) / 1000,
                                   duration: Double(playerState.track.duration) / 1000,
                                   isPaused: playerState.isPaused)
-        Task { @MainActor in self.onChange?(state) }
+        Task { @MainActor in
+            self.playingId = state.spotifyId
+            self.onChange?(state)
+        }
     }
 }
 
