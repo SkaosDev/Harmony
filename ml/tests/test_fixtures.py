@@ -29,6 +29,13 @@ class FixtureTests(unittest.TestCase):
             row = [np.nan if v is None else v for v in case["features"].values()]
             self.assertAlmostEqual(case["probability"], E.predict(PARAMS, row), delta=1e-12)
 
+    def test_time_only_probability_matches_the_shipped_model(self):
+        time_only = PARAMS["time_only"]
+        for case in DATA["cases"]:
+            row = [case["features"][name] for name in time_only["features"]]   # never unknown
+            self.assertAlmostEqual(case["time_only_probability"], E.predict(time_only, row),
+                                   delta=1e-12)
+
     def test_features_recomputed_from_the_stored_series(self):
         for case in DATA["cases"]:
             origin = case["origin_ms"]

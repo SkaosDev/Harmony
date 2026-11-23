@@ -5,8 +5,9 @@ Usage:
 
 Writes ml/fixtures/state_cases.json: 10 SYNTHETIC cases (fixed seed, nothing from EmoPhone, no
 real person). Each case has the raw series the app would hold (heart rate, steps), the answer
-time, the expected 13 features (`null` = unknown) and the expected probability. The Swift tests
-(TODO 2.18-2.20) must retrieve the same values (tolerance 1e-6). Without --model the probability
+time, the expected 13 features (`null` = unknown), the expected probability and the probability
+of the "time only" model. The Swift tests (TODO 2.18-2.21) must retrieve the same values
+(tolerance 1e-6). Without --model the probability
 is computed from app/Harmony/Resources/model_params.json, the file the app ships.
 
 Time: all instants are minutes since `origin_ms` (ms UTC); local time is Korea (UTC+9).
@@ -120,6 +121,7 @@ def build_case(name, description, answer_t, kwargs, rng, params):
         "answer_night": {"sleep_min": _num(sleep), "wake_minute": _num(wake)},
         "features": {f: _num(v) for f, v in zip(F.FEATURES, row)},
         "probability": export.predict(params, row),
+        "time_only_probability": export.predict(params["time_only"], row[:3]),
     }
 
 

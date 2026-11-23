@@ -18,8 +18,7 @@ from test_train import synthetic_table                           # noqa: E402
 def saved_model():
     table = synthetic_table()
     x = table[list(T.FEATURES)].to_numpy(dtype=float)
-    model = T.make_model().fit(x, table[T.LABEL])
-    return {"features": list(T.FEATURES), "label": T.LABEL, "model": model}, x
+    return T.fit_final(table), x
 
 
 class ParamsTests(unittest.TestCase):
@@ -30,6 +29,14 @@ class ParamsTests(unittest.TestCase):
         got = np.array([E.predict(params, row) for row in x])
         self.assertLess(np.abs(got - expected).max(), 1e-9)   # NaN rows included (imputed)
 
+    def test_time_only_block_predicts_like_sklearn(self):
+        saved, x = saved_model()
+        block = E.build_params(saved)["time_only"]
+        self.assertEqual(block["features"], ["hour_sin", "hour_cos", "weekend"])
+        expected = saved["time_only"].predict_proba(x[:, :3])[:, 1]
+        got = np.array([E.predict(block, row[:3]) for row in x])
+        self.assertLess(np.abs(got - expected).max(), 1e-9)
+
     def test_json_is_small_and_ordered(self):
         saved, _ = saved_model()
         params = E.build_params(saved)
@@ -38,9 +45,11 @@ class ParamsTests(unittest.TestCase):
             size = E.write_params(params, path)
             self.assertLess(size, 5 * 1024)
             back = json.loads(path.read_text())
+        self.assertEqual(back["version"], 2)
         self.assertEqual(back["features"], list(T.FEATURES))
         for key in ("medians", "means", "scales", "coefficients"):
             self.assertEqual(len(back[key]), len(T.FEATURES))
+            self.assertEqual(len(back["time_only"][key]), 3)
 
     def test_wrong_feature_order_is_refused(self):
         saved, _ = saved_model()

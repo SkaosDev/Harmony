@@ -659,7 +659,20 @@ pilote mesurera (§13).
   montre retirée 1 h, nuit inconnue, pas = 0 montre portée, FC constante (écart-type 0).
 - **Sommeil dans les fixtures** : l'app lit le sommeil Apple Watch et ne l'estime pas ; chaque cas
   fournit donc les nuits estimées par Python (`nights`, `answer_night`). Le `FeatureBuilder` Swift
-  (2.19) prendra des résumés de nuit en entrée, pas la FC brute de la nuit — à confirmer en 2.19.
+  (2.19) prend bien des `NightSummary` (confirmé) : nuit du jour coupée à t et nuits complètes des
+  14 jours précédents, recalculées en mémoire par `HealthSummaries.night` (`CurrentState`).
+- **FC et pas dans l'app (2.18)** : les `HourSummary` horaires ne permettent pas les fenêtres de
+  15 min ni la grille de 30 min ; l'app relit donc les échantillons bruts FC et pas des 14 derniers
+  jours (+ 1 h) à chaque calcul, en mémoire, sans les stocker (§11). Un échantillon de pas compte
+  dans une fenêtre selon son début. Les tests Swift lisent `ml/fixtures/state_cases.json`, copié dans
+  le bundle de test par une référence du projet Xcode (le fichier reste dans `ml/fixtures`).
+- **Modèle « heure seule » (TODO 2.21, 22 nov. 2026)** : `train.py --final` ajuste aussi la
+  variante heure seule (`hour_sin, hour_cos, weekend`, même modèle §6.3) sur les mêmes 53 139
+  réponses D-1 + D-2 + D-3 ; `model_params.json` passe en version 2 avec un bloc `time_only` au
+  même schéma (2,2 Ko). Le modèle 13 features est identique à la version 1 (mêmes valeurs, donc
+  `StateModel.mlmodel` inchangé). C'est `prior(heure)` du rapport : l'app l'utilise sans
+  référence ou sans FC sur 30 min, et le pilote (4.4) le compare au modèle complet. Les
+  fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
 ---
@@ -837,10 +850,18 @@ suggéré automatiquement (modèle trop faible sur le stress).
   propres données (§6.5) ; modèle EmoPhone gardé, TODO 5.9 close par abandon explicite (§3).
   Aucun doublon entre les 24 IDs UC Irvine (§5.3). Le modèle et les fixtures déjà livrés
   (`model_params.json`, `StateModel.mlmodel`, `ml/fixtures/state_cases.json`) servent pour 2.APP-a.
+- *État dans l'app, 22 nov. 2026 (TODO 2.18–2.22)* : `app/Harmony/Core/State/` — `BaselineCalculator`
+  (FC rééchantillonnée, fenêtres, grille 30 min, références 14 j prêtes à 7 jours),
+  `FeatureBuilder` (13 features dans l'ordre de `model_params.json`, sommeil = nuits Apple Watch),
+  `StateEstimator` (Core ML sur CPU + mode heure seule, modèle `time_only` exporté, §6.7),
+  `CurrentState` (lit FC, pas et sommeil des 14 derniers jours, en mémoire seulement) et section
+  « State » de l'écran Debug. Tests golden : 13 features × 10 cas, probabilités et probabilités
+  heure seule à moins de 1e-6 de Python, sur simulateur et sur iPhone. Sur iPhone avec les vraies
+  données Santé (dimanche après-midi, montre portée) : mode « Body », 13 features connues, calcul
+  en 0,13–0,15 s.
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
-- ML/app : le modèle EmoPhone n'est pas encore branché dans l'app (TODO 2.18–2.22).
 - Table MuSe pas encore construite ; prompt LLM pas encore testé.
 - Aucun appel Spotify testé avec un vrai compte.
 

@@ -5,7 +5,8 @@ Usage:
     python ml/export.py --model data/models/state_model.joblib --coreml
 
 Writes app/Harmony/Resources/model_params.json: feature order, imputation medians,
-standardization means / scales, logistic coefficients and intercept (docs/PROJECT.md §6.7).
+standardization means / scales, logistic coefficients and intercept (docs/PROJECT.md §6.7), and
+the same fields for the "time only" model under `time_only` (TODO 2.21).
 The Swift app reads this file; `predict` below is the reference it must match.
 --coreml also writes StateModel.mlmodel and checks it against scikit-learn on 100 rows.
 Publishing the coefficients is allowed by the EmoPhone authors (TODO 2.14b).
@@ -19,7 +20,7 @@ import numpy as np
 
 from features import FEATURES
 
-VERSION = 1
+VERSION = 2                         # 2: adds the "time only" model (same 13-feature model as 1)
 APP_RESOURCES = Path(__file__).resolve().parents[1] / "app" / "Harmony" / "Resources"
 MAX_BYTES = 5 * 1024
 COREML_TOLERANCE = 1e-6
@@ -30,12 +31,19 @@ def build_params(saved):
     columns = list(saved["features"])
     if columns != list(FEATURES):
         raise ValueError("the saved model does not use the 13 features of features.FEATURES")
-    imputer, scaler, logistic = (saved["model"].named_steps[k] for k in
+    if saved["time_only_features"] != columns[:3]:
+        raise ValueError("the time only model does not use hour_sin, hour_cos, weekend")
+    return {"version": VERSION, "label": saved["label"],
+            **_logistic(saved["model"], columns),
+            "time_only": _logistic(saved["time_only"], saved["time_only_features"])}
+
+
+def _logistic(model, columns):
+    """Feature order, medians, means, scales, coefficients and intercept of one Pipeline."""
+    imputer, scaler, logistic = (model.named_steps[k] for k in
                                  ("simpleimputer", "standardscaler", "logisticregression"))
     return {
-        "version": VERSION,
-        "label": saved["label"],
-        "features": columns,
+        "features": list(columns),
         "medians": imputer.statistics_.tolist(),
         "means": scaler.mean_.tolist(),
         "scales": scaler.scale_.tolist(),
@@ -45,7 +53,8 @@ def build_params(saved):
 
 
 def predict(params, row):
-    """P(arousal_high) of one row (13 values in `features` order, NaN = unknown)."""
+    """P(arousal_high) of one row (values in `features` order, NaN = unknown). Works for the
+    13-feature model and for its `time_only` block."""
     x = np.asarray(row, dtype=float)
     x = np.where(np.isnan(x), params["medians"], x)
     z = (x - params["means"]) / params["scales"]
