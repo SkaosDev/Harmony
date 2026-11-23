@@ -71,6 +71,9 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 iPhone app that plays a short queue from the user's own Spotify library to fit the moment
 (wake-up, stress, low energy, wind-down), using Apple Watch heart rate, steps and sleep.
 Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs/main.tex`.
+State model v2 (decided 23 Nov 2026, TODO Phase 6): design
+`docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` (read it whole, starting with its
+section 0, before any Phase 6 task); evidence in `docs/research/2026-11-23-modele-etat-v2/`.
 
 ## Before any task
 - Read `docs/PROJECT.md` (sections relevant to the task) and the task in `docs/TODO.md`.
@@ -85,13 +88,15 @@ Full context: `docs/PROJECT.md`. Work plan: `docs/TODO.md`. Course report: `docs
 - Cloud: one Cloudflare Worker (TypeScript) that holds the LLM API key. Nothing else.
 
 ## Hard rules
-- Never commit, print or paste EmoPhone / UC Irvine data. They live in `data/` (git-ignored) or
+- Never commit, print or paste EmoPhone / UC Irvine / LifeSnaps data. They live in `data/` (git-ignored) or
   outside the repo. Only scripts and aggregate results go to Git (the trained model too,
   now that TODO 2.14b is confirmed).
 - No API key or secret in the app or in Git. The LLM key lives only in the Worker (`wrangler secret`).
-- Health data never leave the phone. The Worker only receives song titles and artists.
+- Health data never leave the phone (check-in answers count as health data). The Worker only
+  receives song titles and artists.
 - Never show a named emotion to the user; no medical claims.
 - Model evaluation always keeps whole participants apart (GroupKFold / held-out wave). Never a random split.
+  The personal layer (v2) is evaluated chronologically: each answer predicted from the past only.
 - The features computed in Swift must match `docs/PROJECT.md` §6 exactly; a change there means
   retraining and updating the golden test fixtures.
 - Unknown is not zero: a night or a period without watch data is "unknown", never 0 sleep or 0 steps.

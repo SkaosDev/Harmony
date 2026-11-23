@@ -72,6 +72,9 @@ App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudfla
 1. `docs/PROJECT.md` — full context: idea, decisions, architecture, data, model, where we are.
 2. `docs/TODO.md` — ordered checklist, from setup to the final report.
 3. `CLAUDE.md` — rules for Claude Code (general guidelines + project rules).
+4. `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` — state model v2 (decided, not yet
+   built): one-tap questions that tune the model to each user on the iPhone; TODO Phase 6.
+   Evidence: `docs/research/2026-11-23-modele-etat-v2/`.
 
 ## Repository layout
 

@@ -200,11 +200,11 @@
 ## Phase 4 — Pilote et rapport final (7 déc. → fin du semestre)
 
 ### 4.A Préparer le pilote
-- [ ] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple). — ✔ document dans `docs/`.
+- [ ] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`.
 - [ ] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK.
 - [ ] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun.
 - [ ] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`.
-- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes). — ✔ fichier d'export vérifié.
+- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié.
 
 ### 4.B Mener et analyser
 - [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes.
@@ -215,8 +215,8 @@
 ### 4.C Rapport et démo finale
 - [ ] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`.
 - [ ] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport.
-- [ ] **4.12** Résultats (modèle + pilote), limites honnêtes, discussion. — ✔ dans le rapport.
-- [ ] **4.13** Démo finale répétée. — ✔ fonctionne aussi en mode démo si le réseau tombe.
+- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport.
+- [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe.
 
 ---
 
@@ -242,8 +242,45 @@
 
 ---
 
+## Phase 6 — Modèle d'état v2 : A + B (design `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md`)
+
+> Avant toute tâche de cette phase : lire la section 0 du design, puis le design en entier.
+> Décisions D1–D9 et périmètre du pilote prises le 23 nov. 2026 (PROJECT.md §3) ; résumé en
+> PROJECT.md §6.8 et §8 ; preuves dans `docs/research/2026-11-23-modele-etat-v2/`.
+> **Build du pilote** (design §15, « collecte seule ») : à faire **avant la Phase 4** (pilote le
+> 7 déc.) : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.12 (réduit), 6.13 (réduit), 6.14 ; côté A :
+> 6.2–6.4 si prêts avant le 5 déc., 6.11 (rang seulement) si la file (3.2–3.3) existe.
+> Le reste (6.9, 6.11 branchement actif, 6.12b, 6.15) vient après le pilote. Le modèle commun est
+> figé pendant tout le pilote.
+
+### 6.ML
+- [ ] **6.1** Groupes de validation déterministes dans `ml/train.py` (design §7, WP-0). — ✔ deux machines donnent les mêmes écarts-types ; PROJECT.md §6.5 mis à jour.
+- [ ] **6.2** Critères d'adoption v2 et valence écrits avant résultats (design §9). — ✔ notés dans PROJECT.md §3.
+- [ ] **6.3** Features v2 (17) + valence : CV D-1 + D-2, test unique D-3, décision selon 6.2. — ✔ chiffres dans PROJECT.md §6.5.
+- [ ] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat). — ✔ tests Python et Swift passent.
+- [ ] **6.5** Simulation de la règle exacte de l'app (WP-B0) + fixtures de la couche personnelle et du rang. — ✔ hyper-paramètres et courbe notés dans PROJECT.md ; fixtures dans `ml/fixtures/`.
+
+### 6.DESIGN
+- [ ] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.
+
+### 6.APP
+- [ ] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.
+- [ ] **6.8** Couche personnelle (S2 ; énergie seulement au pilote, en mode ombre). — ✔ fixtures 6.5 à 1e-6.
+- [ ] **6.9** Ligne énergie + feuille de check-in (S4). — ✔ NFR5 tenu.
+- [ ] **6.10** Notifications à actions (S5). — ✔ réponse depuis l'écran verrouillé et la montre.
+- [ ] **6.11** Rang `e0` (S3) et branchement dans la file (S6). — ✔ tests de file.
+- [ ] **6.12** Journal de file + modes ombre/actif (S7a). — ✔ champs remplis pour chaque file.
+- [ ] **6.12b** Bandit S1/S2/S3, après le pilote (S7b). — ✔ probabilités ≥ 0,15 journalisées.
+- [ ] **6.13** Réglages, My Data, About, Debug (S8). — ✔ reset → b = 0.
+
+### 6.PILOTE
+- [ ] **6.14** Protocole et consentement incluant les check-ins (complète 4.1) ; demander à l'enseignant si un avis éthique est requis. — ✔ document dans `docs/`.
+- [ ] **6.15** Analyse WP-P. — ✔ tableau d'agrégats dans le rapport.
+
+---
+
 ## En continu
 - [ ] Chaque PR : tâche TODO citée, vérification décrite, relue par un autre membre.
 - [ ] Chaque semaine : PROJECT.md §12 (« où on en est ») mis à jour.
 - [ ] Avant chaque rendu : `git ls-files data/` vide, `git grep -i "api[_-]key"` sans secret.
-- [ ] Signaler aux auteurs d'EmoPhone le problème de la colonne `altitude`.
+- [ ] Signaler aux auteurs d'EmoPhone le problème de la colonne `altitude`, avec les inexactitudes du papier relevées le 23 nov. 2026 (FC annoncée à 1 Hz, `Light.csv` listé pour D-3, `WifiScan` dit limité à D-1/D-2, `DeviceEvent.csv` absent, `Fitness-*` et `Proximity` non documentés : `docs/research/2026-11-23-modele-etat-v2/rapport-1-exploiter-emophone.md`, section « Corrections à reporter »).
