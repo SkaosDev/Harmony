@@ -38,9 +38,12 @@ struct RootView: View {
             }
         }
         .onChange(of: demoMode) { updateHealth() }
-        // "Did it fit?" at the end of every queue, whatever the screen (TODO 3.15).
-        .fullScreenCover(isPresented: .constant(player.phase == .ended)) {
-            FeedbackView { player.answer(fits: $0) }
+        // The player once a queue starts (TODO 3.18), and "Did it fit?" at the end of every
+        // queue, whatever the screen (TODO 3.15).
+        .fullScreenCover(isPresented: Binding(get: { player.isPresented || player.phase == .ended },
+                                              set: { if !$0 { player.isPresented = false } })) {
+            PlayerView()
+                .environment(player)
         }
     }
 

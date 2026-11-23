@@ -84,6 +84,21 @@ struct PlayerControllerTests {
         #expect(records.first?.items.count == 3)
     }
 
+    /// TODO 3.18: starting a queue opens the player; Back keeps the queue; the answer closes it.
+    @Test func playerOpensWithTheQueueAndClosesAfterTheAnswer() async throws {
+        setClock(0)
+        #expect(!controller.isPresented)
+        await play(["a", "b"])
+        #expect(controller.isPresented)
+
+        controller.isPresented = false
+        #expect(controller.phase == .playing && controller.queue != nil)
+
+        controller.isPresented = true
+        controller.answer(fits: nil)
+        #expect(!controller.isPresented && controller.phase == .idle)
+    }
+
     @Test func failedStartShowsCannotPlayAndRecordsNothing() async throws {
         playback.fails = true
         await play(["a"])

@@ -1,12 +1,15 @@
 import SwiftUI
 
 /// A row with a 48 pt coloured tile (radius 4), as in the onboarding: 12 pt gap, 4 pt vertical
-/// padding, title 16 pt bold, optional detail 13 pt grey, optional number in the tile (17 pt).
-struct TileRow: View {
+/// padding, title 16 pt bold, optional detail 13 pt grey, optional number in the tile (17 pt),
+/// and what comes at the right end (badges and buttons of `V2-File`, 4 pt apart).
+struct TileRow<Trailing: View>: View {
     let color: Color
     var number: String?
     let title: String
     var detail: String?
+    var titleColor = Theme.textPrimary
+    @ViewBuilder var trailing: Trailing
 
     var body: some View {
         HStack(spacing: 12) {
@@ -24,7 +27,7 @@ struct TileRow: View {
                 Text(title)
                     .font(Theme.font(size: 16, bold: true))
                     .designLineHeight(16 * 1.2)
-                    .foregroundStyle(Theme.textPrimary)
+                    .foregroundStyle(titleColor)
                 if let detail {
                     Text(detail)
                         .font(Theme.font(size: 13))
@@ -33,8 +36,15 @@ struct TileRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 4) { trailing }
         }
         .padding(.vertical, 4)
+    }
+}
+
+extension TileRow where Trailing == EmptyView {
+    init(color: Color, number: String? = nil, title: String, detail: String? = nil) {
+        self.init(color: color, number: number, title: title, detail: detail) { EmptyView() }
     }
 }
 

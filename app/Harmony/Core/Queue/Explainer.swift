@@ -45,8 +45,8 @@ enum Explainer {
         return capitalized(parts.joined(separator: ", ")) + ": " + plan(situation: situation, e0: e0)
     }
 
-    /// "Calm songs first, then more energy.", "Medium songs first, then a little calmer.",
-    /// "Energetic songs all the way."
+    /// "calm songs first, then more energy.", "medium songs first, then a little calmer.",
+    /// "energetic songs all the way." (lower case: it follows the context in `reason`).
     static func plan(situation: Situation, e0: Double) -> String {
         let level = e0 < calmBelow ? "calm" : e0 > livelyFrom ? "energetic" : "medium"
         let move = QueueTargets.goal(e0: e0, situation: situation) - e0
@@ -77,7 +77,7 @@ enum Explainer {
         return reference?.z(latest.hrv)
     }
 
-    private static func capitalized(_ text: String) -> String {
+    static func capitalized(_ text: String) -> String {
         text.prefix(1).uppercased() + text.dropFirst()
     }
 }

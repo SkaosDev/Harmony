@@ -18,6 +18,8 @@ final class PlayerController {
     }
 
     private(set) var phase = Phase.idle
+    /// The player screen is open (TODO 3.18); Back closes it, the queue goes on in Spotify.
+    var isPresented = false
     private(set) var queue: PreparedQueue?
     /// The music app's last state, and when it came.
     private(set) var state: PlaybackState?
@@ -71,6 +73,7 @@ final class PlayerController {
         state = nil
         problem = nil
         tracker = PlaybackTracker(queue: queue.entries.map(\.song.spotifyId))
+        isPresented = true
         playback.onChange = { [weak self] in self?.receive($0) }
         await start()
     }
@@ -140,6 +143,7 @@ final class PlayerController {
         phase = .idle
         queue = nil
         state = nil
+        isPresented = false
     }
 
     /// App Remote drops its connection in the background (PROJECT.md §9, TODO 3.12).

@@ -20,6 +20,8 @@ enum Theme {
     static let track = Color(hex: 0x4D4D4D)
     /// Destructive buttons.
     static let destructive = Color(hex: 0xE91429)
+    /// Background of "Now playing" (`V2-Lecture`).
+    static let player = Color(hex: 0x191414)
 
     /// Helvetica Neue, as in the design. Weights 700 and 800 both map to Bold
     /// (the heaviest weight of Helvetica Neue on iOS).
