@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A1000000000000000000001E /* state_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* state_cases.json */; };
 		A10000000000000000000020 /* normalize_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001F /* normalize_cases.json */; };
+		A10000000000000000000022 /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000024 /* SpotifyiOS */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000022 /* SpotifyiOS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +117,7 @@
 			);
 			name = Harmony;
 			packageProductDependencies = (
+				A10000000000000000000024 /* SpotifyiOS */,
 			);
 			productName = Harmony;
 			productReference = A10000000000000000000003 /* Harmony.app */;
@@ -171,6 +174,9 @@
 			);
 			mainGroup = A10000000000000000000002;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A10000000000000000000023 /* XCRemoteSwiftPackageReference "ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A1000000000000000000000C /* Products */;
 			projectDirPath = "";
@@ -489,6 +495,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A10000000000000000000023 /* XCRemoteSwiftPackageReference "ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/spotify/ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 5.0.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000000000000000000024 /* SpotifyiOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000023 /* XCRemoteSwiftPackageReference "ios-sdk" */;
+			productName = SpotifyiOS;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A10000000000000000000001 /* Project object */;
 }
