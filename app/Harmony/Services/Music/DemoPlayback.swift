@@ -38,6 +38,11 @@ final class DemoPlayback: Playback {
         next()
     }
 
+    func remove(spotifyId: String) async throws {
+        guard let place = spotifyIds.firstIndex(of: spotifyId), place > index else { return }
+        spotifyIds.remove(at: place)
+    }
+
     func reconnect() async {}
 
     func disconnect() {}

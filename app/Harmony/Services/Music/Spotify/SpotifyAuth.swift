@@ -18,13 +18,15 @@ final class SpotifyAuth {
 
     /// Registered in the Spotify dashboard (TODO 0.C5).
     static let redirectURI = "harmony://callback"
-    /// PROJECT.md §9. `app-remote-control` is for playback (TODO 3.10).
+    /// PROJECT.md §9. `app-remote-control` is for playback (TODO 3.10), `playlist-modify-private`
+    /// for the "Harmony" playlist that holds the queue (TODO 3.11).
     static let scopes = [
         "user-library-read",
         "user-library-modify",
         "user-top-read",
         "user-read-recently-played",
         "app-remote-control",
+        "playlist-modify-private",
     ]
 
     /// The app's instance; the client ID comes from `Config.xcconfig` through Info.plist.

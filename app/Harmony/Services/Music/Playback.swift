@@ -17,8 +17,10 @@ nonisolated struct PlaybackState: Equatable, Sendable {
 protocol Playback: AnyObject {
     /// Called at each change of song, pause or position jump.
     var onChange: ((PlaybackState) -> Void)? { get set }
-    /// Plays the first song and queues the others, in order.
+    /// Plays the songs, in order.
     func start(spotifyIds: [String]) async throws
+    /// Takes a coming song out of the queue ("Remove this song", TODO 3.18).
+    func remove(spotifyId: String) async throws
     func pause() async throws
     func resume() async throws
     func skipToNext() async throws

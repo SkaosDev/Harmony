@@ -1162,6 +1162,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
   | `user-read-recently-played` | `GET /me/player/recently-played` | oui (1.21) |
   | `user-library-modify` | `PUT /me/library` (like, TODO 3.14) | oui (3.14, 23 nov.) |
   | `app-remote-control` | App Remote (lecture, TODO 3.10) | oui (3.10, 23 nov.) |
+  | `playlist-modify-private` | playlist privée « Harmony » qui porte la file (`POST /me/playlists`, `PUT` et `DELETE /playlists/{id}/items`) | pas encore (ajouté le 23 nov.) |
 
   `GET /me` et `GET /tracks/{id}` ne demandent aucun scope. Pas de `user-read-private` ni
   `user-read-email` : `GET /me` ne renvoie de toute façon plus ni e-mail ni pays.
@@ -1199,17 +1200,27 @@ suggéré automatiquement (modèle trop faible sur le stress).
   - ensuite, Harmony relancé et Spotify toujours ouvert : `connect()` avec le jeton Web API → OK.
 
   D'où la règle de l'app : on essaie d'abord le jeton Web API ; si la connexion est refusée, on
-  réveille Spotify sur le premier morceau, puis on ajoute les autres à sa file.
-  Ajouts à la file (`enqueueTrackUri`), tests du 23 nov. :
+  réveille Spotify sur la file.
+  **File = playlist « Harmony »** (décision de Clément du 23 nov., `SpotifyPlaylist.swift`) :
+  ni App Remote ni le Web API ne savent vider la file « À suivre » de Spotify, et le test sur
+  iPhone du 23 nov. a montré que chaque file lancée y restait, devant les suivantes (7 files
+  lancées : les morceaux des anciennes passaient avant ceux de la nouvelle, l'écran restait sur le
+  premier titre, le morceau retiré passait quand même, « Did it fit? » n'arrivait jamais). Désormais
+  chaque file remplace le contenu d'une playlist privée « Harmony » (créée une fois, recréée si elle
+  a disparu), puis App Remote coupe l'aléatoire et la répétition et joue la playlist ; si le premier
+  état ne montre pas le premier morceau (Spotify a encore l'ancien contenu), `play` repart, 3 fois
+  max à 1 s d'écart. « Remove this song » retire le morceau de la playlist (marche aussi téléphone
+  verrouillé) ; s'il démarre quand même, l'app le passe. Après le dernier morceau, la lecture
+  automatique de Spotify enchaîne : le premier morceau hors file termine la file (« Did it fit? »).
+  Restes de l'ancienne méthode, gardés pour mémoire, ajouts à la file (`enqueueTrackUri`), tests du 23 nov. :
   - envoyé avant que le `play` ait pris effet, un ajout est refusé (`error.request_execution_failed`,
     -3000), perdu ou doublé → on attend un état reçu **après** le `play` qui montre le premier
     morceau à son début (< 5 s ; 5 s d'attente max) ;
   - un ajout envoyé juste après un autre peut être perdu alors que Spotify répond OK → les ajouts
     partent à 1 s d'écart ; un ajout refusé est réessayé jusqu'à 3 fois, à 1 s d'écart.
 
-  Limite connue : ni App Remote ni le Web API ne savent vider la file de Spotify. Si l'on lance une
-  nouvelle file avant la fin de la précédente, les morceaux restants de l'ancienne restent dans
-  « À suivre » et passent avant ceux de la nouvelle. La connexion tombe
+  Les morceaux que l'utilisateur ajoute lui-même à « À suivre » passent toujours avant la playlist
+  (comportement de Spotify). La connexion tombe
   quand Harmony passe en arrière-plan : on se déconnecte et on se reconnecte au retour (TODO 3.12).
   Événements vérifiés sur l'iPhone le 23 nov. (écran Debug › Last queue) : la file apparaît dans
   Spotify, like (`PUT /me/library`, le titre arrive dans les Titres likés), skip avant 30 s,

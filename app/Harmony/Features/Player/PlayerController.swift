@@ -126,12 +126,19 @@ final class PlayerController {
         }
     }
 
-    /// Removes a coming song: the music app cannot take it out of its queue, so it is passed when
-    /// it starts, and nothing is recorded for it.
+    /// Removes a coming song from the music app's queue; nothing is recorded for it. Should it
+    /// still start (the removal failed), it is passed.
     func remove(_ spotifyId: String) {
         guard spotifyId != state?.spotifyId else { return }
         removed.insert(spotifyId)
         tracker.removed = removed
+        Task { [playback] in
+            do {
+                try await playback?.remove(spotifyId: spotifyId)
+            } catch {
+                print("Song not removed from the music app: \(error)")
+            }
+        }
     }
 
     /// "Did it fit?": Yes, Nope, or nil for Skip, which records nothing (TODO 3.15).

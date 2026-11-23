@@ -5,10 +5,14 @@ import Foundation
 /// Needs a real iPhone, the Spotify app and a Premium account.
 ///
 /// Connection: first with the Web API token (scope `app-remote-control`); App Remote only
-/// connects to a running Spotify app, so if that fails, Spotify is woken up on the first song
+/// connects to a running Spotify app, so if that fails, Spotify is woken up on the queue
 /// (`authorizeAndPlayURI`) and comes back to `harmony://callback` with a token (`handle(_:)`).
+///
+/// The queue is played as the private "Harmony" playlist (`SpotifyPlaylist`), not through
+/// Spotify's own queue: that one cannot be cleared, so every queue started stayed in it, in
+/// front of the next ones (test of 23 Nov.).
 final class SpotifyRemote: NSObject, Playback {
-    static let shared = SpotifyRemote(auth: .shared)
+    static let shared = SpotifyRemote(auth: .shared, playlist: SpotifyPlaylist(api: SpotifyAPI(auth: .shared)))
 
     enum Failure: Error, Equatable {
         /// The Spotify app is not installed: it cannot be opened.
@@ -23,17 +27,11 @@ final class SpotifyRemote: NSObject, Playback {
     static let connectTimeout: Duration = .seconds(10)
     /// Longest wait for the Spotify app to open, play and come back.
     static let wakeTimeout: Duration = .seconds(60)
-    /// A song added to Spotify's queue before `play` took effect is refused
-    /// (`error.request_execution_failed`), lost or doubled (tests of 23 Nov.): wait for a state
-    /// sent after `play` that shows the first song at its start (`startWindow`), then try each
-    /// song up to `enqueueTries` times, `enqueueRetryDelay` apart.
+    /// Right after the playlist changed, the Spotify app may still play its former songs: after
+    /// `play`, the first state must show the queue's first song (within `firstSongTimeout`),
+    /// else `play` is sent again, up to `playTries` times, 1 s apart.
     static let firstSongTimeout: Duration = .seconds(5)
-    static let startWindow: TimeInterval = 5
-    static let enqueueTries = 3
-    static let enqueueRetryDelay: Duration = .seconds(1)
-    /// A song added right after another one can be lost although Spotify answers OK (test of
-    /// 23 Nov.): the songs are added `enqueueSpacing` apart.
-    static let enqueueSpacing: Duration = .seconds(1)
+    static let playTries = 3
 
     var onChange: ((PlaybackState) -> Void)?
     /// The last player state, and how many came since the connection.
@@ -41,6 +39,7 @@ final class SpotifyRemote: NSObject, Playback {
     private var stateCount = 0
 
     private let auth: SpotifyAuth
+    private let playlist: SpotifyPlaylist
     private var connecting: CheckedContinuation<Void, Error>?
     private var timeout: Task<Void, Never>?
 
@@ -52,8 +51,9 @@ final class SpotifyRemote: NSObject, Playback {
         return remote
     }()
 
-    init(auth: SpotifyAuth) {
+    init(auth: SpotifyAuth, playlist: SpotifyPlaylist) {
         self.auth = auth
+        self.playlist = playlist
     }
 
     var isConnected: Bool { appRemote.isConnected }
@@ -65,8 +65,8 @@ final class SpotifyRemote: NSObject, Playback {
         try await waitForConnection(timeout: Self.connectTimeout) { $0.appRemote.connect() }
     }
 
-    /// Opens the Spotify app and plays `uri` (a song, `spotify:track:…`); returns once App
-    /// Remote is connected, after Spotify came back to Harmony.
+    /// Opens the Spotify app and plays `uri` (a song or a playlist); returns once App Remote is
+    /// connected, after Spotify came back to Harmony.
     func wake(playing uri: String) async throws {
         try await waitForConnection(timeout: Self.wakeTimeout) { remote in
             remote.appRemote.authorizeAndPlayURI(uri) { @Sendable opened in
@@ -120,46 +120,43 @@ final class SpotifyRemote: NSObject, Playback {
 
     // MARK: Playback (TODO 3.11)
 
-    /// Connects if needed, plays the first song and queues the others. If Spotify is not
-    /// running, it is woken up on the first song.
+    /// Puts the queue in the "Harmony" playlist, then plays it from its first song, shuffle and
+    /// repeat off. If Spotify is not running, it is woken up on the playlist.
     func start(spotifyIds: [String]) async throws {
         guard let first = spotifyIds.first else { return }
-        let rest = spotifyIds.dropFirst()
+        let uri = Self.playlistURI(try await playlist.fill(with: spotifyIds))
         if !appRemote.isConnected {
             do {
                 try await connect()
             } catch {
-                let mark = stateCount
-                try await wake(playing: Self.uri(first))
-                try await enqueue(rest, after: first, statesBefore: mark)
-                return
+                try await wake(playing: uri)
             }
         }
-        let mark = stateCount
-        try await command("play \(first)") { $0.play(Self.uri(first), callback: $1) }
-        try await enqueue(rest, after: first, statesBefore: mark)
+        try await command("shuffle off") { $0.setShuffle(false, callback: $1) }
+        try await command("repeat off") { $0.setRepeatMode(.off, callback: $1) }
+        for attempt in 1...Self.playTries {
+            let mark = stateCount
+            try await command("play \(uri)") { $0.play(uri, callback: $1) }
+            if await firstState(after: mark)?.spotifyId == first { return }
+            if attempt < Self.playTries { try await Task.sleep(for: .seconds(1)) }
+        }
+        print("App Remote: the queue's first song did not start, \(lastState?.spotifyId ?? "nothing") plays")
     }
 
-    /// Adds `ids` to Spotify's queue once a state sent after `play` shows `first` at its start.
-    private func enqueue(_ ids: some Collection<String>, after first: String, statesBefore mark: Int) async throws {
+    /// The first player state received after `mark`, or nil after `firstSongTimeout`.
+    private func firstState(after mark: Int) async -> PlaybackState? {
         let clock = ContinuousClock()
         let deadline = clock.now + Self.firstSongTimeout
         while clock.now < deadline {
-            if stateCount > mark, let state = lastState, state.spotifyId == first, state.position < Self.startWindow { break }
-            try await Task.sleep(for: .milliseconds(100))
+            if stateCount > mark { return lastState }
+            try? await Task.sleep(for: .milliseconds(100))
         }
-        for (index, id) in ids.enumerated() {
-            if index > 0 { try await Task.sleep(for: Self.enqueueSpacing) }
-            for attempt in 1...Self.enqueueTries {
-                do {
-                    try await command("enqueue \(id)") { $0.enqueueTrackUri(Self.uri(id), callback: $1) }
-                    break
-                } catch {
-                    if attempt == Self.enqueueTries { throw error }
-                    try await Task.sleep(for: Self.enqueueRetryDelay)
-                }
-            }
-        }
+        return nil
+    }
+
+    /// Takes a coming song out of the playlist: Spotify will not play it.
+    func remove(spotifyId: String) async throws {
+        try await playlist.remove(spotifyId)
     }
 
     func pause() async throws {
@@ -188,6 +185,8 @@ final class SpotifyRemote: NSObject, Playback {
     }
 
     nonisolated static func uri(_ spotifyId: String) -> String { "spotify:track:\(spotifyId)" }
+
+    nonisolated static func playlistURI(_ playlistId: String) -> String { "spotify:playlist:\(playlistId)" }
 
     nonisolated static func spotifyId(fromURI uri: String) -> String? {
         let prefix = "spotify:track:"

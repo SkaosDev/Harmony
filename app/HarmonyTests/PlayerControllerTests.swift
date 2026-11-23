@@ -16,6 +16,7 @@ final class FakePlayback: Playback {
     func pause() async throws { commands.append("pause") }
     func resume() async throws { commands.append("resume") }
     func skipToNext() async throws { commands.append("next") }
+    func remove(spotifyId: String) async throws { commands.append("remove " + spotifyId) }
     func reconnect() async { commands.append("reconnect") }
     func disconnect() { commands.append("disconnect") }
 
@@ -177,7 +178,10 @@ struct PlayerControllerTests {
         playback.send("a")
         controller.remove("b")
         #expect(controller.activeIds == ["a", "c"])
+        for _ in 0..<10 where !playback.commands.contains("remove b") { await Task.yield() }
+        #expect(playback.commands.contains("remove b"))
 
+        // Should the music app still play it, it is passed.
         setClock(200)
         playback.send("b")
         // The skip runs in a task.
