@@ -23,16 +23,19 @@ final class SpotifyRemote: NSObject, Playback {
     static let connectTimeout: Duration = .seconds(10)
     /// Longest wait for the Spotify app to open, play and come back.
     static let wakeTimeout: Duration = .seconds(60)
-    /// Spotify refuses a song added to its queue right after `play`
-    /// (`error.request_execution_failed`, test of 23 Nov.): wait for the first song to play, then
-    /// try each song up to `enqueueTries` times, `enqueueRetryDelay` apart.
+    /// A song added to Spotify's queue before `play` took effect is refused
+    /// (`error.request_execution_failed`), lost or doubled (tests of 23 Nov.): wait for a state
+    /// sent after `play` that shows the first song at its start (`startWindow`), then try each
+    /// song up to `enqueueTries` times, `enqueueRetryDelay` apart.
     static let firstSongTimeout: Duration = .seconds(5)
+    static let startWindow: TimeInterval = 5
     static let enqueueTries = 3
     static let enqueueRetryDelay: Duration = .seconds(1)
 
     var onChange: ((PlaybackState) -> Void)?
-    /// Song of the last player state.
-    private var playingId: String?
+    /// The last player state, and how many came since the connection.
+    private var lastState: PlaybackState?
+    private var stateCount = 0
 
     private let auth: SpotifyAuth
     private var connecting: CheckedContinuation<Void, Error>?
@@ -123,19 +126,23 @@ final class SpotifyRemote: NSObject, Playback {
             do {
                 try await connect()
             } catch {
+                let mark = stateCount
                 try await wake(playing: Self.uri(first))
-                try await enqueue(rest, after: first)
+                try await enqueue(rest, after: first, statesBefore: mark)
                 return
             }
         }
+        let mark = stateCount
         try await command("play \(first)") { $0.play(Self.uri(first), callback: $1) }
-        try await enqueue(rest, after: first)
+        try await enqueue(rest, after: first, statesBefore: mark)
     }
 
-    private func enqueue(_ ids: some Collection<String>, after first: String) async throws {
+    /// Adds `ids` to Spotify's queue once a state sent after `play` shows `first` at its start.
+    private func enqueue(_ ids: some Collection<String>, after first: String, statesBefore mark: Int) async throws {
         let clock = ContinuousClock()
         let deadline = clock.now + Self.firstSongTimeout
-        while playingId != first, clock.now < deadline {
+        while clock.now < deadline {
+            if stateCount > mark, let state = lastState, state.spotifyId == first, state.position < Self.startWindow { break }
             try await Task.sleep(for: .milliseconds(100))
         }
         for id in ids {
@@ -186,6 +193,7 @@ final class SpotifyRemote: NSObject, Playback {
     /// Sends a player command and waits for Spotify's answer.
     private func command(_ name: String, _ send: (any SPTAppRemotePlayerAPI, @escaping SPTAppRemoteCallback) -> Void) async throws {
         guard appRemote.isConnected, let api = appRemote.playerAPI else { throw Failure.connection("not connected") }
+        print("App Remote \(name)")
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             send(api) { @Sendable _, error in
                 if let error {
@@ -205,8 +213,10 @@ extension SpotifyRemote: SPTAppRemotePlayerStateDelegate {
                                   position: Double(playerState.playbackPosition) / 1000,
                                   duration: Double(playerState.track.duration) / 1000,
                                   isPaused: playerState.isPaused)
+        print("App Remote state: \(state.spotifyId ?? "-") at \(Int(state.position)) s\(state.isPaused ? ", paused" : "")")
         Task { @MainActor in
-            self.playingId = state.spotifyId
+            self.lastState = state
+            self.stateCount += 1
             self.onChange?(state)
         }
     }
