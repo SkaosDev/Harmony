@@ -697,17 +697,51 @@ pilote mesurera (§13).
 5. **Contrôle hors ligne** : le même prompt sur 2 000 morceaux MuSe (scores cachés au LLM) →
    corrélation et erreur moyenne, via l'API Batch (moitié prix).
 
-LLM prévu : Claude Haiku 5.5 (`claude-haiku-5-5`), < 1 $ au total d'après l'estimation du
-rapport. Attention : l'API est facturée à part de l'abonnement Claude Pro (compte Console +
-crédit à acheter).
+LLM : **Claude Haiku 4.5 (`claude-haiku-4-5`)**, choix d'équipe du 23 nov. 2026 (le rapport
+`main.tex` cite encore Haiku 5.5, à mettre à jour par l'équipe). Attention : l'API est facturée à
+part de l'abonnement Claude Pro (compte Console + crédit à acheter).
+
+**Requête partagée (TODO 2.29)** — une seule source, lue par le Worker et par `ml/llm_check.py` :
+`ml/prompts/score.txt` (prompt système, ~150 tokens) et `ml/prompts/score_config.json` (modèle,
+`max_tokens` 1024, schéma de sortie). Cas communs Python ↔ TypeScript :
+`ml/fixtures/score_cases.json`. Pour consommer le moins de tokens possible :
+- pas de réflexion (*thinking*, désactivée par défaut sur Haiku 4.5), pas de cache (le prompt est
+  sous le minimum de 4 096 tokens de Haiku 4.5) ;
+- entrée compacte, une ligne par morceau : `index<TAB>titre<TAB>artiste1, artiste2` (caractères de
+  contrôle → espace) ;
+- sortie en *structured output* (JSON garanti) : `{"s":[[index, énergie, positivité], …]}` en
+  **entiers 0–100**, divisés par 100 chez nous. « 50 = un morceau typique (la moitié des morceaux
+  en dessous) », pour coller à l'échelle en centiles de MuSe (§5.2) ;
+- lecture : pour chaque index, la paire n'est gardée que si exactement un triplet porte cet index
+  et que les deux valeurs sont des entiers 0–100, sinon `null` (→ neutre). Réponse coupée
+  (`stop_reason` ≠ `end_turn`) → échec de la requête.
+- Coût estimé : ~1 000 tokens en entrée + ~500 en sortie par lot de 50, soit ~0,0035 $ par lot.
 
 ### 7.1 Le Worker (seul composant cloud)
-- Route unique, par ex. `POST /score` avec `{songs: [{title, artists}]}` (≤ 50).
-- **Authentification sans comptes à nous** : l'app envoie son jeton d'accès Spotify ; le Worker
-  appelle `GET https://api.spotify.com/v1/me` et n'accepte que les ID Spotify de la liste blanche
-  (les ≤ 5 comptes du pilote). Proposition à valider en équipe.
-- Clé LLM : `wrangler secret put …`, jamais dans le code. Limite simple : taille des lots,
-  nombre de requêtes par utilisateur et par jour.
+Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
+Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).
+- `GET /health` → 200 `{"ok":true}`.
+- `POST /score`, en-tête `Authorization: Bearer <jeton d'accès Spotify>`, corps
+  `{"songs":[{"title":"…","artists":["…"]}]}` : 1 à 50 morceaux, titre de 1 à 200 caractères,
+  1 à 10 artistes de 1 à 100 caractères, corps ≤ 64 Ko (lecture arrêtée au-delà), aucun autre
+  champ (TODO 2.24).
+- Réponse 200 `{"scores":[{"energy":0.42,"positivity":0.71} | null, …]}`, même ordre et même
+  longueur que `songs` ; `null` = pas de paire valide pour ce morceau → neutre dans l'app.
+- Codes : 400 entrée invalide · 401 jeton absent ou refusé par Spotify · 403 compte hors liste ·
+  429 limite du jour (`Retry-After` jusqu'à 00:00 UTC) · 502 Spotify ou LLM en échec (réessayer
+  plus tard, ne pas mettre en cache comme neutre) · 404/405 autres routes et méthodes.
+- **Authentification sans comptes à nous** (TODO 2.25) : le Worker appelle
+  `GET https://api.spotify.com/v1/me` avec le jeton de l'app et n'accepte que les ID Spotify du
+  secret `ALLOWED_SPOTIFY_IDS` (liste séparée par des virgules, hors du dépôt public).
+- Clé LLM : secret `ANTHROPIC_API_KEY`, jamais dans le code ni dans Git (`git grep` vérifié).
+- **Limite** (TODO 2.27) : 50 requêtes (≤ 2 500 morceaux) par utilisateur et par jour UTC,
+  compteur dans Workers KV (`count:<id>:<date>`, expire après 2 jours) ; les requêtes refusées
+  (400/401/403) ne comptent pas. KV n'est pas atomique : des requêtes simultanées d'un même
+  compte autorisé peuvent dépasser un peu la limite. Accepté (5 comptes connus, ~0,0035 $ par
+  requête) ; un Durable Object serait la version stricte si besoin.
+- Mesures du 23 nov. 2026 (vrai jeton Spotify, 50 titres connus) : 50 paires entre 0 et 1, aucun
+  `null` ; 4,3 s en local, 5,1 s une fois déployé. Ça tient dans l'offre gratuite (10 ms de CPU
+  par requête, l'attente réseau ne compte pas). Un faux jeton → 401 venant du vrai Spotify.
 - Offre gratuite Cloudflare : 100 000 requêtes/jour, largement suffisant.
 
 ---
@@ -859,6 +893,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
   heure seule à moins de 1e-6 de Python, sur simulateur et sur iPhone. Sur iPhone avec les vraies
   données Santé (dimanche après-midi, montre portée) : mode « Body », 13 features connues, calcul
   en 0,13–0,15 s.
+
+- *Worker et prompt LLM, 23 nov. 2026 (TODO 2.23–2.29)* : `worker/` déployé sur Cloudflare
+  (`POST /score`, authentification par jeton Spotify + liste blanche, 50 requêtes/jour/utilisateur
+  dans KV, Claude Haiku 4.5 en sortie JSON compacte) ; prompt partagé `ml/prompts/` et cas communs
+  Python ↔ TypeScript (§7, §7.1). Contrôle hors ligne `ml/llm_check.py` prêt (2.30).
 
 **Pas encore fait**
 - Aucun code d'app ; aucun compte développeur configuré (Apple, Spotify, Cloudflare, API LLM).
