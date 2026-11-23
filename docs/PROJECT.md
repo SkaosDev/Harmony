@@ -1157,6 +1157,21 @@ suggéré automatiquement (modèle trop faible sur le stress).
   l'animation d'ouverture du lecteur (~0,35 s). Aucune de ces files n'a eu besoin du repli MuSe :
   le pire cas, jusqu'à 15 `GET /tracks/{id}` à la suite (3 essais × 5 places), n'est pas mesuré.
   La musique démarre ensuite, sans bloquer l'écran (playlist puis App Remote : ~3 s sur un essai).
+  Mesure faite avant le recalcul de l'état à chaque tap (TODO 4.4), qui ajoute une estimation
+  (0,13–0,15 s, §12).
+- **Pilote (TODO 4.4–4.5, 23 nov. ; protocole `docs/pilot-protocol.md`)** : tirage par blocs de
+  2 jours (`Core/Pilot/PilotSchedule.swift`) : dans chaque bloc, l'ordre body / time only vient
+  d'une graine tirée au démarrage, le 2e jour prend l'autre type (7/7 sur 14 jours). Jour de
+  départ et graine dans UserDefaults (`pilot.startDay`, `pilot.seed`, effacés par « Delete
+  everything ») ; Debug › Pilot pour démarrer, arrêter, voir le jour et le type du jour. Un jour
+  « time only », la file part de `CurrentState.timeOnly` (heure seule, même si la montre a une FC
+  récente) ; le badge de Home garde l'état réel. L'état est recalculé à chaque tap (Home peut rester
+  ouvert des heures). `QueueRecord.kind` = type tiré (`.body` hors pilote), `QueueRecord.stateMode`
+  = estimation réellement utilisée (un jour body sans FC récente part de l'heure seule ; nil pour
+  les files d'avant). Export anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug ›
+  Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
+  `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Les paires v2 et les
+  comptes `PromptLog` (4.5) viendront avec 6.7/6.8, dans un nouveau format.
 
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
@@ -1401,8 +1416,17 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément ; textes
   relus par Cyprien.
 
+- *Pilote et rapport, 23 nov. 2026 (TODO 4.1, 4.4–4.12)* : protocole et consentement
+  (`docs/pilot-protocol.md`, un seul participant : Clément, du 7 au 20 déc., §3) ; tirage quotidien
+  body / time only par blocs de 2 jours et export anonyme dans Debug (§8) ; script d'analyse
+  `ml/pilot_analysis.py` testé sur un export synthétique ; rapport : sections Design (architecture,
+  modules, répartition des tâches tirée de Git), Use Cases et Evaluation and Discussion dans
+  `docs/main.tex` (résultats du pilote en `\tbd`). 4.2 et 4.3 sans objet.
+
 **Pas encore fait**
 - Démo M3 au customer (3.24).
+- Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
+  rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
 - Bug vu pendant 3.21 (23 nov.) : à chaque file, `DELETE /me/library` de l'ancienne playlist
   « Harmony » répond 403, donc les anciennes playlists restent dans le compte Spotify (§9 la disait
   vérifiée). À corriger avant le pilote.
@@ -1414,7 +1438,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 |---|---|---|
 | Qui a un Mac ? (un seul MacBook Air déclaré) | Le développement iOS ne peut se faire que sur Mac | Décider tout de suite qui code l'app où |
 | HealthKit avec compte gratuit | Bloque la lecture sur un vrai iPhone | Acheter l'Apple Developer Program en premier |
-| Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Vérifier TestFlight vs. installation Xcode (UDID) avant M3 |
+| Installer l'app sur les iPhone du pilote | Sans TestFlight ou appareils enregistrés, pas de pilote | Sans objet : pilote à une personne, l'app est déjà sur l'iPhone de Clément (§3, 23 nov.) |
 | Spotify PKCE/App Remote | Bloque M1 | Prototype d'auth dès la première semaine |
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
 | Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurée (2.35) : 11,4 % sur 2 045 titres, 88,6 % notés par le LLM ; premier scoring 158 s → à lancer en arrière-plan à l'onboarding (3.16) |

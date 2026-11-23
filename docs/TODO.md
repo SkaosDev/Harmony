@@ -206,19 +206,19 @@
 - [ ] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK. *(Sans objet : pilote à une personne, l'app est déjà sur l'iPhone de Clément ; décision de Clément, 23 nov.)*
 - [ ] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun. *(Sans objet : seul le compte de Clément, déjà autorisé ; décision de Clément, 23 nov.)*
 - [ ] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`.
-- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié.
+- [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié. *(23 nov., partiel : export `harmony-pilot-1` dans Debug › Pilot (`Core/Pilot/PilotExport.swift`), files, feedbacks et couverture montre, sans ID, titre, valeur santé ni date ; test contre `ml/fixtures/pilot_export_example.json`. Paires v2 et `PromptLog` : après 6.7/6.8.)*
 
 ### 4.B Mener et analyser
-- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes.
-- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » par type de file. — ✔ tableau de résultats.
-- [ ] **4.8** Fréquence du repli MuSe et taux de skip des suggestions. — ✔ chiffres notés.
-- [ ] **4.9** Couverture réelle des données montre (nuits inconnues, FC manquante). — ✔ chiffres notés.
+- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes. *(Liste du point du jour 7 dans `docs/pilot-protocol.md` §8.)*
+- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » par type de file. — ✔ tableau de résultats. *(Script prêt : `ml/pilot_analysis.py`, testé sur l'export synthétique ; chiffres après le pilote.)*
+- [ ] **4.8** Fréquence du repli MuSe et taux de skip des suggestions. — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
+- [ ] **4.9** Couverture réelle des données montre (nuits inconnues, FC manquante). — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
 
 ### 4.C Rapport et démo finale
-- [ ] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`.
-- [ ] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport.
-- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport.
-- [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe.
+- [ ] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`. *(23 nov. : section Design de `docs/main.tex` (figure d'architecture, table des modules, répartition tirée de Git, à confirmer par l'équipe) ; pas compilé ici, pas de LaTeX sur le Mac.)*
+- [ ] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport. *(23 nov. : section Use Cases, UC1–UC3 ; pas compilé ici.)*
+- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport. *(23 nov., partiel : modèle, scores, performances, limites, discussion ; résultats du pilote en `\tbd`.)*
+- [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe. *(Dépend de la couche personnelle, Phase 6.)*
 
 ---
 
