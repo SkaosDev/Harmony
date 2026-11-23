@@ -1,16 +1,5 @@
-import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
-import { env } from "cloudflare:workers";
 import { expect, it } from "vitest";
-import worker from "../src";
-
-const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
-
-async function call(request: Request): Promise<Response> {
-  const ctx = createExecutionContext();
-  const response = await worker.fetch(new IncomingRequest(request), env, ctx);
-  await waitOnExecutionContext(ctx);
-  return response;
-}
+import { call } from "./helpers";
 
 it("answers /health", async () => {
   const response = await call(new Request("https://worker.test/health"));
