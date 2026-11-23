@@ -187,7 +187,7 @@
 - [x] **3.17** Accueil : 4 grands boutons, suggestion mise en avant (design : `V2-Accueil`, `V2-AccueilVide`). — ✔ ≤ 2 taps entre lancement et musique (NFR5). *(23 nov., iPhone 16 : ouverture de l'app puis tap sur une tuile → Spotify joue. Écart au design voulu par Clément : la grille sous le titre au lieu d'être centrée.)*
 - [x] **3.18** Lecteur : pochette non modifiée, logo et lien Spotify, raison de la file, skip/like (design : `V2-Lecture`, `V2-File`, `V2-LectureImpossible`). — ✔ conforme NFR6. *(23 nov., iPhone 16 : pochette Spotify non recadrée, logo vert officiel, « Play on Spotify », skip/like/remove, « Did it fit? », changement de file. Ajouts voulus par Clément : mini-lecteur au-dessus des onglets, pochettes dans « Up next », liste sous l'en-tête ; la file est jouée comme playlist « Harmony », voir PROJECT.md §9.)*
 - [x] **3.19** Réglages : données stockées, consentements, export JSON, suppression totale avec confirmation (design : `V2-Reglages`, `V2-CompteSpotify`, `V2-Sante`, `V2-MesDonnees`, `V2-APropos`). — ✔ après suppression, toutes les tables sont vides (FR13). *(23 nov. : test `DataControlTests` (les 8 tables vides, jetons et clés effacés) + sur l'iPhone 16, export JSON et « Delete everything » → retour à l'onboarding. Écarts : liste des Réglages sous le titre, barre d'onglets visible dans les sous-pages.)*
-- [ ] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR.
+- [x] **3.20** Textes relus par Cyprien (aucun mot d'émotion, aucune promesse médicale). — ✔ validation dans la PR. *(23 nov. : textes validés par Cyprien.)*
 
 ### 3.QA
 - [ ] **3.21** File affichée en < 2 s après le tap (NFR3). — ✔ mesuré sur iPhone.
