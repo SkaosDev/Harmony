@@ -1,0 +1,81 @@
+D1 read s 0.1
+   ActivityEvent.csv rows 13477 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [  9.   22.7 223.1]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.483, 'confidenceTilting': 0.196, 'confidenceUnknown': 0.169, 'confidenceOnFoot': 0.08, 'confidenceInVehicle': 0.07, 'confidenceOnBicycle': 0.001, 'confidenceRunning': 0.0}
+   ActivityTransition.csv rows 531 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [ 100.2  756.1 8811.9]
+     enter {'STILL': 0.444, 'WALKING': 0.441, 'IN_VEHICLE': 0.1, 'RUNNING': 0.011, 'ON_BICYCLE': 0.004}
+   Fitbit-Calorie.csv rows 47520 cols ['timestamp', 'value', 'level', 'mets']
+     interval s q10/50/90: [60. 60. 60.]
+     value q [0.831 0.831 2.993] mets q [10. 10. 36.] level shares {0: 0.886, 1: 0.091, 3: 0.013, 2: 0.009}
+   Fitbit-HeartRate.csv rows 220933 cols ['timestamp', 'value']
+     interval s q10/50/90: [ 5.  5. 15.]
+D1 read s 0.0
+   ActivityEvent.csv rows 11520 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [  9.2  15.4 140. ]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.485, 'confidenceUnknown': 0.309, 'confidenceTilting': 0.123, 'confidenceOnFoot': 0.061, 'confidenceInVehicle': 0.019, 'confidenceOnBicycle': 0.003}
+   ActivityTransition.csv rows 352 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [  99.5  914.6 7974.1]
+     enter {'STILL': 0.44, 'WALKING': 0.412, 'IN_VEHICLE': 0.094, 'ON_BICYCLE': 0.051, 'RUNNING': 0.003}
+   Fitbit-Calorie.csv rows 46080 cols ['timestamp', 'value', 'level', 'mets']
+     interval s q10/50/90: [60. 60. 60.]
+     value q [1.102 1.102 4.629] mets q [10. 10. 42.] level shares {0: 0.863, 1: 0.112, 2: 0.013, 3: 0.012}
+   Fitbit-HeartRate.csv rows 280066 cols ['timestamp', 'value']
+     interval s q10/50/90: [ 5.  5. 15.]
+D1 read s 0.1
+   ActivityEvent.csv rows 27636 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [ 3.5 15.2 45.8]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.557, 'confidenceUnknown': 0.183, 'confidenceOnFoot': 0.116, 'confidenceTilting': 0.095, 'confidenceInVehicle': 0.042, 'confidenceOnBicycle': 0.007}
+   ActivityTransition.csv rows 712 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [  61.3  313.8 6539.6]
+     enter {'WALKING': 0.396, 'STILL': 0.364, 'IN_VEHICLE': 0.191, 'ON_BICYCLE': 0.037, 'RUNNING': 0.013}
+   Fitbit-Calorie.csv rows 47520 cols ['timestamp', 'value', 'level', 'mets']
+     interval s q10/50/90: [60. 60. 60.]
+     value q [0.828 0.828 2.649] mets q [10. 10. 32.] level shares {0: 0.887, 1: 0.104, 2: 0.008, 3: 0.002}
+   Fitbit-HeartRate.csv rows 285848 cols ['timestamp', 'value']
+     interval s q10/50/90: [ 5.  5. 15.]
+D2 read s 0.1
+   ActivityEvent.csv rows 21155 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [ 0.1 15.3 27.2]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.482, 'confidenceUnknown': 0.259, 'confidenceOnFoot': 0.096, 'confidenceTilting': 0.09, 'confidenceInVehicle': 0.05, 'confidenceOnBicycle': 0.023}
+   ActivityTransition.csv rows 1354 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [  36.   197.2 2724. ]
+     enter {'WALKING': 0.407, 'STILL': 0.37, 'IN_VEHICLE': 0.106, 'ON_BICYCLE': 0.074, 'RUNNING': 0.043}
+   Fitbit-Calorie.csv rows 0 cols ['timestamp', 'value', 'level', 'mets']
+   Fitbit-HeartRate.csv rows 0 cols ['timestamp', 'value']
+D2 read s 0.1
+   ActivityEvent.csv rows 13150 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [ 0.1 15.4 38. ]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.452, 'confidenceUnknown': 0.244, 'confidenceOnFoot': 0.115, 'confidenceTilting': 0.101, 'confidenceInVehicle': 0.078, 'confidenceOnBicycle': 0.01}
+   ActivityTransition.csv rows 1006 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [  36.8  185.2 4788.3]
+     enter {'WALKING': 0.415, 'STILL': 0.323, 'IN_VEHICLE': 0.205, 'ON_BICYCLE': 0.039, 'RUNNING': 0.019}
+   Fitbit-Calorie.csv rows 0 cols ['timestamp', 'value', 'level', 'mets']
+   Fitbit-HeartRate.csv rows 0 cols ['timestamp', 'value']
+D2 read s 0.1
+   ActivityEvent.csv rows 30447 cols ['timestamp', 'confidenceStill', 'confidenceUnknown', 'confidenceInVehicle', 'confidenceOnBicycle', 'confidenceOnFoot', 'confidenceWalking', 'confidenceRunning', 'confidenceTilting']
+     interval s q10/50/90: [ 0.1 15.2 23. ]
+/private/tmp/claude-501/-Users-clement-Hanyang-Harmony/c2063cc9-8a1d-4a62-98ec-d0a36282975d/scratchpad/v2/features/scripts/probe.py:30: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  print("     conf range", df[c].min().min(), df[c].max().max(), "row sum q50", df[c].sum(1).median())
+     conf range 0.0 1.0 row sum q50 1.0
+     argmax shares {'confidenceStill': 0.562, 'confidenceUnknown': 0.214, 'confidenceTilting': 0.101, 'confidenceOnFoot': 0.058, 'confidenceInVehicle': 0.05, 'confidenceOnBicycle': 0.016}
+   ActivityTransition.csv rows 982 cols ['timestamp', 'typeEnter', 'typeExit']
+     interval s q10/50/90: [  46.6  222.  4679.6]
+     enter {'WALKING': 0.394, 'STILL': 0.38, 'IN_VEHICLE': 0.162, 'ON_BICYCLE': 0.055, 'RUNNING': 0.009}
+   Fitbit-Calorie.csv rows 0 cols ['timestamp', 'value', 'level', 'mets']
+   Fitbit-HeartRate.csv rows 0 cols ['timestamp', 'value']

@@ -1,0 +1,130 @@
+===== D1: 10259 responses, 92 participants; columns: ['pcode', 'actualTriggerTime', 'reactionTime', 'responseTime', 'valence', 'arousal', 'stress', 'duration', 'attention', 'disturbance', 'mental', 'change']
+  responses/participant: median 92, IQR 77-147
+  item: n_nonnull, observed min..max (after D3 rescale), mean, sd, ICC(1) between-person share, distinct values
+   valence: n=10259, -3..3, mean=0.67, sd=1.31, ICC1=0.219, k=7
+   arousal: n=10259, -3..3, mean=-0.18, sd=1.55, ICC1=0.185, k=7
+   stress: n=10259, -3..3, mean=-0.40, sd=1.66, ICC1=0.264, k=7
+   duration: n=10087, 0..540, mean=25.97, sd=21.92, ICC1=0.324, k=85
+   attention: n=10259, -3..3, mean=0.32, sd=1.49, ICC1=0.138, k=7
+   disturbance: n=10259, -3..3, mean=0.13, sd=1.79, ICC1=0.305, k=7
+   mental: n=10259, -3..3, mean=-0.09, sd=1.63, ICC1=0.253, k=7
+   change: n=10259, -3..3, mean=-0.04, sd=0.97, ICC1=0.308, k=7
+  pooled Pearson:
+             valence  arousal  stress  attention  disturbance  mental  duration  change
+valence         1.00     0.28   -0.35       0.20        -0.03   -0.02      0.06    0.23
+arousal         0.28     1.00    0.15       0.40         0.19    0.29     -0.05    0.03
+stress         -0.35     0.15    1.00       0.09         0.31    0.32     -0.11   -0.15
+attention       0.20     0.40    0.09       1.00         0.32    0.51     -0.01    0.07
+disturbance    -0.03     0.19    0.31       0.32         1.00    0.40     -0.12   -0.15
+mental         -0.02     0.29    0.32       0.51         0.40    1.00     -0.01    0.03
+duration        0.06    -0.05   -0.11      -0.01        -0.12   -0.01      1.00    0.10
+change          0.23     0.03   -0.15       0.07        -0.15    0.03      0.10    1.00
+  within-person Pearson (person-mean centred):
+             valence  arousal  stress  attention  disturbance  mental  duration  change
+valence         1.00     0.28   -0.42       0.20        -0.01   -0.02      0.03    0.24
+arousal         0.28     1.00    0.04       0.39         0.15    0.25     -0.05    0.06
+stress         -0.42     0.04    1.00       0.08         0.21    0.28     -0.05   -0.13
+attention       0.20     0.39    0.08       1.00         0.31    0.49     -0.02    0.07
+disturbance    -0.01     0.15    0.21       0.31         1.00    0.36     -0.01   -0.11
+mental         -0.02     0.25    0.28       0.49         0.36    1.00      0.01    0.00
+duration        0.03    -0.05   -0.05      -0.02        -0.01    0.01      1.00    0.02
+change          0.24     0.06   -0.13       0.07        -0.11    0.00      0.02    1.00
+  binary above-own-mean: base rates arousal 0.475, valence 0.538, stress 0.454
+  phi(arousal_hi, valence_hi)=0.248; phi(arousal_hi, stress_hi)=0.029; phi(valence_hi, stress_hi)=-0.227
+  quadrant shares (rows arousal_hi 0/1, cols valence_hi 0/1): [[0.304, 0.221], [0.157, 0.317]]
+  valence: share of responses equal to own modal value 0.470; participants with within-SD<0.5: 0.011
+  arousal: share of responses equal to own modal value 0.410; participants with within-SD<0.5: 0.011
+  stress: share of responses equal to own modal value 0.392; participants with within-SD<0.5: 0.000
+===== D2: 21042 responses, 99 participants; columns: ['pcode', 'responseTime', 'intendedTriggerTime', 'actualTriggerTime', 'reactionTime', 'valence', 'arousal', 'stress', 'duration', 'attention', 'disturbance', 'mental', 'valenceChange', 'arousalChange']
+  responses/participant: median 213, IQR 181-237
+  item: n_nonnull, observed min..max (after D3 rescale), mean, sd, ICC(1) between-person share, distinct values
+   valence: n=21042, -3..3, mean=0.68, sd=1.20, ICC1=0.207, k=7
+   arousal: n=21042, -3..3, mean=-0.21, sd=1.47, ICC1=0.176, k=7
+   stress: n=21042, -3..3, mean=-0.26, sd=1.60, ICC1=0.215, k=7
+   duration: n=21019, 0..1680, mean=23.59, sd=20.75, ICC1=0.305, k=71
+   attention: n=21042, -3..3, mean=0.41, sd=1.43, ICC1=0.184, k=7
+   disturbance: n=21042, -3..3, mean=0.31, sd=1.64, ICC1=0.230, k=7
+   mental: n=21042, -3..3, mean=-0.23, sd=1.58, ICC1=0.200, k=7
+   valenceChange: n=21042, -3..3, mean=0.42, sd=1.17, ICC1=0.214, k=7
+   arousalChange: n=21042, -3..3, mean=-0.25, sd=1.34, ICC1=0.228, k=7
+  pooled Pearson:
+               valence  arousal  stress  attention  disturbance  mental  duration  valenceChange  arousalChange
+valence           1.00     0.24   -0.45       0.18        -0.10   -0.11      0.09           0.74           0.23
+arousal           0.24     1.00    0.08       0.41         0.18    0.21     -0.04           0.19           0.69
+stress           -0.45     0.08    1.00       0.11         0.31    0.41     -0.07          -0.43           0.07
+attention         0.18     0.41    0.11       1.00         0.33    0.39      0.05           0.16           0.36
+disturbance      -0.10     0.18    0.31       0.33         1.00    0.35     -0.02          -0.12           0.14
+mental           -0.11     0.21    0.41       0.39         0.35    1.00      0.05          -0.12           0.21
+duration          0.09    -0.04   -0.07       0.05        -0.02    0.05      1.00           0.11          -0.01
+valenceChange     0.74     0.19   -0.43       0.16        -0.12   -0.12      0.11           1.00           0.27
+arousalChange     0.23     0.69    0.07       0.36         0.14    0.21     -0.01           0.27           1.00
+  within-person Pearson (person-mean centred):
+               valence  arousal  stress  attention  disturbance  mental  duration  valenceChange  arousalChange
+valence           1.00     0.27   -0.48       0.17        -0.09   -0.16      0.02           0.70           0.23
+arousal           0.27     1.00   -0.00       0.40         0.14    0.17      0.01           0.22           0.66
+stress           -0.48    -0.00    1.00       0.09         0.25    0.42     -0.00          -0.45          -0.00
+attention         0.17     0.40    0.09       1.00         0.31    0.37      0.04           0.14           0.36
+disturbance      -0.09     0.14    0.25       0.31         1.00    0.30      0.02          -0.11           0.13
+mental           -0.16     0.17    0.42       0.37         0.30    1.00      0.05          -0.17           0.16
+duration          0.02     0.01   -0.00       0.04         0.02    0.05      1.00           0.04           0.02
+valenceChange     0.70     0.22   -0.45       0.14        -0.11   -0.17      0.04           1.00           0.27
+arousalChange     0.23     0.66   -0.00       0.36         0.13    0.16      0.02           0.27           1.00
+  binary above-own-mean: base rates arousal 0.459, valence 0.579, stress 0.466
+  phi(arousal_hi, valence_hi)=0.214; phi(arousal_hi, stress_hi)=-0.002; phi(valence_hi, stress_hi)=-0.306
+  quadrant shares (rows arousal_hi 0/1, cols valence_hi 0/1): [[0.28, 0.261], [0.14, 0.319]]
+  valence: share of responses equal to own modal value 0.542; participants with within-SD<0.5: 0.051
+  arousal: share of responses equal to own modal value 0.449; participants with within-SD<0.5: 0.030
+  stress: share of responses equal to own modal value 0.420; participants with within-SD<0.5: 0.030
+===== D3: 21838 responses, 106 participants; columns: ['pcode', 'intendedTriggerTime', 'actualTriggerTime', 'reactionTime', 'responseTime', 'happy', 'relaxed', 'cheerful', 'content', 'sad', 'anxious', 'depressed', 'angry', 'valence', 'arousal', 'stress', 'disturbance']
+  responses/participant: median 206, IQR 197-219
+  item: n_nonnull, observed min..max (after D3 rescale), mean, sd, ICC(1) between-person share, distinct values
+   happy: n=21838, -3..3, mean=0.31, sd=1.36, ICC1=0.307, k=7
+   relaxed: n=21838, -3..3, mean=0.51, sd=1.46, ICC1=0.300, k=7
+   cheerful: n=21838, -3..3, mean=0.11, sd=1.47, ICC1=0.248, k=7
+   content: n=21838, -3..3, mean=0.21, sd=1.50, ICC1=0.257, k=7
+   sad: n=21838, -3..3, mean=-1.88, sd=1.36, ICC1=0.447, k=7
+   anxious: n=21838, -3..3, mean=-1.11, sd=1.73, ICC1=0.404, k=7
+   depressed: n=21838, -3..3, mean=-1.67, sd=1.50, ICC1=0.433, k=7
+   angry: n=21838, -3..3, mean=-1.97, sd=1.37, ICC1=0.432, k=7
+   valence: n=21838, -3..3, mean=0.43, sd=1.42, ICC1=0.194, k=7
+   arousal: n=21838, -3..3, mean=-0.59, sd=1.67, ICC1=0.181, k=7
+   stress: n=21838, -3..3, mean=-0.67, sd=1.72, ICC1=0.343, k=7
+   disturbance: n=21838, -3..3, mean=-0.06, sd=1.98, ICC1=0.459, k=7
+  pooled Pearson:
+             valence  arousal  stress  disturbance
+valence         1.00     0.26   -0.51        -0.11
+arousal         0.26     1.00   -0.15        -0.01
+stress         -0.51    -0.15    1.00         0.35
+disturbance    -0.11    -0.01    0.35         1.00
+  within-person Pearson (person-mean centred):
+             valence  arousal  stress  disturbance
+valence         1.00     0.28   -0.54        -0.09
+arousal         0.28     1.00   -0.16         0.01
+stress         -0.54    -0.16    1.00         0.21
+disturbance    -0.09     0.01    0.21         1.00
+  D3 PANAS-type adjectives vs valence/arousal/stress, within-person:
+           valence  arousal  stress
+happy         0.61     0.28   -0.46
+relaxed       0.39    -0.07   -0.33
+cheerful      0.61     0.36   -0.45
+content       0.60     0.27   -0.48
+sad          -0.36    -0.07    0.36
+anxious      -0.44    -0.10    0.54
+depressed    -0.49    -0.14    0.48
+angry        -0.42     0.01    0.41
+  D3 pooled:
+           valence  arousal  stress
+happy         0.65     0.27   -0.40
+relaxed       0.46    -0.08   -0.29
+cheerful      0.64     0.33   -0.40
+content       0.63     0.23   -0.41
+sad          -0.37     0.01    0.46
+anxious      -0.43    -0.08    0.60
+depressed    -0.48    -0.07    0.57
+angry        -0.42     0.08    0.48
+  binary above-own-mean: base rates arousal 0.426, valence 0.563, stress 0.451
+  phi(arousal_hi, valence_hi)=0.166; phi(arousal_hi, stress_hi)=-0.106; phi(valence_hi, stress_hi)=-0.343
+  quadrant shares (rows arousal_hi 0/1, cols valence_hi 0/1): [[0.291, 0.282], [0.145, 0.281]]
+  valence: share of responses equal to own modal value 0.451; participants with within-SD<0.5: 0.009
+  arousal: share of responses equal to own modal value 0.448; participants with within-SD<0.5: 0.009
+  stress: share of responses equal to own modal value 0.410; participants with within-SD<0.5: 0.000

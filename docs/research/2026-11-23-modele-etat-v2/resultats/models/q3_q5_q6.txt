@@ -1,0 +1,281 @@
+D-1 + D-2: 31301 answers, 191 participants; outer 5 folds (ml/train.py), inner GroupKFold(4) for tuning/stacking
+
+=== Q3: model families on the 13 v1 features (fold mean +/- sd; paired vs LR C=1 and vs time only) ===
+
+[arousal_high]
+  time only (LR C=1)                 AUROC 0.534 +/- 0.009  BA 0.506 +/- 0.008
+  LR C=1 (current)                   AUROC 0.563 +/- 0.012  BA 0.537 +/- 0.007
+      vs time: +0.029 +/- 0.005 (5/5 folds >0)
+  LR tuned C                         AUROC 0.562 +/- 0.011  BA 0.534 +/- 0.006
+      vs LR C=1: AUROC -0.000 +/- 0.001 (3/5 folds >0); vs time: +0.028 +/- 0.005 (5/5 folds >0)
+  LR + 8 interactions                AUROC 0.562 +/- 0.011  BA 0.535 +/- 0.007
+      vs LR C=1: AUROC -0.001 +/- 0.002 (2/5 folds >0); vs time: +0.028 +/- 0.004 (5/5 folds >0)
+  LR + all pairwise (deg 2)          AUROC 0.560 +/- 0.011  BA 0.533 +/- 0.007
+      vs LR C=1: AUROC -0.003 +/- 0.003 (1/5 folds >0); vs time: +0.026 +/- 0.004 (5/5 folds >0)
+  HistGradientBoosting               AUROC 0.558 +/- 0.012  BA 0.520 +/- 0.011
+      vs LR C=1: AUROC -0.005 +/- 0.004 (0/5 folds >0); vs time: +0.024 +/- 0.004 (5/5 folds >0)
+  MLP                                AUROC 0.562 +/- 0.011  BA 0.534 +/- 0.006
+      vs LR C=1: AUROC -0.000 +/- 0.003 (3/5 folds >0); vs time: +0.028 +/- 0.005 (5/5 folds >0)
+  Ensemble mean (LR, HGB, MLP)       AUROC 0.562 +/- 0.011  BA 0.531 +/- 0.006
+      vs LR C=1: AUROC -0.000 +/- 0.002 (2/5 folds >0); vs time: +0.028 +/- 0.005 (5/5 folds >0)
+  Stack (meta-LR on LR, HGB, MLP)    AUROC 0.563 +/- 0.011  BA 0.536 +/- 0.007
+      vs LR C=1: AUROC +0.000 +/- 0.002 (2/5 folds >0); vs time: +0.029 +/- 0.005 (5/5 folds >0)
+  chosen hyper-parameters per outer fold:
+    LR tuned C: [{'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.003}]
+    LR + 8 interactions: [{'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}]
+    LR + all pairwise (deg 2): [{'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}]
+    HistGradientBoosting: [{'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 3, 'max_iter': 50}]
+    MLP: [{'hidden_layer_sizes': (8,), 'alpha': 3.0}, {'hidden_layer_sizes': (8,), 'alpha': 3.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}]
+
+[valence_high]
+  time only (LR C=1)                 AUROC 0.534 +/- 0.004  BA 0.500 +/- 0.000
+  LR C=1 (current)                   AUROC 0.542 +/- 0.017  BA 0.512 +/- 0.002
+      vs time: +0.008 +/- 0.013 (3/5 folds >0)
+  LR tuned C                         AUROC 0.543 +/- 0.018  BA 0.510 +/- 0.003
+      vs LR C=1: AUROC +0.001 +/- 0.002 (2/5 folds >0); vs time: +0.009 +/- 0.015 (3/5 folds >0)
+  LR + 8 interactions                AUROC 0.543 +/- 0.018  BA 0.510 +/- 0.002
+      vs LR C=1: AUROC +0.001 +/- 0.003 (3/5 folds >0); vs time: +0.009 +/- 0.015 (3/5 folds >0)
+  LR + all pairwise (deg 2)          AUROC 0.542 +/- 0.016  BA 0.515 +/- 0.004
+      vs LR C=1: AUROC +0.000 +/- 0.004 (3/5 folds >0); vs time: +0.008 +/- 0.013 (3/5 folds >0)
+  HistGradientBoosting               AUROC 0.545 +/- 0.022  BA 0.512 +/- 0.009
+      vs LR C=1: AUROC +0.004 +/- 0.009 (3/5 folds >0); vs time: +0.012 +/- 0.019 (3/5 folds >0)
+  MLP                                AUROC 0.544 +/- 0.018  BA 0.508 +/- 0.002
+      vs LR C=1: AUROC +0.002 +/- 0.002 (4/5 folds >0); vs time: +0.010 +/- 0.014 (3/5 folds >0)
+  Ensemble mean (LR, HGB, MLP)       AUROC 0.546 +/- 0.020  BA 0.510 +/- 0.001
+      vs LR C=1: AUROC +0.005 +/- 0.004 (4/5 folds >0); vs time: +0.013 +/- 0.016 (3/5 folds >0)
+  Stack (meta-LR on LR, HGB, MLP)    AUROC 0.541 +/- 0.018  BA 0.505 +/- 0.002
+      vs LR C=1: AUROC -0.001 +/- 0.004 (3/5 folds >0); vs time: +0.007 +/- 0.015 (3/5 folds >0)
+  chosen hyper-parameters per outer fold:
+    LR tuned C: [{'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}]
+    LR + 8 interactions: [{'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}, {'C': 0.001}]
+    LR + all pairwise (deg 2): [{'C': 0.001}, {'C': 0.01}, {'C': 0.001}, {'C': 0.1}, {'C': 0.001}]
+    HistGradientBoosting: [{'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 50}, {'max_depth': 2, 'max_iter': 150}]
+    MLP: [{'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (8,), 'alpha': 1.0}, {'hidden_layer_sizes': (8,), 'alpha': 1.0}, {'hidden_layer_sizes': (8,), 'alpha': 3.0}]
+
+[stress_high]
+  time only (LR C=1)                 AUROC 0.543 +/- 0.012  BA 0.509 +/- 0.010
+  LR C=1 (current)                   AUROC 0.540 +/- 0.011  BA 0.516 +/- 0.005
+      vs time: -0.002 +/- 0.003 (1/5 folds >0)
+  LR tuned C                         AUROC 0.541 +/- 0.011  BA 0.510 +/- 0.004
+      vs LR C=1: AUROC +0.000 +/- 0.001 (4/5 folds >0); vs time: -0.002 +/- 0.003 (1/5 folds >0)
+  LR + 8 interactions                AUROC 0.543 +/- 0.009  BA 0.521 +/- 0.006
+      vs LR C=1: AUROC +0.003 +/- 0.002 (4/5 folds >0); vs time: +0.001 +/- 0.004 (3/5 folds >0)
+  LR + all pairwise (deg 2)          AUROC 0.543 +/- 0.008  BA 0.526 +/- 0.006
+      vs LR C=1: AUROC +0.003 +/- 0.007 (3/5 folds >0); vs time: +0.000 +/- 0.006 (3/5 folds >0)
+  HistGradientBoosting               AUROC 0.547 +/- 0.010  BA 0.520 +/- 0.008
+      vs LR C=1: AUROC +0.007 +/- 0.004 (4/5 folds >0); vs time: +0.005 +/- 0.004 (4/5 folds >0)
+  MLP                                AUROC 0.544 +/- 0.008  BA 0.522 +/- 0.006
+      vs LR C=1: AUROC +0.003 +/- 0.005 (4/5 folds >0); vs time: +0.001 +/- 0.006 (3/5 folds >0)
+  Ensemble mean (LR, HGB, MLP)       AUROC 0.547 +/- 0.010  BA 0.521 +/- 0.005
+      vs LR C=1: AUROC +0.007 +/- 0.003 (5/5 folds >0); vs time: +0.004 +/- 0.004 (4/5 folds >0)
+  Stack (meta-LR on LR, HGB, MLP)    AUROC 0.548 +/- 0.009  BA 0.518 +/- 0.005
+      vs LR C=1: AUROC +0.008 +/- 0.004 (5/5 folds >0); vs time: +0.006 +/- 0.005 (4/5 folds >0)
+  chosen hyper-parameters per outer fold:
+    LR tuned C: [{'C': 0.003}, {'C': 0.001}, {'C': 0.001}, {'C': 0.003}, {'C': 0.03}]
+    LR + 8 interactions: [{'C': 0.03}, {'C': 0.001}, {'C': 0.001}, {'C': 0.003}, {'C': 0.1}]
+    LR + all pairwise (deg 2): [{'C': 0.001}, {'C': 0.01}, {'C': 0.1}, {'C': 0.001}, {'C': 0.001}]
+    HistGradientBoosting: [{'max_depth': 3, 'max_iter': 150}, {'max_depth': 2, 'max_iter': 150}, {'max_depth': 2, 'max_iter': 150}, {'max_depth': 3, 'max_iter': 50}, {'max_depth': 3, 'max_iter': 50}]
+    MLP: [{'hidden_layer_sizes': (8,), 'alpha': 0.1}, {'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (8,), 'alpha': 0.01}, {'hidden_layer_sizes': (16,), 'alpha': 1.0}]
+
+=== Q5: spread and calibration of out-of-fold probabilities ===
+  percentiles 5/25/50/75/95 pooled over test folds; Brier / ECE(10 bins) fold mean +/- sd; Brier of the training base rate as reference
+
+[arousal_high]  base-rate Brier 0.249 +/- 0.001
+  time only (LR C=1)                 p 0.402 / 0.440 / 0.473 / 0.492 / 0.503  Brier 0.248 +/- 0.001  ECE 0.018 +/- 0.009
+  LR C=1 (current)                   p 0.357 / 0.428 / 0.467 / 0.508 / 0.553  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.005
+  LR tuned C                         p 0.365 / 0.431 / 0.467 / 0.504 / 0.548  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.004
+  LR + 8 interactions                p 0.357 / 0.434 / 0.471 / 0.506 / 0.541  Brier 0.246 +/- 0.001  ECE 0.018 +/- 0.006
+  LR + all pairwise (deg 2)          p 0.344 / 0.432 / 0.470 / 0.511 / 0.543  Brier 0.246 +/- 0.001  ECE 0.022 +/- 0.006
+  HistGradientBoosting               p 0.376 / 0.441 / 0.474 / 0.493 / 0.522  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.006
+  MLP                                p 0.373 / 0.438 / 0.472 / 0.504 / 0.532  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.005
+  Ensemble mean (LR, HGB, MLP)       p 0.373 / 0.438 / 0.471 / 0.501 / 0.530  Brier 0.246 +/- 0.001  ECE 0.019 +/- 0.006
+  Stack (meta-LR on LR, HGB, MLP)    p 0.365 / 0.436 / 0.474 / 0.505 / 0.539  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.006
+
+[valence_high]  base-rate Brier 0.246 +/- 0.004
+  time only (LR C=1)                 p 0.521 / 0.541 / 0.565 / 0.589 / 0.618  Brier 0.246 +/- 0.004  ECE 0.039 +/- 0.016
+  LR C=1 (current)                   p 0.486 / 0.538 / 0.566 / 0.597 / 0.637  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.018
+  LR tuned C                         p 0.493 / 0.542 / 0.567 / 0.594 / 0.628  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.016
+  LR + 8 interactions                p 0.487 / 0.541 / 0.568 / 0.600 / 0.625  Brier 0.245 +/- 0.003  ECE 0.041 +/- 0.016
+  LR + all pairwise (deg 2)          p 0.463 / 0.534 / 0.569 / 0.602 / 0.642  Brier 0.246 +/- 0.003  ECE 0.040 +/- 0.018
+  HistGradientBoosting               p 0.479 / 0.546 / 0.566 / 0.597 / 0.622  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.017
+  MLP                                p 0.494 / 0.545 / 0.569 / 0.594 / 0.619  Brier 0.245 +/- 0.003  ECE 0.039 +/- 0.017
+  Ensemble mean (LR, HGB, MLP)       p 0.494 / 0.543 / 0.567 / 0.594 / 0.620  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.016
+  Stack (meta-LR on LR, HGB, MLP)    p 0.500 / 0.550 / 0.567 / 0.588 / 0.617  Brier 0.245 +/- 0.003  ECE 0.039 +/- 0.017
+
+[stress_high]  base-rate Brier 0.249 +/- 0.001
+  time only (LR C=1)                 p 0.398 / 0.436 / 0.472 / 0.492 / 0.503  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.008
+  LR C=1 (current)                   p 0.392 / 0.435 / 0.468 / 0.492 / 0.516  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.006
+  LR tuned C                         p 0.399 / 0.437 / 0.468 / 0.489 / 0.512  Brier 0.248 +/- 0.001  ECE 0.019 +/- 0.006
+  LR + 8 interactions                p 0.395 / 0.431 / 0.464 / 0.494 / 0.525  Brier 0.247 +/- 0.001  ECE 0.022 +/- 0.007
+  LR + all pairwise (deg 2)          p 0.382 / 0.428 / 0.462 / 0.499 / 0.540  Brier 0.248 +/- 0.002  ECE 0.021 +/- 0.009
+  HistGradientBoosting               p 0.400 / 0.432 / 0.460 / 0.494 / 0.532  Brier 0.247 +/- 0.002  ECE 0.021 +/- 0.007
+  MLP                                p 0.391 / 0.431 / 0.462 / 0.494 / 0.530  Brier 0.247 +/- 0.001  ECE 0.019 +/- 0.008
+  Ensemble mean (LR, HGB, MLP)       p 0.402 / 0.435 / 0.463 / 0.492 / 0.518  Brier 0.247 +/- 0.001  ECE 0.019 +/- 0.007
+  Stack (meta-LR on LR, HGB, MLP)    p 0.404 / 0.435 / 0.460 / 0.490 / 0.519  Brier 0.247 +/- 0.002  ECE 0.018 +/- 0.008
+
+=== Q5: per-person past-only rank of the predictions (e0 spread) ===
+
+[arousal_high]
+  time only (LR C=1)               min history  7: rows with rank 0.957; rank pct 0.05 / 0.27 / 0.52 / 0.76 / 0.96; raw p pct on same rows 0.402 / 0.441 / 0.474 / 0.492 / 0.503
+      pooled AUROC raw 0.533 +/- 0.008  rank 0.536 +/- 0.006  paired rank-raw +0.003 +/- 0.005 (4/5 folds >0); within-person AUROC raw 0.539 rank 0.539 (191 persons)
+  time only (LR C=1)               min history 20: rows with rank 0.878; rank pct 0.05 / 0.27 / 0.51 / 0.76 / 0.96; raw p pct on same rows 0.402 / 0.441 / 0.474 / 0.492 / 0.503
+      pooled AUROC raw 0.532 +/- 0.008  rank 0.534 +/- 0.006  paired rank-raw +0.002 +/- 0.005 (3/5 folds >0); within-person AUROC raw 0.537 rank 0.537 (191 persons)
+  LR C=1 (current)                 min history  7: rows with rank 0.957; rank pct 0.03 / 0.23 / 0.49 / 0.78 / 0.98; raw p pct on same rows 0.356 / 0.427 / 0.466 / 0.508 / 0.555
+      pooled AUROC raw 0.563 +/- 0.012  rank 0.558 +/- 0.007  paired rank-raw -0.005 +/- 0.010 (2/5 folds >0); within-person AUROC raw 0.562 rank 0.558 (191 persons)
+  LR C=1 (current)                 min history 20: rows with rank 0.878; rank pct 0.03 / 0.23 / 0.49 / 0.78 / 0.98; raw p pct on same rows 0.354 / 0.427 / 0.467 / 0.509 / 0.558
+      pooled AUROC raw 0.566 +/- 0.012  rank 0.559 +/- 0.006  paired rank-raw -0.006 +/- 0.010 (1/5 folds >0); within-person AUROC raw 0.561 rank 0.558 (191 persons)
+  LR tuned C                       min history  7: rows with rank 0.957; rank pct 0.03 / 0.23 / 0.49 / 0.78 / 0.98; raw p pct on same rows 0.363 / 0.431 / 0.467 / 0.504 / 0.550
+      pooled AUROC raw 0.563 +/- 0.011  rank 0.559 +/- 0.006  paired rank-raw -0.004 +/- 0.009 (2/5 folds >0); within-person AUROC raw 0.563 rank 0.559 (191 persons)
+  LR tuned C                       min history 20: rows with rank 0.878; rank pct 0.03 / 0.22 / 0.49 / 0.78 / 0.98; raw p pct on same rows 0.361 / 0.430 / 0.467 / 0.504 / 0.554
+      pooled AUROC raw 0.565 +/- 0.011  rank 0.559 +/- 0.006  paired rank-raw -0.006 +/- 0.009 (1/5 folds >0); within-person AUROC raw 0.562 rank 0.559 (191 persons)
+  HistGradientBoosting             min history  7: rows with rank 0.957; rank pct 0.02 / 0.19 / 0.45 / 0.73 / 0.96; raw p pct on same rows 0.374 / 0.441 / 0.474 / 0.493 / 0.522
+      pooled AUROC raw 0.558 +/- 0.011  rank 0.554 +/- 0.005  paired rank-raw -0.004 +/- 0.009 (3/5 folds >0); within-person AUROC raw 0.563 rank 0.556 (191 persons)
+  HistGradientBoosting             min history 20: rows with rank 0.878; rank pct 0.02 / 0.19 / 0.45 / 0.72 / 0.96; raw p pct on same rows 0.371 / 0.439 / 0.472 / 0.493 / 0.523
+      pooled AUROC raw 0.558 +/- 0.012  rank 0.554 +/- 0.005  paired rank-raw -0.005 +/- 0.009 (3/5 folds >0); within-person AUROC raw 0.561 rank 0.556 (191 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history  7: rows with rank 0.957; rank pct 0.02 / 0.22 / 0.48 / 0.77 / 0.98; raw p pct on same rows 0.363 / 0.436 / 0.474 / 0.506 / 0.539
+      pooled AUROC raw 0.563 +/- 0.011  rank 0.560 +/- 0.006  paired rank-raw -0.003 +/- 0.009 (2/5 folds >0); within-person AUROC raw 0.565 rank 0.562 (191 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history 20: rows with rank 0.878; rank pct 0.02 / 0.21 / 0.48 / 0.77 / 0.98; raw p pct on same rows 0.360 / 0.435 / 0.473 / 0.506 / 0.540
+      pooled AUROC raw 0.565 +/- 0.011  rank 0.560 +/- 0.006  paired rank-raw -0.005 +/- 0.009 (2/5 folds >0); within-person AUROC raw 0.563 rank 0.561 (191 persons)
+
+[valence_high]
+  time only (LR C=1)               min history  7: rows with rank 0.957; rank pct 0.05 / 0.27 / 0.55 / 0.79 / 0.98; raw p pct on same rows 0.521 / 0.541 / 0.566 / 0.590 / 0.618
+      pooled AUROC raw 0.533 +/- 0.005  rank 0.532 +/- 0.008  paired rank-raw -0.001 +/- 0.008 (3/5 folds >0); within-person AUROC raw 0.543 rank 0.538 (191 persons)
+  time only (LR C=1)               min history 20: rows with rank 0.878; rank pct 0.05 / 0.27 / 0.54 / 0.78 / 0.97; raw p pct on same rows 0.521 / 0.541 / 0.567 / 0.590 / 0.619
+      pooled AUROC raw 0.534 +/- 0.004  rank 0.535 +/- 0.009  paired rank-raw +0.001 +/- 0.008 (3/5 folds >0); within-person AUROC raw 0.543 rank 0.543 (190 persons)
+  LR C=1 (current)                 min history  7: rows with rank 0.957; rank pct 0.02 / 0.23 / 0.52 / 0.80 / 0.99; raw p pct on same rows 0.484 / 0.538 / 0.566 / 0.597 / 0.638
+      pooled AUROC raw 0.543 +/- 0.017  rank 0.538 +/- 0.010  paired rank-raw -0.005 +/- 0.012 (1/5 folds >0); within-person AUROC raw 0.549 rank 0.544 (191 persons)
+  LR C=1 (current)                 min history 20: rows with rank 0.878; rank pct 0.02 / 0.22 / 0.52 / 0.79 / 0.98; raw p pct on same rows 0.482 / 0.538 / 0.566 / 0.598 / 0.640
+      pooled AUROC raw 0.543 +/- 0.018  rank 0.541 +/- 0.012  paired rank-raw -0.002 +/- 0.013 (2/5 folds >0); within-person AUROC raw 0.547 rank 0.547 (190 persons)
+  LR tuned C                       min history  7: rows with rank 0.957; rank pct 0.02 / 0.23 / 0.52 / 0.80 / 0.99; raw p pct on same rows 0.493 / 0.542 / 0.567 / 0.594 / 0.629
+      pooled AUROC raw 0.543 +/- 0.018  rank 0.538 +/- 0.011  paired rank-raw -0.005 +/- 0.012 (1/5 folds >0); within-person AUROC raw 0.550 rank 0.546 (191 persons)
+  LR tuned C                       min history 20: rows with rank 0.878; rank pct 0.02 / 0.23 / 0.52 / 0.79 / 0.98; raw p pct on same rows 0.491 / 0.541 / 0.568 / 0.595 / 0.630
+      pooled AUROC raw 0.544 +/- 0.019  rank 0.542 +/- 0.012  paired rank-raw -0.002 +/- 0.013 (2/5 folds >0); within-person AUROC raw 0.548 rank 0.547 (190 persons)
+  HistGradientBoosting             min history  7: rows with rank 0.957; rank pct 0.02 / 0.20 / 0.48 / 0.75 / 0.96; raw p pct on same rows 0.477 / 0.546 / 0.566 / 0.597 / 0.622
+      pooled AUROC raw 0.546 +/- 0.021  rank 0.546 +/- 0.013  paired rank-raw -0.000 +/- 0.010 (2/5 folds >0); within-person AUROC raw 0.552 rank 0.551 (191 persons)
+  HistGradientBoosting             min history 20: rows with rank 0.878; rank pct 0.02 / 0.20 / 0.47 / 0.74 / 0.96; raw p pct on same rows 0.474 / 0.545 / 0.566 / 0.597 / 0.622
+      pooled AUROC raw 0.548 +/- 0.022  rank 0.549 +/- 0.014  paired rank-raw +0.001 +/- 0.010 (2/5 folds >0); within-person AUROC raw 0.551 rank 0.552 (190 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history  7: rows with rank 0.957; rank pct 0.02 / 0.20 / 0.49 / 0.77 / 0.98; raw p pct on same rows 0.499 / 0.550 / 0.567 / 0.588 / 0.618
+      pooled AUROC raw 0.541 +/- 0.018  rank 0.542 +/- 0.013  paired rank-raw +0.001 +/- 0.009 (2/5 folds >0); within-person AUROC raw 0.549 rank 0.549 (191 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history 20: rows with rank 0.878; rank pct 0.02 / 0.20 / 0.49 / 0.76 / 0.98; raw p pct on same rows 0.496 / 0.549 / 0.567 / 0.588 / 0.618
+      pooled AUROC raw 0.543 +/- 0.018  rank 0.546 +/- 0.013  paired rank-raw +0.003 +/- 0.010 (3/5 folds >0); within-person AUROC raw 0.547 rank 0.548 (190 persons)
+
+[stress_high]
+  time only (LR C=1)               min history  7: rows with rank 0.957; rank pct 0.02 / 0.20 / 0.48 / 0.75 / 0.96; raw p pct on same rows 0.397 / 0.435 / 0.471 / 0.492 / 0.502
+      pooled AUROC raw 0.544 +/- 0.011  rank 0.541 +/- 0.008  paired rank-raw -0.003 +/- 0.006 (1/5 folds >0); within-person AUROC raw 0.543 rank 0.539 (191 persons)
+  time only (LR C=1)               min history 20: rows with rank 0.878; rank pct 0.02 / 0.21 / 0.48 / 0.75 / 0.96; raw p pct on same rows 0.396 / 0.435 / 0.470 / 0.492 / 0.502
+      pooled AUROC raw 0.545 +/- 0.009  rank 0.543 +/- 0.010  paired rank-raw -0.001 +/- 0.004 (2/5 folds >0); within-person AUROC raw 0.543 rank 0.544 (191 persons)
+  LR C=1 (current)                 min history  7: rows with rank 0.957; rank pct 0.02 / 0.20 / 0.48 / 0.76 / 0.98; raw p pct on same rows 0.391 / 0.435 / 0.467 / 0.492 / 0.516
+      pooled AUROC raw 0.541 +/- 0.011  rank 0.541 +/- 0.007  paired rank-raw -0.000 +/- 0.007 (3/5 folds >0); within-person AUROC raw 0.542 rank 0.540 (191 persons)
+  LR C=1 (current)                 min history 20: rows with rank 0.878; rank pct 0.03 / 0.21 / 0.48 / 0.76 / 0.97; raw p pct on same rows 0.391 / 0.434 / 0.467 / 0.492 / 0.517
+      pooled AUROC raw 0.543 +/- 0.009  rank 0.542 +/- 0.009  paired rank-raw -0.000 +/- 0.006 (2/5 folds >0); within-person AUROC raw 0.543 rank 0.544 (191 persons)
+  LR tuned C                       min history  7: rows with rank 0.957; rank pct 0.02 / 0.20 / 0.48 / 0.76 / 0.98; raw p pct on same rows 0.398 / 0.437 / 0.467 / 0.488 / 0.512
+      pooled AUROC raw 0.542 +/- 0.010  rank 0.541 +/- 0.006  paired rank-raw -0.000 +/- 0.007 (3/5 folds >0); within-person AUROC raw 0.542 rank 0.540 (191 persons)
+  LR tuned C                       min history 20: rows with rank 0.878; rank pct 0.02 / 0.21 / 0.48 / 0.76 / 0.97; raw p pct on same rows 0.397 / 0.436 / 0.467 / 0.488 / 0.513
+      pooled AUROC raw 0.543 +/- 0.009  rank 0.543 +/- 0.009  paired rank-raw -0.000 +/- 0.006 (2/5 folds >0); within-person AUROC raw 0.543 rank 0.544 (191 persons)
+  HistGradientBoosting             min history  7: rows with rank 0.957; rank pct 0.03 / 0.23 / 0.52 / 0.80 / 0.97; raw p pct on same rows 0.399 / 0.432 / 0.459 / 0.494 / 0.533
+      pooled AUROC raw 0.548 +/- 0.010  rank 0.548 +/- 0.008  paired rank-raw +0.000 +/- 0.006 (3/5 folds >0); within-person AUROC raw 0.552 rank 0.548 (191 persons)
+  HistGradientBoosting             min history 20: rows with rank 0.878; rank pct 0.04 / 0.23 / 0.53 / 0.80 / 0.97; raw p pct on same rows 0.399 / 0.432 / 0.460 / 0.496 / 0.535
+      pooled AUROC raw 0.548 +/- 0.009  rank 0.549 +/- 0.011  paired rank-raw +0.001 +/- 0.005 (2/5 folds >0); within-person AUROC raw 0.551 rank 0.551 (191 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history  7: rows with rank 0.957; rank pct 0.03 / 0.23 / 0.51 / 0.78 / 0.98; raw p pct on same rows 0.404 / 0.434 / 0.460 / 0.490 / 0.520
+      pooled AUROC raw 0.549 +/- 0.009  rank 0.549 +/- 0.008  paired rank-raw -0.000 +/- 0.006 (2/5 folds >0); within-person AUROC raw 0.553 rank 0.549 (191 persons)
+  Stack (meta-LR on LR, HGB, MLP)  min history 20: rows with rank 0.878; rank pct 0.04 / 0.23 / 0.52 / 0.78 / 0.98; raw p pct on same rows 0.404 / 0.434 / 0.460 / 0.491 / 0.521
+      pooled AUROC raw 0.549 +/- 0.008  rank 0.549 +/- 0.010  paired rank-raw +0.001 +/- 0.006 (2/5 folds >0); within-person AUROC raw 0.552 rank 0.552 (191 persons)
+
+=== Q6: 2-D state (arousal = energy, valence = positivity) quadrants ===
+  true quadrant shares: lowA-lowV 0.288, lowA-highV 0.248, highA-lowV 0.146, highA-highV 0.318
+
+  model: LR C=1 (current)
+    Spearman pooled: p_arousal vs centred arousal 0.103; p_valence vs centred valence 0.065; p_arousal vs p_valence 0.713
+    [threshold 0.5] rows 1.000; accuracy 0.294 (fold 0.294 +/- 0.016), chance 0.273, kappa 0.029; opposite-quadrant rate 0.181 (chance 0.204)
+      predicted shares: lowA-lowV 0.086, lowA-highV 0.610, highA-lowV 0.000, highA-highV 0.304
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.106  0.641  0.000  0.253
+        lowA-highV   0.098  0.611  0.000  0.290
+        highA-lowV   0.076  0.601  0.000  0.323
+        highA-highV  0.063  0.585  0.000  0.352
+    [threshold = training base rate] rows 1.000; accuracy 0.315 (fold 0.315 +/- 0.012), chance 0.276, kappa 0.054; opposite-quadrant rate 0.242 (chance 0.278)
+      predicted shares: lowA-lowV 0.368, lowA-highV 0.111, highA-lowV 0.137, highA-highV 0.384
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.426  0.116  0.133  0.326
+        lowA-highV   0.381  0.116  0.134  0.368
+        highA-lowV   0.352  0.103  0.150  0.395
+        highA-highV  0.312  0.108  0.136  0.444
+    [per-person past rank > 0.5 (>=20 past)] rows 0.878; accuracy 0.313 (fold 0.313 +/- 0.012), chance 0.276, kappa 0.051; opposite-quadrant rate 0.238 (chance 0.273)
+      predicted shares: lowA-lowV 0.371, lowA-highV 0.146, highA-lowV 0.118, highA-highV 0.366
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.423  0.142  0.115  0.320
+        lowA-highV   0.386  0.155  0.108  0.351
+        highA-lowV   0.364  0.139  0.135  0.362
+        highA-highV  0.313  0.146  0.120  0.421
+
+  model: LR tuned C
+    Spearman pooled: p_arousal vs centred arousal 0.104; p_valence vs centred valence 0.066; p_arousal vs p_valence 0.754
+    [threshold 0.5] rows 1.000; accuracy 0.289 (fold 0.289 +/- 0.018), chance 0.270, kappa 0.026; opposite-quadrant rate 0.177 (chance 0.198)
+      predicted shares: lowA-lowV 0.068, lowA-highV 0.651, highA-lowV 0.000, highA-highV 0.281
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.084  0.684  0.000  0.232
+        lowA-highV   0.080  0.648  0.000  0.272
+        highA-lowV   0.059  0.648  0.000  0.293
+        highA-highV  0.048  0.624  0.000  0.328
+    [threshold = training base rate] rows 1.000; accuracy 0.317 (fold 0.317 +/- 0.013), chance 0.279, kappa 0.053; opposite-quadrant rate 0.243 (chance 0.280)
+      predicted shares: lowA-lowV 0.373, lowA-highV 0.101, highA-lowV 0.121, highA-highV 0.404
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.434  0.106  0.116  0.344
+        lowA-highV   0.386  0.104  0.121  0.389
+        highA-lowV   0.358  0.093  0.130  0.419
+        highA-highV  0.316  0.098  0.122  0.464
+    [per-person past rank > 0.5 (>=20 past)] rows 0.878; accuracy 0.317 (fold 0.317 +/- 0.012), chance 0.279, kappa 0.053; opposite-quadrant rate 0.239 (chance 0.276)
+      predicted shares: lowA-lowV 0.384, lowA-highV 0.132, highA-lowV 0.105, highA-highV 0.379
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.440  0.128  0.101  0.331
+        lowA-highV   0.400  0.140  0.096  0.364
+        highA-lowV   0.378  0.122  0.121  0.378
+        highA-highV  0.322  0.135  0.107  0.436
+
+  model: HistGradientBoosting
+    Spearman pooled: p_arousal vs centred arousal 0.096; p_valence vs centred valence 0.072; p_arousal vs p_valence 0.687
+    [threshold 0.5] rows 1.000; accuracy 0.278 (fold 0.278 +/- 0.023), chance 0.264, kappa 0.019; opposite-quadrant rate 0.173 (chance 0.187)
+      predicted shares: lowA-lowV 0.077, lowA-highV 0.728, highA-lowV 0.001, highA-highV 0.193
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.098  0.742  0.001  0.159
+        lowA-highV   0.075  0.728  0.000  0.196
+        highA-lowV   0.069  0.729  0.002  0.200
+        highA-highV  0.064  0.716  0.001  0.219
+    [threshold = training base rate] rows 1.000; accuracy 0.315 (fold 0.315 +/- 0.011), chance 0.277, kappa 0.052; opposite-quadrant rate 0.243 (chance 0.280)
+      predicted shares: lowA-lowV 0.324, lowA-highV 0.087, highA-lowV 0.146, highA-highV 0.443
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.381  0.086  0.146  0.387
+        lowA-highV   0.332  0.095  0.131  0.442
+        highA-lowV   0.303  0.084  0.166  0.447
+        highA-highV  0.275  0.082  0.149  0.494
+    [per-person past rank > 0.5 (>=20 past)] rows 0.878; accuracy 0.313 (fold 0.313 +/- 0.012), chance 0.279, kappa 0.048; opposite-quadrant rate 0.242 (chance 0.278)
+      predicted shares: lowA-lowV 0.424, lowA-highV 0.131, highA-lowV 0.100, highA-highV 0.344
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.479  0.126  0.101  0.294
+        lowA-highV   0.432  0.139  0.084  0.345
+        highA-lowV   0.419  0.128  0.115  0.338
+        highA-highV  0.371  0.131  0.106  0.392
+
+  model: Stack (meta-LR on LR, HGB, MLP)
+    Spearman pooled: p_arousal vs centred arousal 0.103; p_valence vs centred valence 0.061; p_arousal vs p_valence 0.632
+    [threshold 0.5] rows 1.000; accuracy 0.289 (fold 0.289 +/- 0.017), chance 0.270, kappa 0.026; opposite-quadrant rate 0.178 (chance 0.197)
+      predicted shares: lowA-lowV 0.049, lowA-highV 0.654, highA-lowV 0.001, highA-highV 0.296
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.059  0.694  0.001  0.246
+        lowA-highV   0.060  0.656  0.001  0.284
+        highA-lowV   0.038  0.652  0.000  0.309
+        highA-highV  0.037  0.616  0.001  0.345
+    [threshold = training base rate] rows 1.000; accuracy 0.307 (fold 0.307 +/- 0.014), chance 0.271, kappa 0.048; opposite-quadrant rate 0.243 (chance 0.277)
+      predicted shares: lowA-lowV 0.328, lowA-highV 0.100, highA-lowV 0.173, highA-highV 0.399
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.382  0.107  0.169  0.342
+        lowA-highV   0.337  0.107  0.163  0.392
+        highA-lowV   0.306  0.096  0.186  0.412
+        highA-highV  0.282  0.090  0.178  0.450
+    [per-person past rank > 0.5 (>=20 past)] rows 0.878; accuracy 0.310 (fold 0.310 +/- 0.009), chance 0.274, kappa 0.050; opposite-quadrant rate 0.237 (chance 0.274)
+      predicted shares: lowA-lowV 0.383, lowA-highV 0.140, highA-lowV 0.132, highA-highV 0.345
+      P(pred | true), rows = true lowA-lowV | lowA-highV | highA-lowV | highA-highV
+        lowA-lowV    0.438  0.137  0.132  0.293
+        lowA-highV   0.395  0.151  0.113  0.341
+        highA-lowV   0.372  0.139  0.146  0.343
+        highA-highV  0.330  0.133  0.141  0.395

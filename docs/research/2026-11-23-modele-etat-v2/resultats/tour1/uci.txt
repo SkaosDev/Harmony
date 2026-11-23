@@ -1,0 +1,105 @@
+participants dirs: 24
+assessment/events.csv: n_par=12, total 0.00 GB, median 0.0 MB | cols: start_timestamp,end_timestamp,duration_sec,academicevent_1,academicevent_2,academicevent_3,academicevent_4,academicevent_5,academicevent_6,academicevent_7,academicevent_8,academicevent_9,academicevent_10,academicevent_11,academicevent_12,academicevent_13,event_2,event_4,event_5,event_6,event_12,event_13,event_17,resources_1,resources_1_5_text,resources_2,resources_3,vote
+assessment/surveys.csv: n_par=24, total 0.00 GB, median 0.0 MB | cols: start_timestamp,end_timestamp,stage,progress,duration_sec,rel_length,aim_1,aim_2,aim_3,aim_4,bc_1,bc_2,bc_3_1,bc_3_2,bc_3_3,bc_3_4,bc_3_5,bc_3_6,bc_4_1,bc_4_2,bc_4_3,bc_4_4,bc_4_5,bc_4_6,bc_4_7,bc_4_8,bc_4_9,bc_4_10,bc_4_11,bc_4_12,bc_4_13,bc_4_14,bc_5,bc_6,bc_7,bc_8,bc_9,bc_10,bc_11,bc_12,bc_13,bc_14,bc_15,bc_16,bc_17,bc_18,bc_19,bct_1,bct_2,bct_3,bdi,bdi_1,bdi_2,bdi_3,bdi_4,bdi_5,bdi_6,bdi_7,bdi
+ema/daily.csv: n_par=24, total 0.00 GB, median 0.1 MB | cols: submission_timestamp,start_timestamp,Active,Afraid,Alert,Ashamed,Attentive,Determined,Distressed,Enthusiastic,Excited,Guilty,Hostile,Inspired,Interested,Irritable,Jittery,Nervous,Proud,Scared,Strong,Upset,covid_worried,health_worried,Active_last_modify,Afraid_last_modify,Alert_last_modify,Ashamed_last_modify,Attentive_last_modify,Determined_last_modify,Distressed_last_modify,Enthusiastic_last_modi
+ema/weekly.csv: n_par=22, total 0.00 GB, median 0.0 MB | cols: submission_timestamp,start_timestamp,Active,Afraid,Alert,Ashamed,Attentive,Determined,Distressed,Enthusiastic,Excited,Guilty,Hostile,Inspired,Interested,Irritable,Jittery,Nervous,Proud,Scared,Strong,Upset,week_felt,Active_last_modify,Afraid_last_modify,Alert_last_modify,Ashamed_last_modify,Attentive_last_modify,Determined_last_modify,Distressed_last_modify,Enthusiastic_last_modify,Excited_last_mod
+oura/activity.csv: n_par=24, total 0.00 GB, median 0.0 MB | cols: date,score,score_stay_active,score_move_every_hour,score_meet_daily_targets,score_training_frequency,score_training_volume,score_recovery_time,cal_active,cal_total,daily_movement,inactivity_alerts,steps,non_wear,rest,inactive,low,medium,high,average_met,met_min_inactive,met_min_low,met_min_medium,met_min_high,day_start_timestamp,day_end_timestamp
+oura/activity_level.csv: n_par=23, total 0.03 GB, median 1.3 MB | cols: timestamps,activity_level,activity_class
+oura/heart_rate.csv: n_par=24, total 0.01 GB, median 0.3 MB | cols: timestamp,heart_rate,heart_rmssd
+oura/readiness.csv: n_par=24, total 0.00 GB, median 0.0 MB | cols: date,score,score_activity_balance,score_hrv_balance,score_previous_day,score_previous_night,score_recovery_index,score_resting_hr,score_sleep_balance,score_temperature
+oura/sleep.csv: n_par=23, total 0.00 GB, median 0.0 MB | cols: date,score,score_alignment,score_deep,score_disturbances,score_efficiency,score_latency,score_rem,score_total,duration,awake,light,rem,deep,total,onset_latency,midpoint_time,efficiency,restless,hr_average,hr_lowest,rmssd,breath_average,bedtime_start_midnight_delta,bedtime_end_midnight_delta,temperature_delta,bedtime_start_timestamp,bedtime_end_timestamp
+oura/sleep_hypnogram.csv: n_par=23, total 0.01 GB, median 0.3 MB | cols: timestamp,hypnogram_level,hypnogram_class
+personicle/personicle.csv: n_par=23, total 0.00 GB, median 0.2 MB | cols: timestamp,activity_set_bicycle,activity_set_running,activity_set_walking,activity_previous_event,activity_name,sub_activity_name,activity_level,activity_type,venue_type,time_band,activity_duration,major_activity,time_window,step_count
+samsung/awake_times.csv: n_par=24, total 0.00 GB, median 0.0 MB | cols: timestamp_start,timestamp_end,state
+samsung/hrv_1min.csv: n_par=22, total 0.04 GB, median 1.0 MB | cols: timestamp,hrv_meannn,hrv_sdnn,hrv_rmssd,hrv_sdsd,hrv_cvnn,hrv_cvsd,hrv_mediannn,hrv_madnn,hrv_mcvnn,hrv_iqrnn,hrv_prc80nn,hrv_pnn50,hrv_pnn20,hrv_minnn,hrv_maxnn,hrv_tinn,hrv_hti,hrv_ulf,hrv_vlf,hrv_lf,hrv_hf,hrv_vhf,hrv_lfhf,hrv_lfn,hrv_hfn,hrv_lnhf,hrv_sd1,hrv_sd2,hrv_sd1sd2,hrv_s,hr,ulf,vlf,lf,hf,vhf,lfhf,lfn,hfn,lnhf
+samsung/hrv_5min.csv: n_par=21, total 0.00 GB, median 0.1 MB | cols: timestamp,hrv_meannn,hrv_sdnn,hrv_rmssd,hrv_sdsd,hrv_cvnn,hrv_cvsd,hrv_mediannn,hrv_madnn,hrv_mcvnn,hrv_iqrnn,hrv_prc80nn,hrv_pnn50,hrv_pnn20,hrv_minnn,hrv_maxnn,hrv_tinn,hrv_hti,hrv_ulf,hrv_vlf,hrv_lf,hrv_hf,hrv_vhf,hrv_lfhf,hrv_lfn,hrv_hfn,hrv_lnhf,hrv_sd1,hrv_sd2,hrv_sd1sd2,hrv_s,hr
+samsung/imu.csv: n_par=24, total 19.96 GB, median 869.8 MB | cols: timestamp,accx,accy,accz,gyrx,gyry,gyrz
+samsung/pedometer.csv: n_par=24, total 0.06 GB, median 2.2 MB | cols: timestamp,num_total_steps,num_total_walking_steps,num_total_running_steps,move_distance_meter,cal_burn_kcal,last_speed_kmh,last_step_freq,last_state_level,last_state_class
+samsung/ppg.csv: n_par=24, total 10.78 GB, median 461.9 MB | cols: timestamp,ppg,hr
+samsung/pressure.csv: n_par=24, total 4.56 GB, median 201.6 MB | cols: timestamp,pressure
+===== ema/daily: 3949 rows, 24 participants; per-participant median 180
+  Active: n=3949, 0..100, mean 32.5, sd 27.8, ICC1 0.339
+  Afraid: n=3949, 0..100, mean 18.8, sd 22.5, ICC1 0.347
+  Alert: n=3949, 0..100, mean 38.4, sd 25.1, ICC1 0.343
+  Ashamed: n=3949, 0..100, mean 20.6, sd 23.2, ICC1 0.295
+  Attentive: n=3949, 0..100, mean 43.3, sd 25.5, ICC1 0.423
+  Determined: n=3949, 0..100, mean 49.6, sd 26.3, ICC1 0.457
+  Distressed: n=3949, 0..100, mean 32.1, sd 27.6, ICC1 0.279
+  Enthusiastic: n=3949, 0..100, mean 46.5, sd 26.3, ICC1 0.448
+  Excited: n=3949, 0..100, mean 46.8, sd 25.6, ICC1 0.411
+  Guilty: n=3949, 0..100, mean 23.5, sd 25.0, ICC1 0.389
+  Hostile: n=3949, 0..100, mean 13.0, sd 17.4, ICC1 0.284
+  Inspired: n=3949, 0..100, mean 41.8, sd 27.1, ICC1 0.509
+  Interested: n=3949, 0..100, mean 55.8, sd 23.5, ICC1 0.429
+  Irritable: n=3949, 0..100, mean 22.7, sd 24.1, ICC1 0.214
+  Jittery: n=3949, 0..100, mean 21.2, sd 23.6, ICC1 0.305
+  Nervous: n=3949, 0..100, mean 30.8, sd 27.7, ICC1 0.257
+  Proud: n=3949, 0..100, mean 42.5, sd 26.1, ICC1 0.477
+  Scared: n=3949, 0..100, mean 20.2, sd 23.3, ICC1 0.327
+  Strong: n=3949, 0..100, mean 39.2, sd 26.1, ICC1 0.540
+  Upset: n=3949, 0..100, mean 25.1, sd 25.2, ICC1 0.246
+  health_worried: n=3336, 0..100, mean 20.1, sd 24.6, ICC1 0.656
+  composite ACT: n=3949, ICC1 0.444
+  composite PA: n=3949, ICC1 0.617
+  composite NA: n=3949, ICC1 0.413
+  composite PAmNA: n=3949, ICC1 0.559
+  pooled corr:
+                 ACT    PA    NA  PAmNA  health_worried
+ACT             1.00  0.81  0.31   0.39           -0.13
+PA              0.81  1.00 -0.11   0.78           -0.25
+NA              0.31 -0.11  1.00  -0.70            0.26
+PAmNA           0.39  0.78 -0.70   1.00           -0.34
+health_worried -0.13 -0.25  0.26  -0.34            1.00
+  within-person corr:
+                 ACT    PA    NA  PAmNA  health_worried
+ACT             1.00  0.75  0.39   0.22            0.05
+PA              0.75  1.00 -0.04   0.70           -0.04
+NA              0.39 -0.04  1.00  -0.75            0.21
+PAmNA           0.22  0.70 -0.75   1.00           -0.17
+health_worried  0.05 -0.04  0.21  -0.17            1.00
+===== ema/weekly: 605 rows, 22 participants; per-participant median 26
+  Active: n=605, 0..100, mean 37.5, sd 27.5, ICC1 0.463
+  Afraid: n=605, 0..99, mean 21.3, sd 23.3, ICC1 0.389
+  Alert: n=605, 0..97, mean 41.3, sd 24.0, ICC1 0.407
+  Ashamed: n=605, 0..100, mean 23.3, sd 23.1, ICC1 0.410
+  Attentive: n=605, 0..99, mean 45.3, sd 24.8, ICC1 0.538
+  Determined: n=605, 0..100, mean 52.6, sd 25.3, ICC1 0.513
+  Distressed: n=605, 0..100, mean 43.3, sd 27.9, ICC1 0.437
+  Enthusiastic: n=605, 0..100, mean 48.7, sd 24.6, ICC1 0.530
+  Excited: n=605, 0..100, mean 50.6, sd 23.6, ICC1 0.472
+  Guilty: n=605, 0..100, mean 26.2, sd 25.6, ICC1 0.530
+  Hostile: n=605, 0..87, mean 16.0, sd 16.8, ICC1 0.200
+  Inspired: n=605, 0..100, mean 45.1, sd 25.9, ICC1 0.531
+  Interested: n=605, 0..100, mean 57.5, sd 20.8, ICC1 0.404
+  Irritable: n=605, 0..100, mean 30.1, sd 24.2, ICC1 0.350
+  Jittery: n=605, 0..98, mean 23.8, sd 22.9, ICC1 0.420
+  Nervous: n=605, 0..100, mean 36.1, sd 27.0, ICC1 0.334
+  Proud: n=605, 0..100, mean 46.0, sd 24.9, ICC1 0.545
+  Scared: n=605, 0..86, mean 23.8, sd 23.5, ICC1 0.373
+  Strong: n=605, 0..97, mean 40.5, sd 24.8, ICC1 0.572
+  Upset: n=605, 0..100, mean 33.5, sd 25.1, ICC1 0.370
+  week_felt: n=605, 0..100, mean 50.8, sd 19.1, ICC1 0.230
+  composite ACT: n=605, ICC1 0.521
+  composite PA: n=605, ICC1 0.671
+  composite NA: n=605, ICC1 0.522
+  composite PAmNA: n=605, ICC1 0.661
+  pooled corr:
+            ACT    PA    NA  PAmNA  week_felt
+ACT        1.00  0.82  0.34   0.37       0.37
+PA         0.82  1.00 -0.08   0.77       0.56
+NA         0.34 -0.08  1.00  -0.70      -0.37
+PAmNA      0.37  0.77 -0.70   1.00       0.64
+week_felt  0.37  0.56 -0.37   0.64       1.00
+  within-person corr:
+            ACT    PA    NA  PAmNA  week_felt
+ACT        1.00  0.76  0.46   0.19       0.22
+PA         0.76  1.00  0.07   0.65       0.45
+NA         0.46  0.07  1.00  -0.71      -0.38
+PAmNA      0.19  0.65 -0.71   1.00       0.61
+week_felt  0.22  0.45 -0.38   0.61       1.00
+===== oura/sleep.csv: 23 participants, 3997 rows, median 172/participant; share non-missing non-zero per column:
+  date 0.00, score 1.00, score_alignment 1.00, score_deep 1.00, score_disturbances 1.00, score_efficiency 1.00, score_latency 1.00, score_rem 1.00, score_total 1.00, duration 1.00, awake 1.00, light 1.00, rem 1.00, deep 1.00, total 1.00, onset_latency 1.00, midpoint_time 1.00, efficiency 1.00, restless 1.00, hr_average 1.00, hr_lowest 1.00, rmssd 1.00, breath_average 1.00, bedtime_start_midnight_delta 1.00, bedtime_end_midnight_delta 1.00, temperature_delta 0.98, bedtime_start_timestamp 1.00, bedtime_end_timestamp 1.00
+===== oura/readiness.csv: 24 participants, 3997 rows, median 164/participant; share non-missing non-zero per column:
+  date 0.00, score 1.00, score_activity_balance 0.98, score_hrv_balance 0.63, score_previous_day 0.96, score_previous_night 1.00, score_recovery_index 1.00, score_resting_hr 1.00, score_sleep_balance 0.98, score_temperature 1.00
+===== oura/activity.csv: 24 participants, 4477 rows, median 187/participant; share non-missing non-zero per column:
+  date 0.00, score 1.00, score_stay_active 1.00, score_move_every_hour 1.00, score_meet_daily_targets 1.00, score_training_frequency 1.00, score_training_volume 1.00, score_recovery_time 1.00, cal_active 1.00, cal_total 1.00, daily_movement 1.00, inactivity_alerts 0.60, steps 1.00, non_wear 0.59, rest 1.00, inactive 1.00, low 1.00, medium 0.91, high 0.28, average_met 1.00, met_min_inactive 0.99, met_min_low 0.99, met_min_medium 0.91, met_min_high 0.28, day_start_timestamp 1.00, day_end_timestamp 1.00, target_calories 0.00, target_km 0.00, target_miles 0.00, to_target_km 0.00, to_target_miles 0.00

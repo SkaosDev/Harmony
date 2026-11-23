@@ -1,0 +1,96 @@
+D-1 + D-2: 31301 answers; outer 5 folds (ml/train.py), inner GroupKFold(4)
+MLP predictions = mean of 3 seeds of the tuned config; HGB fixed: depth 3, 150 iter, lr 0.05, min leaf 100, l2 1
+
+=== [arousal] ===
+  LR C=1 separate                    AUROC 0.563 +/- 0.012  BA 0.537 +/- 0.007  Spearman(centred) 0.102 +/- 0.006  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.005  p pct 0.357 / 0.428 / 0.467 / 0.508 / 0.553
+  HGB fixed separate                 AUROC 0.558 +/- 0.014  BA 0.533 +/- 0.008  Spearman(centred) 0.098 +/- 0.010  Brier 0.246 +/- 0.001  ECE 0.023 +/- 0.006  p pct 0.343 / 0.433 / 0.475 / 0.505 / 0.549
+      paired AUROC vs LR C=1 separate -0.005 +/- 0.003 (1/5 folds >0)
+  MLP single-task                    AUROC 0.562 +/- 0.010  BA 0.531 +/- 0.008  Spearman(centred) 0.105 +/- 0.006  Brier 0.246 +/- 0.001  ECE 0.019 +/- 0.006  p pct 0.370 / 0.436 / 0.471 / 0.502 / 0.534
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.004 (3/5 folds >0)
+  MLP multi-task                     AUROC 0.563 +/- 0.012  BA 0.539 +/- 0.009  Spearman(centred) 0.104 +/- 0.006  Brier 0.245 +/- 0.001  ECE 0.018 +/- 0.007  p pct 0.359 / 0.434 / 0.474 / 0.511 / 0.539
+      paired AUROC vs LR C=1 separate +0.000 +/- 0.002 (2/5 folds >0)
+  LR chain A->V->S                   AUROC 0.563 +/- 0.012  BA 0.537 +/- 0.007  Spearman(centred) 0.102 +/- 0.006  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.005  p pct 0.357 / 0.428 / 0.467 / 0.508 / 0.553
+      paired AUROC vs LR C=1 separate +0.000 +/- 0.000 (0/5 folds >0)
+  LR cross-target stack              AUROC 0.563 +/- 0.013  BA 0.538 +/- 0.007  Spearman(centred) 0.102 +/- 0.005  Brier 0.246 +/- 0.001  ECE 0.020 +/- 0.006  p pct 0.356 / 0.428 / 0.467 / 0.509 / 0.554
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.000 (2/5 folds >0)
+  HGB chain A->V->S                  AUROC 0.558 +/- 0.014  BA 0.533 +/- 0.008  Spearman(centred) 0.098 +/- 0.010  Brier 0.246 +/- 0.001  ECE 0.023 +/- 0.006  p pct 0.343 / 0.433 / 0.475 / 0.505 / 0.549
+      paired AUROC vs LR C=1 separate -0.005 +/- 0.003 (1/5 folds >0)
+  HGB cross-target stack             AUROC 0.558 +/- 0.014  BA 0.534 +/- 0.007  Spearman(centred) 0.097 +/- 0.010  Brier 0.246 +/- 0.001  ECE 0.023 +/- 0.007  p pct 0.346 / 0.433 / 0.474 / 0.508 / 0.552
+      paired AUROC vs LR C=1 separate -0.004 +/- 0.003 (0/5 folds >0)
+  Ridge centred (regression)         AUROC 0.559 +/- 0.009  BA 0.543 +/- 0.009  Spearman(centred) 0.112 +/- 0.009  R2(centred) 0.015 +/- 0.003  pred pct -0.281 / -0.106 / +0.014 / +0.094 / +0.285
+      paired AUROC vs LR C=1 separate -0.004 +/- 0.009 (2/5 folds >0)
+  HGB regressor centred (fixed)      AUROC 0.556 +/- 0.007  BA 0.538 +/- 0.007  Spearman(centred) 0.108 +/- 0.013  R2(centred) 0.016 +/- 0.004  pred pct -0.312 / -0.082 / +0.012 / +0.112 / +0.237
+      paired AUROC vs LR C=1 separate -0.007 +/- 0.009 (2/5 folds >0)
+      paired AUROC multi-task - single-task MLP +0.001 +/- 0.002 (2/5 folds >0)
+      paired AUROC LR cross-target stack - LR separate -0.000 +/- 0.000 (2/5 folds >0)
+      paired AUROC HGB cross-target stack - HGB separate +0.000 +/- 0.002 (2/5 folds >0)
+      paired AUROC Ridge centred - LR separate -0.004 +/- 0.009 (2/5 folds >0); Spearman +0.009 +/- 0.007 (5/5 folds >0)
+
+=== [valence] ===
+  LR C=1 separate                    AUROC 0.542 +/- 0.017  BA 0.512 +/- 0.002  Spearman(centred) 0.068 +/- 0.029  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.018  p pct 0.486 / 0.538 / 0.566 / 0.597 / 0.637
+  HGB fixed separate                 AUROC 0.541 +/- 0.017  BA 0.517 +/- 0.009  Spearman(centred) 0.068 +/- 0.025  Brier 0.246 +/- 0.003  ECE 0.042 +/- 0.016  p pct 0.450 / 0.540 / 0.572 / 0.608 / 0.636
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.006 (3/5 folds >0)
+  MLP single-task                    AUROC 0.544 +/- 0.018  BA 0.509 +/- 0.005  Spearman(centred) 0.071 +/- 0.031  Brier 0.245 +/- 0.003  ECE 0.039 +/- 0.015  p pct 0.497 / 0.544 / 0.567 / 0.591 / 0.618
+      paired AUROC vs LR C=1 separate +0.002 +/- 0.003 (3/5 folds >0)
+  MLP multi-task                     AUROC 0.546 +/- 0.019  BA 0.511 +/- 0.002  Spearman(centred) 0.075 +/- 0.031  Brier 0.245 +/- 0.003  ECE 0.041 +/- 0.016  p pct 0.487 / 0.540 / 0.568 / 0.599 / 0.625
+      paired AUROC vs LR C=1 separate +0.004 +/- 0.003 (5/5 folds >0)
+  LR chain A->V->S                   AUROC 0.542 +/- 0.017  BA 0.511 +/- 0.002  Spearman(centred) 0.068 +/- 0.029  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.018  p pct 0.485 / 0.538 / 0.566 / 0.597 / 0.637
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.000 (2/5 folds >0)
+  LR cross-target stack              AUROC 0.541 +/- 0.016  BA 0.512 +/- 0.002  Spearman(centred) 0.067 +/- 0.029  Brier 0.245 +/- 0.003  ECE 0.040 +/- 0.017  p pct 0.486 / 0.538 / 0.566 / 0.597 / 0.637
+      paired AUROC vs LR C=1 separate -0.001 +/- 0.001 (1/5 folds >0)
+  HGB chain A->V->S                  AUROC 0.541 +/- 0.017  BA 0.516 +/- 0.010  Spearman(centred) 0.067 +/- 0.022  Brier 0.245 +/- 0.003  ECE 0.041 +/- 0.016  p pct 0.452 / 0.542 / 0.572 / 0.609 / 0.638
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.007 (3/5 folds >0)
+  HGB cross-target stack             AUROC 0.541 +/- 0.017  BA 0.516 +/- 0.008  Spearman(centred) 0.067 +/- 0.023  Brier 0.246 +/- 0.003  ECE 0.042 +/- 0.016  p pct 0.452 / 0.543 / 0.574 / 0.608 / 0.638
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.007 (3/5 folds >0)
+  LR + true arousal_high (question)  AUROC 0.628 +/- 0.022  BA 0.598 +/- 0.011  Spearman(centred) 0.245 +/- 0.042  Brier 0.234 +/- 0.004  ECE 0.046 +/- 0.014  p pct 0.407 / 0.455 / 0.523 / 0.681 / 0.727
+      paired AUROC vs LR C=1 separate +0.087 +/- 0.019 (5/5 folds >0)
+  Ridge centred (regression)         AUROC 0.545 +/- 0.008  BA 0.537 +/- 0.008  Spearman(centred) 0.081 +/- 0.022  R2(centred) 0.005 +/- 0.004  pred pct -0.136 / -0.063 / -0.001 / +0.055 / +0.138
+      paired AUROC vs LR C=1 separate +0.003 +/- 0.011 (3/5 folds >0)
+  HGB regressor centred (fixed)      AUROC 0.541 +/- 0.011  BA 0.533 +/- 0.009  Spearman(centred) 0.074 +/- 0.022  R2(centred) 0.003 +/- 0.006  pred pct -0.172 / -0.059 / -0.002 / +0.077 / +0.157
+      paired AUROC vs LR C=1 separate -0.001 +/- 0.006 (2/5 folds >0)
+      paired AUROC multi-task - single-task MLP +0.002 +/- 0.001 (5/5 folds >0)
+      paired AUROC LR chain A->V->S - LR separate -0.000 +/- 0.000 (2/5 folds >0)
+      paired AUROC LR cross-target stack - LR separate -0.001 +/- 0.001 (1/5 folds >0)
+      paired AUROC HGB chain A->V->S - HGB separate +0.000 +/- 0.001 (3/5 folds >0)
+      paired AUROC HGB cross-target stack - HGB separate +0.000 +/- 0.001 (3/5 folds >0)
+      paired AUROC LR + true arousal_high - LR separate +0.087 +/- 0.019 (5/5 folds >0)
+      paired AUROC Ridge centred - LR separate +0.003 +/- 0.011 (3/5 folds >0); Spearman +0.013 +/- 0.016 (4/5 folds >0)
+
+=== [stress] ===
+  LR C=1 separate                    AUROC 0.540 +/- 0.011  BA 0.516 +/- 0.005  Spearman(centred) 0.085 +/- 0.021  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.006  p pct 0.392 / 0.435 / 0.468 / 0.492 / 0.516
+  HGB fixed separate                 AUROC 0.547 +/- 0.009  BA 0.527 +/- 0.009  Spearman(centred) 0.098 +/- 0.015  Brier 0.247 +/- 0.002  ECE 0.022 +/- 0.010  p pct 0.385 / 0.428 / 0.458 / 0.502 / 0.549
+      paired AUROC vs LR C=1 separate +0.006 +/- 0.004 (4/5 folds >0)
+  MLP single-task                    AUROC 0.544 +/- 0.010  BA 0.516 +/- 0.004  Spearman(centred) 0.092 +/- 0.020  Brier 0.247 +/- 0.001  ECE 0.018 +/- 0.007  p pct 0.406 / 0.433 / 0.464 / 0.491 / 0.512
+      paired AUROC vs LR C=1 separate +0.004 +/- 0.002 (5/5 folds >0)
+  MLP multi-task                     AUROC 0.543 +/- 0.009  BA 0.512 +/- 0.002  Spearman(centred) 0.090 +/- 0.018  Brier 0.247 +/- 0.001  ECE 0.015 +/- 0.005  p pct 0.411 / 0.439 / 0.465 / 0.487 / 0.508
+      paired AUROC vs LR C=1 separate +0.003 +/- 0.004 (4/5 folds >0)
+  LR chain A->V->S                   AUROC 0.540 +/- 0.011  BA 0.516 +/- 0.006  Spearman(centred) 0.085 +/- 0.021  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.006  p pct 0.392 / 0.435 / 0.468 / 0.492 / 0.517
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.000 (2/5 folds >0)
+  LR cross-target stack              AUROC 0.540 +/- 0.011  BA 0.516 +/- 0.006  Spearman(centred) 0.085 +/- 0.021  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.006  p pct 0.392 / 0.435 / 0.468 / 0.492 / 0.517
+      paired AUROC vs LR C=1 separate -0.000 +/- 0.000 (2/5 folds >0)
+  HGB chain A->V->S                  AUROC 0.545 +/- 0.010  BA 0.527 +/- 0.010  Spearman(centred) 0.095 +/- 0.012  Brier 0.247 +/- 0.002  ECE 0.023 +/- 0.012  p pct 0.387 / 0.429 / 0.459 / 0.501 / 0.546
+      paired AUROC vs LR C=1 separate +0.005 +/- 0.005 (4/5 folds >0)
+  HGB cross-target stack             AUROC 0.545 +/- 0.010  BA 0.527 +/- 0.010  Spearman(centred) 0.095 +/- 0.012  Brier 0.247 +/- 0.002  ECE 0.023 +/- 0.012  p pct 0.387 / 0.429 / 0.459 / 0.501 / 0.546
+      paired AUROC vs LR C=1 separate +0.005 +/- 0.005 (4/5 folds >0)
+  LR + true arousal_high (question)  AUROC 0.540 +/- 0.011  BA 0.515 +/- 0.005  Spearman(centred) 0.083 +/- 0.024  Brier 0.248 +/- 0.001  ECE 0.020 +/- 0.006  p pct 0.391 / 0.435 / 0.467 / 0.492 / 0.516
+      paired AUROC vs LR C=1 separate -0.001 +/- 0.001 (1/5 folds >0)
+  Ridge centred (regression)         AUROC 0.541 +/- 0.011  BA 0.530 +/- 0.007  Spearman(centred) 0.086 +/- 0.019  R2(centred) 0.006 +/- 0.003  pred pct -0.214 / -0.094 / +0.029 / +0.087 / +0.160
+      paired AUROC vs LR C=1 separate +0.001 +/- 0.003 (2/5 folds >0)
+  HGB regressor centred (fixed)      AUROC 0.551 +/- 0.010  BA 0.534 +/- 0.007  Spearman(centred) 0.102 +/- 0.011  R2(centred) 0.010 +/- 0.003  pred pct -0.249 / -0.108 / -0.013 / +0.106 / +0.263
+      paired AUROC vs LR C=1 separate +0.010 +/- 0.011 (4/5 folds >0)
+      paired AUROC multi-task - single-task MLP -0.001 +/- 0.003 (4/5 folds >0)
+      paired AUROC LR chain A->V->S - LR separate -0.000 +/- 0.000 (2/5 folds >0)
+      paired AUROC LR cross-target stack - LR separate -0.000 +/- 0.000 (2/5 folds >0)
+      paired AUROC HGB chain A->V->S - HGB separate -0.001 +/- 0.002 (1/5 folds >0)
+      paired AUROC HGB cross-target stack - HGB separate -0.001 +/- 0.002 (1/5 folds >0)
+      paired AUROC LR + true arousal_high - LR separate -0.001 +/- 0.001 (1/5 folds >0)
+      paired AUROC Ridge centred - LR separate +0.001 +/- 0.003 (2/5 folds >0); Spearman +0.001 +/- 0.002 (3/5 folds >0)
+
+chosen hyper-parameters per outer fold:
+  ('MLP single-task', 'arousal'): [{'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (32,), 'alpha': 3.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}]
+  ('MLP single-task', 'valence'): [{'hidden_layer_sizes': (32,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (32,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 3.0}, {'hidden_layer_sizes': (32,), 'alpha': 3.0}]
+  ('MLP single-task', 'stress'): [{'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (32,), 'alpha': 1.0}, {'hidden_layer_sizes': (32,), 'alpha': 1.0}]
+  ('MLP multi-task', 'all'): [{'hidden_layer_sizes': (16,), 'alpha': 1.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}, {'hidden_layer_sizes': (32, 16), 'alpha': 1.0}]
+  ('Ridge centred', 'arousal'): [1000.0, 1000.0, 100.0, 1000.0, 1000.0]
+  ('Ridge centred', 'valence'): [1000.0, 1000.0, 1000.0, 1000.0, 1000.0]
+  ('Ridge centred', 'stress'): [1000.0, 1000.0, 1000.0, 1000.0, 1.0]

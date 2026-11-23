@@ -1,0 +1,71 @@
+{
+ "sleep_logs_main": 3551,
+ "sleep_logs_with_stages_share": 0.945,
+ "night_signal_coverage": {
+  "sleep_min": {
+   "participants": 69,
+   "nights_total": 3551,
+   "nights_per_participant_median": 58.0
+  },
+  "rmssd": {
+   "participants": 43,
+   "nights_total": 2475,
+   "nights_per_participant_median": 58.0
+  },
+  "nremhr": {
+   "participants": 43,
+   "nights_total": 2475,
+   "nights_per_participant_median": 58.0
+  },
+  "rhr_prev": {
+   "participants": 71,
+   "nights_total": 4422,
+   "nights_per_participant_median": 64.0
+  },
+  "deep_share": {
+   "participants": 63,
+   "nights_total": 3357,
+   "nights_per_participant_median": 57.0
+  },
+  "rem_share": {
+   "participants": 63,
+   "nights_total": 3357,
+   "nights_per_participant_median": 57.0
+  },
+  "efficiency": {
+   "participants": 69,
+   "nights_total": 3551,
+   "nights_per_participant_median": 58.0
+  },
+  "temp": {
+   "participants": 64,
+   "nights_total": 3359,
+   "nights_per_participant_median": 57.0
+  },
+  "br": {
+   "participants": 43,
+   "nights_total": 2495,
+   "nights_per_participant_median": 59.0
+  },
+  "spo2": {
+   "participants": 28,
+   "nights_total": 1270,
+   "nights_per_participant_median": 53.5
+  }
+ },
+ "answers": 5028,
+ "unknown_share_at_answers": {
+  "z_sleep_min_meas": 0.272,
+  "z_rmssd": 0.523,
+  "z_nremhr": 0.523,
+  "z_rhr_prev": 0.197,
+  "z_deep_share": 0.306,
+  "z_rem_share": 0.306,
+  "z_efficiency": 0.272,
+  "z_temp": 0.291,
+  "z_br": 0.519,
+  "z_spo2": 0.708,
+  "sleep_unknown_meas": 0.0,
+  "hours_since_wake_meas": 0.201
+ }
+}

@@ -1,0 +1,81 @@
+CV table: 31301 answers, 191 participants (D-1 + D-2), 5 folds
+label base rates: arousal_high 0.464, valence_high 0.566, stress_high 0.462
+## Q5 combined sets
+### arousal_high
+  v1 (13), C=1                     AUROC 0.563 ± 0.012  BA 0.537
+  v1 + ALL candidates (60), C=1   AUROC 0.572 ± 0.018  Δ +0.0092 ± 0.0126 (3/5 folds >0); BA +0.0054 ± 0.0113
+  proposed set (17), C=1          AUROC 0.571 ± 0.018  Δ +0.0084 ± 0.0104 (4/5 folds >0); BA +0.0073 ± 0.0089  [set chosen after looking at these folds: optimistic]
+  v1 (13), nested C                AUROC 0.562 ± 0.010  chosen C per fold [0.0003, 0.0003, 0.001, 0.001, 0.003]
+  ALL (60), nested C              AUROC 0.571 ± 0.012  Δ vs v1 nested +0.0093 ± 0.0095 (3/5 folds >0); BA +0.0113 ± 0.0093  C [0.001, 0.0001, 0.0003, 0.0003, 0.001]
+  proposed (17), nested C          AUROC 0.570 ± 0.015  Δ vs v1 nested +0.0088 ± 0.0098 (4/5 folds >0); BA +0.0126 ± 0.0127  C [0.001, 0.0003, 0.001, 0.001, 0.001]
+  standardized coefficients of the proposed set (mean ± sd over 5 fold models):
+     raw_hr_30                +0.138 ± 0.024
+     z_hr_15                  +0.123 ± 0.012
+     sleep_unknown            +0.109 ± 0.022
+     z_hr_30                  -0.089 ± 0.033
+     hour_sin                 -0.073 ± 0.009
+     hour_cos                 +0.049 ± 0.008
+     raw_log_steps_60         +0.048 ± 0.018
+     raw_hr_60                +0.028 ± 0.031
+     raw_log_steps_30         +0.027 ± 0.013
+     weekend                  -0.027 ± 0.012
+     z_log_steps_15           +0.025 ± 0.007
+     z_hr_60                  -0.025 ± 0.021
+     z_sleep_min              +0.020 ± 0.010
+     z_log_steps_60           -0.017 ± 0.011
+     hours_since_wake         +0.012 ± 0.009
+     z_log_steps_30           +0.007 ± 0.011
+     zb_hr_30                 +0.006 ± 0.005
+
+### valence_high
+  v1 (13), C=1                     AUROC 0.542 ± 0.017  BA 0.512
+  v1 + ALL candidates (60), C=1   AUROC 0.551 ± 0.022  Δ +0.0091 ± 0.0064 (4/5 folds >0); BA +0.0130 ± 0.0068
+  proposed set (17), C=1          AUROC 0.559 ± 0.024  Δ +0.0171 ± 0.0086 (5/5 folds >0); BA +0.0135 ± 0.0044  [set chosen after looking at these folds: optimistic]
+  v1 (13), nested C                AUROC 0.543 ± 0.017  chosen C per fold [0.001, 0.0003, 0.0001, 0.0003, 0.0001]
+  ALL (60), nested C              AUROC 0.553 ± 0.024  Δ vs v1 nested +0.0098 ± 0.0091 (4/5 folds >0); BA +0.0083 ± 0.0045  C [0.0003, 0.0003, 0.0001, 0.001, 0.0001]
+  proposed (17), nested C          AUROC 0.559 ± 0.024  Δ vs v1 nested +0.0157 ± 0.0073 (5/5 folds >0); BA +0.0123 ± 0.0064  C [0.01, 0.001, 0.001, 0.001, 0.0001]
+  standardized coefficients of the proposed set (mean ± sd over 5 fold models):
+     raw_log_steps_60         +0.158 ± 0.022
+     raw_hr_30                +0.157 ± 0.032
+     hour_cos                 +0.114 ± 0.010
+     z_log_steps_60           -0.099 ± 0.016
+     z_hr_30                  -0.081 ± 0.022
+     sleep_unknown            +0.066 ± 0.031
+     weekend                  +0.061 ± 0.004
+     z_log_steps_15           +0.056 ± 0.008
+     z_hr_60                  +0.055 ± 0.020
+     zb_hr_30                 -0.048 ± 0.017
+     z_sleep_min              +0.036 ± 0.009
+     hours_since_wake         -0.021 ± 0.018
+     hour_sin                 +0.017 ± 0.008
+     z_log_steps_30           +0.014 ± 0.018
+     raw_hr_60                -0.010 ± 0.020
+     raw_log_steps_30         -0.006 ± 0.013
+     z_hr_15                  +0.005 ± 0.017
+
+### stress_high
+  v1 (13), C=1                     AUROC 0.540 ± 0.011  BA 0.516
+  v1 + ALL candidates (60), C=1   AUROC 0.541 ± 0.020  Δ +0.0006 ± 0.0127 (3/5 folds >0); BA +0.0077 ± 0.0081
+  proposed set (17), C=1          AUROC 0.541 ± 0.019  Δ +0.0004 ± 0.0124 (3/5 folds >0); BA -0.0014 ± 0.0088  [set chosen after looking at these folds: optimistic]
+  v1 (13), nested C                AUROC 0.541 ± 0.011  chosen C per fold [0.003, 0.001, 0.001, 0.003, 0.03]
+  ALL (60), nested C              AUROC 0.539 ± 0.019  Δ vs v1 nested -0.0016 ± 0.0128 (3/5 folds >0); BA +0.0075 ± 0.0084  C [0.003, 1.0, 0.0003, 1.0, 3.0]
+  proposed (17), nested C          AUROC 0.540 ± 0.018  Δ vs v1 nested -0.0008 ± 0.0119 (3/5 folds >0); BA -0.0019 ± 0.0058  C [0.03, 0.001, 0.0003, 0.003, 0.03]
+  standardized coefficients of the proposed set (mean ± sd over 5 fold models):
+     raw_hr_60                +0.140 ± 0.020
+     hour_cos                 -0.119 ± 0.010
+     weekend                  -0.109 ± 0.009
+     z_hr_60                  -0.087 ± 0.032
+     raw_log_steps_30         -0.065 ± 0.015
+     hour_sin                 -0.063 ± 0.010
+     z_log_steps_30           +0.060 ± 0.021
+     raw_log_steps_60         -0.055 ± 0.036
+     raw_hr_30                -0.053 ± 0.036
+     zb_hr_30                 +0.049 ± 0.023
+     z_log_steps_15           -0.046 ± 0.005
+     hours_since_wake         +0.040 ± 0.009
+     z_sleep_min              -0.026 ± 0.004
+     z_hr_15                  +0.022 ± 0.014
+     sleep_unknown            +0.012 ± 0.015
+     z_log_steps_60           +0.006 ± 0.034
+     z_hr_30                  +0.001 ± 0.061
+

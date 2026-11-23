@@ -1,0 +1,53 @@
+== time_profile
+  night 0-4: {'n': 21, 'act_high_share': np.float64(0.429), 'val_high_share': np.float64(0.619), 'mood_shares': {'ALERT': 0.048, 'HAPPY': 0.19, 'NEUTRAL': 0.19, 'RESTED/RELAXED': 0.238, 'SAD': 0.0, 'TENSE/ANXIOUS': 0.048, 'TIRED': 0.286}}
+  morning 5-12: {'n': 1449, 'act_high_share': np.float64(0.582), 'val_high_share': np.float64(0.554), 'mood_shares': {'ALERT': 0.113, 'HAPPY': 0.117, 'NEUTRAL': 0.205, 'RESTED/RELAXED': 0.239, 'SAD': 0.025, 'TENSE/ANXIOUS': 0.175, 'TIRED': 0.126}}
+  afternoon 13-17: {'n': 1462, 'act_high_share': np.float64(0.527), 'val_high_share': np.float64(0.502), 'mood_shares': {'ALERT': 0.09, 'HAPPY': 0.137, 'NEUTRAL': 0.181, 'RESTED/RELAXED': 0.196, 'SAD': 0.025, 'TENSE/ANXIOUS': 0.144, 'TIRED': 0.229}}
+  evening 18-23: {'n': 1950, 'act_high_share': np.float64(0.396), 'val_high_share': np.float64(0.552), 'mood_shares': {'ALERT': 0.025, 'HAPPY': 0.193, 'NEUTRAL': 0.115, 'RESTED/RELAXED': 0.266, 'SAD': 0.036, 'TENSE/ANXIOUS': 0.078, 'TIRED': 0.286}}
+== frozen_emophone
+  full_auroc: 0.471
+  time_neutralised_auroc: 0.501
+  single feature AUROC z_hr_15: 0.538
+  single feature AUROC z_hr_30: 0.54
+  single feature AUROC z_hr_60: 0.545
+  single feature AUROC zb_hr_30: 0.532
+  single feature AUROC z_log_steps_30: 0.531
+  single feature AUROC z_sleep_min: 0.511
+  single feature AUROC hours_since_wake: 0.423
+== lifesnaps_13_coefficients_vs_emophone
+  hour_sin: {'lifesnaps': 0.045, 'emophone': -0.063}
+  hour_cos: {'lifesnaps': -0.424, 'emophone': 0.047}
+  weekend: {'lifesnaps': -0.026, 'emophone': 0.003}
+  z_hr_15: {'lifesnaps': 0.12, 'emophone': 0.122}
+  z_hr_30: {'lifesnaps': 0.219, 'emophone': -0.047}
+  z_hr_60: {'lifesnaps': 0.028, 'emophone': 0.038}
+  zb_hr_30: {'lifesnaps': -0.262, 'emophone': 0.047}
+  z_log_steps_15: {'lifesnaps': -0.051, 'emophone': 0.058}
+  z_log_steps_30: {'lifesnaps': 0.03, 'emophone': 0.029}
+  z_log_steps_60: {'lifesnaps': 0.078, 'emophone': 0.009}
+  z_sleep_min: {'lifesnaps': 0.054, 'emophone': 0.028}
+  hours_since_wake: {'lifesnaps': 0.108, 'emophone': 0.041}
+  sleep_unknown: {'lifesnaps': -0.103, 'emophone': 0.119}
+== per_person_correlation_heterogeneity
+  arousal ~ z_rmssd: {'persons': 27, 'observed_sd': 0.179, 'expected_sd_if_no_true_variation': 0.211, 'median_days': 42.0}
+  arousal ~ z_nremhr: {'persons': 27, 'observed_sd': 0.185, 'expected_sd_if_no_true_variation': 0.211, 'median_days': 42.0}
+  arousal ~ z_rhr_prev: {'persons': 46, 'observed_sd': 0.207, 'expected_sd_if_no_true_variation': 0.211, 'median_days': 46.5}
+  arousal ~ z_deep_share: {'persons': 40, 'observed_sd': 0.182, 'expected_sd_if_no_true_variation': 0.218, 'median_days': 44.0}
+  arousal ~ z_rem_share: {'persons': 40, 'observed_sd': 0.244, 'expected_sd_if_no_true_variation': 0.218, 'median_days': 44.0}
+  arousal ~ z_efficiency: {'persons': 42, 'observed_sd': 0.219, 'expected_sd_if_no_true_variation': 0.221, 'median_days': 45.0}
+  arousal ~ z_temp: {'persons': 41, 'observed_sd': 0.166, 'expected_sd_if_no_true_variation': 0.22, 'median_days': 45.0}
+  arousal ~ z_br: {'persons': 27, 'observed_sd': 0.219, 'expected_sd_if_no_true_variation': 0.211, 'median_days': 42.0}
+  arousal ~ z_spo2: {'persons': 14, 'observed_sd': 0.207, 'expected_sd_if_no_true_variation': 0.178, 'median_days': 43.5}
+  arousal ~ z_sleep_min_meas: {'persons': 42, 'observed_sd': 0.2, 'expected_sd_if_no_true_variation': 0.221, 'median_days': 45.0}
+  valence ~ z_rmssd: {'persons': 26, 'observed_sd': 0.201, 'expected_sd_if_no_true_variation': 0.202, 'median_days': 43.0}
+  valence ~ z_nremhr: {'persons': 26, 'observed_sd': 0.186, 'expected_sd_if_no_true_variation': 0.202, 'median_days': 43.0}
+  valence ~ z_rhr_prev: {'persons': 46, 'observed_sd': 0.232, 'expected_sd_if_no_true_variation': 0.211, 'median_days': 46.5}
+  valence ~ z_deep_share: {'persons': 40, 'observed_sd': 0.193, 'expected_sd_if_no_true_variation': 0.218, 'median_days': 44.0}
+  valence ~ z_rem_share: {'persons': 40, 'observed_sd': 0.203, 'expected_sd_if_no_true_variation': 0.218, 'median_days': 44.0}
+  valence ~ z_efficiency: {'persons': 42, 'observed_sd': 0.218, 'expected_sd_if_no_true_variation': 0.221, 'median_days': 45.0}
+  valence ~ z_temp: {'persons': 41, 'observed_sd': 0.189, 'expected_sd_if_no_true_variation': 0.22, 'median_days': 45.0}
+  valence ~ z_br: {'persons': 26, 'observed_sd': 0.281, 'expected_sd_if_no_true_variation': 0.202, 'median_days': 43.0}
+  valence ~ z_spo2: {'persons': 14, 'observed_sd': 0.173, 'expected_sd_if_no_true_variation': 0.178, 'median_days': 43.5}
+  valence ~ z_sleep_min_meas: {'persons': 42, 'observed_sd': 0.275, 'expected_sd_if_no_true_variation': 0.221, 'median_days': 45.0}
+== repeated_grouped_cv_10x5
+  act_high: {'time': '0.588 ± 0.033', 'time+HR+steps': '0.595 ± 0.036', 'v1_13': '0.595 ± 0.035', 'v1_measured_sleep': '0.590 ± 0.036', 'v1_measured+night': '0.587 ± 0.037', 'time+HR+steps - time': '+0.0065 ± 0.0163; folds > 0: 35/50', 'v1_13 - time': '+0.0069 ± 0.0164; folds > 0: 37/50', 'v1_measured_sleep - v1_13': '-0.0047 ± 0.0073; folds > 0: 11/50', 'v1_measured+night - v1_measured_sleep': '-0.0038 ± 0.0060; folds > 0: 15/50'}
+  val_high: {'time': '0.555 ± 0.022', 'time+HR+steps': '0.547 ± 0.023', 'v1_13': '0.554 ± 0.024', 'v1_measured_sleep': '0.547 ± 0.022', 'v1_measured+night': '0.547 ± 0.019', 'time+HR+steps - time': '-0.0087 ± 0.0095; folds > 0: 9/50', 'v1_13 - time': '-0.0008 ± 0.0175; folds > 0: 25/50', 'v1_measured_sleep - v1_13': '-0.0078 ± 0.0130; folds > 0: 14/50', 'v1_measured+night - v1_measured_sleep': '+0.0007 ± 0.0089; folds > 0: 28/50'}

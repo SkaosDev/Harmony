@@ -1,0 +1,171 @@
+CV table: 31301 answers, 191 participants (D-1 + D-2), 5 folds
+label base rates: arousal_high 0.464, valence_high 0.566, stress_high 0.462
+## Coverage: share unknown (NaN) per new feature — D-1 / D-2 / pooled
+  z_hr_120                 0.413 / 0.500 / 0.472
+  z_hr_240                 0.409 / 0.497 / 0.468
+  z_log_steps_120          0.412 / 0.500 / 0.471
+  z_log_steps_240          0.408 / 0.497 / 0.467
+  z_steps_since6           0.621 / 0.641 / 0.635
+  z_hr_since6              0.621 / 0.641 / 0.635
+  z_sedhr_since6           0.622 / 0.641 / 0.635
+  z_steps_since_wake       0.642 / 0.716 / 0.692
+  z_hr_since_wake          0.642 / 0.716 / 0.692
+  z_hr_wake60              0.684 / 0.732 / 0.717
+  z_steps_wake120          0.664 / 0.723 / 0.703
+  z_steps_yday             0.613 / 0.595 / 0.601
+  z_hr_yday                0.584 / 0.575 / 0.578
+  z_sedhr_yday             0.584 / 0.575 / 0.578
+  z_hr_prev_evening        0.591 / 0.566 / 0.574
+  z_steps_prev_evening     0.590 / 0.566 / 0.574
+  log_min_since_walk       0.116 / 0.403 / 0.309
+  z_sedhr_30               0.575 / 0.632 / 0.613
+  z_sedhr_60               0.491 / 0.561 / 0.538
+  z_sedhr_120              0.437 / 0.517 / 0.491
+  zres_hr_30               0.428 / 0.511 / 0.484
+  zres_hr_60               0.419 / 0.505 / 0.477
+  z_mets_15                0.431 / 0.514 / 0.486
+  z_mets_30                0.423 / 0.509 / 0.481
+  z_mets_60                0.416 / 0.504 / 0.475
+  lvl1_share_30            0.071 / 0.366 / 0.270
+  lvl1_share_60            0.061 / 0.360 / 0.262
+  z_lvl1_share_30          0.423 / 0.509 / 0.481
+  z_lvl1_share_60          0.416 / 0.504 / 0.475
+  z_mets_15                0.431 / 0.514 / 0.486
+  z_mets_30                0.423 / 0.509 / 0.481
+  z_mets_60                0.416 / 0.504 / 0.475
+  z_lvl1_share_30          0.423 / 0.509 / 0.481
+  z_lvl1_share_60          0.416 / 0.504 / 0.475
+  lvl1_share_30            0.071 / 0.366 / 0.270
+  lvl1_share_60            0.061 / 0.360 / 0.262
+  raw_mets_30              0.071 / 0.366 / 0.270
+  raw_mets_60              0.061 / 0.360 / 0.262
+  raw_log_steps_30         0.077 / 0.369 / 0.274
+  raw_log_steps_60         0.063 / 0.362 / 0.264
+  raw_hr_30                0.078 / 0.369 / 0.274
+  raw_hr_60                0.064 / 0.362 / 0.264
+  act_still_30             0.174 / 0.530 / 0.413
+  act_foot_30              0.174 / 0.530 / 0.413
+  act_vehicle_30           0.174 / 0.530 / 0.413
+  act_still_60             0.155 / 0.516 / 0.398
+  act_foot_60              0.155 / 0.516 / 0.398
+  act_vehicle_60           0.155 / 0.516 / 0.398
+  tr_still_30              0.165 / 0.161 / 0.162
+  tr_foot_30               0.165 / 0.161 / 0.162
+  tr_vehicle_30            0.165 / 0.161 / 0.162
+  tr_still_60              0.171 / 0.169 / 0.170
+  tr_foot_60               0.171 / 0.169 / 0.170
+  tr_vehicle_60            0.171 / 0.169 / 0.170
+  act_known_60             mean 0.569; share 0: 0.329
+  tr_known_60              mean 0.829; share 0: 0.143
+  cov_since6               mean 0.604; share 0: 0.247
+
+## Redundancy: pooled Pearson r between new and v1 features (rows where both known)
+  r(z_mets_30, z_log_steps_30) = +0.729  (n=16161)
+  r(z_mets_30, z_hr_30) = +0.776  (n=16145)
+  r(lvl1_share_30, z_log_steps_30) = +0.750  (n=16162)
+  r(act_foot_30, z_log_steps_30) = +0.487  (n=8854)
+  r(act_vehicle_30, z_log_steps_30) = +0.048  (n=8854)
+  r(act_vehicle_30, z_hr_30) = +0.024  (n=8846)
+  r(z_sedhr_60, z_hr_60) = +0.789  (n=14460)
+  r(zres_hr_30, z_hr_30) = +0.676  (n=16139)
+  r(z_hr_120, z_hr_60) = +0.876  (n=16373)
+  r(z_hr_since6, z_hr_60) = +0.383  (n=11315)
+  r(z_steps_since6, z_log_steps_60) = +0.387  (n=11316)
+  r(log_min_since_walk, z_log_steps_60) = -0.577  (n=15267)
+  r(z_hr_yday, z_hr_30) = +0.064  (n=12466)
+  r(tr_vehicle_60, act_vehicle_60) = +0.783  (n=16344)
+  r(tr_foot_60, act_foot_60) = +0.826  (n=16344)
+
+## Target arousal_high: AUROC mean ± sd over 5 folds; paired Δ vs v1 (13)
+  time only (3)            AUROC 0.534 ± 0.009  BA 0.506
+  v1 (13)                  AUROC 0.563 ± 0.012  BA 0.537 ± 0.007
+  v1 + A long windows 2-4 h                   ( 4) AUROC 0.563 ± 0.011  Δ +0.0008 ± 0.0019 (3/5 folds >0); BA -0.0001 ± 0.0033
+  v1 + B day so far (since 06:00)             ( 3) AUROC 0.565 ± 0.013  Δ +0.0019 ± 0.0024 (4/5 folds >0); BA +0.0012 ± 0.0041
+  v1 + C since wake / morning                 ( 4) AUROC 0.563 ± 0.013  Δ +0.0008 ± 0.0010 (4/5 folds >0); BA +0.0001 ± 0.0021
+  v1 + D yesterday / prev. evening            ( 5) AUROC 0.562 ± 0.013  Δ -0.0005 ± 0.0009 (1/5 folds >0); BA -0.0001 ± 0.0019
+  v1 + F min since walking                    ( 1) AUROC 0.566 ± 0.009  Δ +0.0031 ± 0.0046 (3/5 folds >0); BA +0.0015 ± 0.0061
+  v1 + E1 sedentary HR                        ( 3) AUROC 0.562 ± 0.012  Δ -0.0002 ± 0.0009 (3/5 folds >0); BA +0.0001 ± 0.0008
+  v1 + E2 HR residual after steps             ( 2) AUROC 0.562 ± 0.012  Δ -0.0003 ± 0.0006 (2/5 folds >0); BA -0.0001 ± 0.0021
+  v1 + G intensity (METs, level)              ( 7) AUROC 0.568 ± 0.013  Δ +0.0058 ± 0.0061 (3/5 folds >0); BA +0.0036 ± 0.0064
+  v1 + G1 intensity z-scored                  ( 5) AUROC 0.562 ± 0.013  Δ -0.0004 ± 0.0006 (1/5 folds >0); BA -0.0009 ± 0.0010
+  v1 + G2 intensity raw                       ( 4) AUROC 0.568 ± 0.013  Δ +0.0054 ± 0.0043 (4/5 folds >0); BA +0.0033 ± 0.0049
+  v1 + R1 raw steps (no reference)            ( 2) AUROC 0.566 ± 0.011  Δ +0.0030 ± 0.0037 (4/5 folds >0); BA +0.0030 ± 0.0027
+  v1 + R2 raw HR (no reference)               ( 2) AUROC 0.571 ± 0.018  Δ +0.0086 ± 0.0108 (4/5 folds >0); BA +0.0070 ± 0.0098
+  v1 + H1 activity type (ActivityEvent)       ( 6) AUROC 0.565 ± 0.010  Δ +0.0022 ± 0.0042 (3/5 folds >0); BA -0.0007 ± 0.0058
+  v1 + H2 activity type (ActivityTransition)  ( 6) AUROC 0.564 ± 0.011  Δ +0.0010 ± 0.0022 (3/5 folds >0); BA -0.0011 ± 0.0043
+  v1 + Q1 all day context (A+B+C+D+F)         (17) AUROC 0.566 ± 0.011  Δ +0.0038 ± 0.0058 (4/5 folds >0); BA +0.0023 ± 0.0065
+  v1 + E1+E2 sedentary + residual HR          ( 5) AUROC 0.562 ± 0.012  Δ -0.0004 ± 0.0012 (2/5 folds >0); BA -0.0004 ± 0.0018
+  v1 + H1+H2 activity type                    (12) AUROC 0.565 ± 0.010  Δ +0.0021 ± 0.0044 (3/5 folds >0); BA -0.0018 ± 0.0063
+  [Q3] v1 without steps (10)                    AUROC 0.561 ± 0.013  Δ vs v1 -0.0012 ± 0.0018 (2/5 folds >0); BA -0.0025 ± 0.0022
+  [Q3] v1 with METs instead of steps (13)       AUROC 0.561 ± 0.013  Δ vs v1 -0.0016 ± 0.0017 (1/5 folds >0); BA -0.0031 ± 0.0025
+  [Q3] v1 + R1 raw steps + G2 raw intensity      AUROC 0.567 ± 0.013  Δ vs v1+R1 +0.0018 ± 0.0020 (4/5 folds >0); BA +0.0005 ± 0.0024
+  [Q2] v1 with sedentary HR instead of HR (12)  AUROC 0.559 ± 0.014  Δ vs v1 -0.0041 ± 0.0033 (1/5 folds >0); BA -0.0027 ± 0.0035
+  [morning <12h, 3627 answers] time only AUROC 0.528 ± 0.019; v1 AUROC 0.561 ± 0.015
+      v1 + B day so far (since 06:00)         AUROC 0.560 ± 0.016  Δ -0.0010 ± 0.0017 (2/5 folds >0); BA -0.0000 ± 0.0037
+      v1 + C since wake / morning             AUROC 0.561 ± 0.013  Δ -0.0002 ± 0.0035 (3/5 folds >0); BA +0.0001 ± 0.0025
+      v1 + D yesterday / prev. evening        AUROC 0.559 ± 0.015  Δ -0.0021 ± 0.0022 (1/5 folds >0); BA +0.0017 ± 0.0023
+      v1 + Q1 all day context              AUROC 0.562 ± 0.020  Δ +0.0003 ± 0.0061 (4/5 folds >0); BA +0.0037 ± 0.0022
+  [H1 rows with activity known, 18369] v1 0.554 ± 0.013; v1+H1 0.558 ± 0.010  Δ +0.0046 ± 0.0065 (3/5 folds >0); BA +0.0006 ± 0.0075
+
+## Target valence_high: AUROC mean ± sd over 5 folds; paired Δ vs v1 (13)
+  time only (3)            AUROC 0.534 ± 0.004  BA 0.500
+  v1 (13)                  AUROC 0.542 ± 0.017  BA 0.512 ± 0.002
+  v1 + A long windows 2-4 h                   ( 4) AUROC 0.542 ± 0.017  Δ +0.0006 ± 0.0012 (4/5 folds >0); BA -0.0008 ± 0.0016
+  v1 + B day so far (since 06:00)             ( 3) AUROC 0.542 ± 0.019  Δ -0.0003 ± 0.0029 (2/5 folds >0); BA +0.0008 ± 0.0014
+  v1 + C since wake / morning                 ( 4) AUROC 0.542 ± 0.017  Δ +0.0005 ± 0.0012 (4/5 folds >0); BA +0.0017 ± 0.0015
+  v1 + D yesterday / prev. evening            ( 5) AUROC 0.538 ± 0.016  Δ -0.0033 ± 0.0031 (0/5 folds >0); BA -0.0008 ± 0.0013
+  v1 + F min since walking                    ( 1) AUROC 0.544 ± 0.018  Δ +0.0021 ± 0.0044 (4/5 folds >0); BA +0.0002 ± 0.0013
+  v1 + E1 sedentary HR                        ( 3) AUROC 0.541 ± 0.016  Δ -0.0004 ± 0.0012 (2/5 folds >0); BA +0.0008 ± 0.0010
+  v1 + E2 HR residual after steps             ( 2) AUROC 0.542 ± 0.017  Δ +0.0002 ± 0.0004 (4/5 folds >0); BA -0.0007 ± 0.0019
+  v1 + G intensity (METs, level)              ( 7) AUROC 0.553 ± 0.022  Δ +0.0115 ± 0.0086 (5/5 folds >0); BA +0.0075 ± 0.0049
+  v1 + G1 intensity z-scored                  ( 5) AUROC 0.542 ± 0.018  Δ -0.0001 ± 0.0016 (2/5 folds >0); BA -0.0006 ± 0.0025
+  v1 + G2 intensity raw                       ( 4) AUROC 0.551 ± 0.016  Δ +0.0089 ± 0.0045 (5/5 folds >0); BA +0.0055 ± 0.0034
+  v1 + R1 raw steps (no reference)            ( 2) AUROC 0.555 ± 0.022  Δ +0.0128 ± 0.0064 (5/5 folds >0); BA +0.0082 ± 0.0063
+  v1 + R2 raw HR (no reference)               ( 2) AUROC 0.554 ± 0.020  Δ +0.0122 ± 0.0056 (5/5 folds >0); BA +0.0089 ± 0.0030
+  v1 + H1 activity type (ActivityEvent)       ( 6) AUROC 0.542 ± 0.018  Δ +0.0001 ± 0.0020 (3/5 folds >0); BA -0.0004 ± 0.0015
+  v1 + H2 activity type (ActivityTransition)  ( 6) AUROC 0.546 ± 0.015  Δ +0.0040 ± 0.0029 (4/5 folds >0); BA +0.0002 ± 0.0015
+  v1 + Q1 all day context (A+B+C+D+F)         (17) AUROC 0.542 ± 0.018  Δ +0.0000 ± 0.0017 (3/5 folds >0); BA +0.0028 ± 0.0049
+  v1 + E1+E2 sedentary + residual HR          ( 5) AUROC 0.542 ± 0.016  Δ -0.0002 ± 0.0011 (3/5 folds >0); BA -0.0001 ± 0.0022
+  v1 + H1+H2 activity type                    (12) AUROC 0.545 ± 0.016  Δ +0.0028 ± 0.0036 (3/5 folds >0); BA +0.0003 ± 0.0024
+  [Q3] v1 without steps (10)                    AUROC 0.538 ± 0.016  Δ vs v1 -0.0034 ± 0.0019 (0/5 folds >0); BA -0.0026 ± 0.0024
+  [Q3] v1 with METs instead of steps (13)       AUROC 0.539 ± 0.016  Δ vs v1 -0.0033 ± 0.0022 (0/5 folds >0); BA -0.0033 ± 0.0031
+  [Q3] v1 + R1 raw steps + G2 raw intensity      AUROC 0.554 ± 0.020  Δ vs v1+R1 -0.0007 ± 0.0028 (3/5 folds >0); BA +0.0001 ± 0.0009
+  [Q2] v1 with sedentary HR instead of HR (12)  AUROC 0.542 ± 0.018  Δ vs v1 -0.0002 ± 0.0026 (2/5 folds >0); BA +0.0006 ± 0.0008
+  [morning <12h, 3627 answers] time only AUROC 0.520 ± 0.035; v1 AUROC 0.512 ± 0.027
+      v1 + B day so far (since 06:00)         AUROC 0.512 ± 0.026  Δ +0.0007 ± 0.0036 (3/5 folds >0); BA +0.0022 ± 0.0065
+      v1 + C since wake / morning             AUROC 0.515 ± 0.032  Δ +0.0034 ± 0.0057 (3/5 folds >0); BA +0.0057 ± 0.0052
+      v1 + D yesterday / prev. evening        AUROC 0.517 ± 0.029  Δ +0.0054 ± 0.0073 (3/5 folds >0); BA +0.0016 ± 0.0056
+      v1 + Q1 all day context              AUROC 0.523 ± 0.021  Δ +0.0113 ± 0.0092 (4/5 folds >0); BA +0.0084 ± 0.0147
+  [H1 rows with activity known, 18369] v1 0.540 ± 0.021; v1+H1 0.544 ± 0.024  Δ +0.0040 ± 0.0053 (4/5 folds >0); BA -0.0002 ± 0.0019
+
+## Target stress_high: AUROC mean ± sd over 5 folds; paired Δ vs v1 (13)
+  time only (3)            AUROC 0.543 ± 0.012  BA 0.509
+  v1 (13)                  AUROC 0.540 ± 0.011  BA 0.516 ± 0.005
+  v1 + A long windows 2-4 h                   ( 4) AUROC 0.541 ± 0.012  Δ +0.0011 ± 0.0015 (4/5 folds >0); BA +0.0025 ± 0.0003
+  v1 + B day so far (since 06:00)             ( 3) AUROC 0.538 ± 0.010  Δ -0.0023 ± 0.0021 (0/5 folds >0); BA +0.0000 ± 0.0026
+  v1 + C since wake / morning                 ( 4) AUROC 0.542 ± 0.011  Δ +0.0015 ± 0.0021 (4/5 folds >0); BA +0.0024 ± 0.0047
+  v1 + D yesterday / prev. evening            ( 5) AUROC 0.538 ± 0.010  Δ -0.0028 ± 0.0020 (1/5 folds >0); BA -0.0004 ± 0.0030
+  v1 + F min since walking                    ( 1) AUROC 0.540 ± 0.011  Δ -0.0005 ± 0.0041 (4/5 folds >0); BA +0.0017 ± 0.0014
+  v1 + E1 sedentary HR                        ( 3) AUROC 0.541 ± 0.012  Δ +0.0001 ± 0.0019 (3/5 folds >0); BA +0.0011 ± 0.0005
+  v1 + E2 HR residual after steps             ( 2) AUROC 0.540 ± 0.011  Δ -0.0005 ± 0.0008 (2/5 folds >0); BA -0.0001 ± 0.0009
+  v1 + G intensity (METs, level)              ( 7) AUROC 0.541 ± 0.012  Δ +0.0001 ± 0.0072 (3/5 folds >0); BA +0.0044 ± 0.0024
+  v1 + G1 intensity z-scored                  ( 5) AUROC 0.539 ± 0.011  Δ -0.0015 ± 0.0017 (1/5 folds >0); BA +0.0008 ± 0.0022
+  v1 + G2 intensity raw                       ( 4) AUROC 0.539 ± 0.014  Δ -0.0014 ± 0.0075 (4/5 folds >0); BA +0.0029 ± 0.0016
+  v1 + R1 raw steps (no reference)            ( 2) AUROC 0.541 ± 0.013  Δ +0.0001 ± 0.0053 (3/5 folds >0); BA +0.0006 ± 0.0027
+  v1 + R2 raw HR (no reference)               ( 2) AUROC 0.540 ± 0.014  Δ -0.0002 ± 0.0041 (3/5 folds >0); BA -0.0016 ± 0.0035
+  v1 + H1 activity type (ActivityEvent)       ( 6) AUROC 0.542 ± 0.011  Δ +0.0014 ± 0.0028 (4/5 folds >0); BA +0.0028 ± 0.0034
+  v1 + H2 activity type (ActivityTransition)  ( 6) AUROC 0.543 ± 0.015  Δ +0.0024 ± 0.0049 (3/5 folds >0); BA +0.0064 ± 0.0050
+  v1 + Q1 all day context (A+B+C+D+F)         (17) AUROC 0.538 ± 0.010  Δ -0.0022 ± 0.0036 (2/5 folds >0); BA +0.0045 ± 0.0033
+  v1 + E1+E2 sedentary + residual HR          ( 5) AUROC 0.541 ± 0.012  Δ +0.0002 ± 0.0023 (3/5 folds >0); BA +0.0018 ± 0.0012
+  v1 + H1+H2 activity type                    (12) AUROC 0.543 ± 0.014  Δ +0.0025 ± 0.0043 (4/5 folds >0); BA +0.0060 ± 0.0059
+  [Q3] v1 without steps (10)                    AUROC 0.539 ± 0.011  Δ vs v1 -0.0017 ± 0.0018 (2/5 folds >0); BA -0.0035 ± 0.0029
+  [Q3] v1 with METs instead of steps (13)       AUROC 0.539 ± 0.011  Δ vs v1 -0.0019 ± 0.0035 (2/5 folds >0); BA +0.0010 ± 0.0027
+  [Q3] v1 + R1 raw steps + G2 raw intensity      AUROC 0.539 ± 0.015  Δ vs v1+R1 -0.0015 ± 0.0026 (2/5 folds >0); BA -0.0006 ± 0.0019
+  [Q2] v1 with sedentary HR instead of HR (12)  AUROC 0.542 ± 0.012  Δ vs v1 +0.0013 ± 0.0033 (3/5 folds >0); BA +0.0012 ± 0.0018
+  [morning <12h, 3627 answers] time only AUROC 0.554 ± 0.017; v1 AUROC 0.555 ± 0.012
+      v1 + B day so far (since 06:00)         AUROC 0.551 ± 0.009  Δ -0.0043 ± 0.0050 (1/5 folds >0); BA -0.0016 ± 0.0054
+      v1 + C since wake / morning             AUROC 0.551 ± 0.010  Δ -0.0045 ± 0.0050 (1/5 folds >0); BA -0.0048 ± 0.0059
+      v1 + D yesterday / prev. evening        AUROC 0.554 ± 0.007  Δ -0.0013 ± 0.0078 (3/5 folds >0); BA +0.0033 ± 0.0046
+      v1 + Q1 all day context              AUROC 0.539 ± 0.010  Δ -0.0159 ± 0.0050 (0/5 folds >0); BA -0.0015 ± 0.0100
+  [H1 rows with activity known, 18369] v1 0.538 ± 0.018; v1+H1 0.543 ± 0.020  Δ +0.0046 ± 0.0031 (5/5 folds >0); BA +0.0009 ± 0.0039
+
