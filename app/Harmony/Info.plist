@@ -19,6 +19,11 @@
 	</array>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Harmony reads your heart rate, steps, heart rate variability and sleep from Apple Health to pick songs that fit your moment. Everything stays on your phone.</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
 	<key>SpotifyClientID</key>
 	<string>$(SPOTIFY_CLIENT_ID)</string>
 	<key>WorkerURL</key>
