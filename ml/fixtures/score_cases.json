@@ -1,0 +1,138 @@
+{
+  "_comment": "Shared Python <-> TypeScript cases for the LLM song scores (TODO 2.29). Synthetic titles only.",
+  "messages": [
+    {
+      "name": "one line per song, artists joined, control characters become a space",
+      "songs": [
+        {
+          "title": "Slow Morning",
+          "artists": [
+            "Ana Example"
+          ]
+        },
+        {
+          "title": "Tab\there\r\nand newline",
+          "artists": [
+            "First",
+            "Second"
+          ]
+        },
+        {
+          "title": "Été « fête » 夜",
+          "artists": [
+            "Ünïcode Band"
+          ]
+        }
+      ],
+      "expected": "0\tSlow Morning\tAna Example\n1\tTab here and newline\tFirst, Second\n2\tÉté « fête » 夜\tÜnïcode Band"
+    }
+  ],
+  "parses": [
+    {
+      "name": "valid",
+      "count": 3,
+      "text": "{\"s\":[[0,20,30],[1,100,0],[2,55,50]]}",
+      "expected": [
+        {
+          "energy": 0.2,
+          "positivity": 0.3
+        },
+        {
+          "energy": 1.0,
+          "positivity": 0.0
+        },
+        {
+          "energy": 0.55,
+          "positivity": 0.5
+        }
+      ]
+    },
+    {
+      "name": "any order",
+      "count": 2,
+      "text": "{\"s\":[[1,10,20],[0,30,40]]}",
+      "expected": [
+        {
+          "energy": 0.3,
+          "positivity": 0.4
+        },
+        {
+          "energy": 0.1,
+          "positivity": 0.2
+        }
+      ]
+    },
+    {
+      "name": "missing index",
+      "count": 3,
+      "text": "{\"s\":[[0,20,30],[2,55,50]]}",
+      "expected": [
+        {
+          "energy": 0.2,
+          "positivity": 0.3
+        },
+        null,
+        {
+          "energy": 0.55,
+          "positivity": 0.5
+        }
+      ]
+    },
+    {
+      "name": "duplicate index",
+      "count": 2,
+      "text": "{\"s\":[[0,20,30],[0,25,35],[1,40,40]]}",
+      "expected": [
+        null,
+        {
+          "energy": 0.4,
+          "positivity": 0.4
+        }
+      ]
+    },
+    {
+      "name": "out of range or not an integer",
+      "count": 3,
+      "text": "{\"s\":[[0,101,30],[1,-1,30],[2,50.5,30]]}",
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "wrong triple size and unknown index",
+      "count": 2,
+      "text": "{\"s\":[[0,20],[1,20,30,40],[2,20,30],[-1,5,5]]}",
+      "expected": [
+        null,
+        null
+      ]
+    },
+    {
+      "name": "boolean is not an integer",
+      "count": 1,
+      "text": "{\"s\":[[0,true,30]]}",
+      "expected": [
+        null
+      ]
+    },
+    {
+      "name": "not JSON",
+      "count": 2,
+      "text": "Sure! Here are the scores",
+      "expected": [
+        null,
+        null
+      ]
+    },
+    {
+      "name": "no s list",
+      "count": 1,
+      "text": "{\"scores\":[[0,20,30]]}",
+      "expected": [
+        null
+      ]
+    }
+  ]
+}
