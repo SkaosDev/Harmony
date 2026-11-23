@@ -11,6 +11,31 @@ const MAX_TITLE = 200;
 const MAX_ARTISTS = 10;
 const MAX_ARTIST = 100;
 
+/** The body as text, or null as soon as it exceeds `max` bytes (with or without Content-Length). */
+export async function readBody(request: Request, max = MAX_BODY_BYTES): Promise<string | null> {
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 /** The songs of a /score body, or null if the body is not exactly {"songs":[{title, artists}]}. */
 export function parseSongs(body: string): Song[] | null {
   if (body.length > MAX_BODY_BYTES) return null;

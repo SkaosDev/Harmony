@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSongs } from "../src/validate";
+import { parseSongs, readBody } from "../src/validate";
 import { call, scoreRequest, songs } from "./helpers";
 
 const body = (value: unknown) => JSON.stringify(value);
@@ -38,9 +38,22 @@ describe("POST /score input", () => {
     expect(response.status).toBe(400);
   });
 
-  it("returns 400 when Content-Length is too large", async () => {
-    const request = scoreRequest("x".repeat(70_000));
-    expect((await call(request)).status).toBe(400);
+  it("returns 400 when the body is too large", async () => {
+    expect((await call(scoreRequest("x".repeat(70_000)))).status).toBe(400);
+  });
+
+  it("stops reading a streamed body without Content-Length past 64 KB", async () => {
+    let sent = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        sent += 16_384;
+        controller.enqueue(new Uint8Array(16_384));
+        if (sent > 1_000_000) controller.close();
+      },
+    });
+    const request = new Request("https://worker.test/score", { method: "POST", body: stream });
+    expect(await readBody(request)).toBeNull();
+    expect(sent).toBeLessThan(200_000);
   });
 
   it("returns 405 for GET", async () => {
