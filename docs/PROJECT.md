@@ -898,6 +898,16 @@ l'accord monte avec le nombre de tags (essai 3 : 0,39–0,44 sur les morceaux à
   un résultat validé. Le retour « ça collait ? » et les sauts (`FeedbackStore`) restent le moyen de
   juger ces scores en usage.
 
+**Dans l'app (TODO 2.34)** — `Core/Scoring/SongScorer.swift` : pour chaque morceau de la
+bibliothèque sans `SongScore`, MuSe (`origin = muse`), sinon Worker par lots de 50 (`llm`, ou
+`neutral` 0,5/0,5 si `null`), sinon `neutral` (titre vide, aucun artiste, lot refusé en 400). Un
+morceau qui a un score n'est plus jamais cherché ni envoyé (test). Le store est enregistré après
+MuSe puis après chaque lot : si une requête échoue (403, 429, 502, réseau), les lots déjà notés
+restent et les morceaux restants partent à la prochaine fois, sans être mis à neutre. En mode démo
+(ou sans URL de Worker), les morceaux absents de MuSe attendent. Lancement pour l'instant depuis
+l'écran Debug (section « Song scores » : origines, couverture MuSe, 10 derniers morceaux) ;
+l'onboarding (3.16) l'appellera après l'import.
+
 ### 7.1 Le Worker (seul composant cloud)
 Code : `worker/` (TypeScript, Wrangler, SDK Anthropic ; commandes dans `worker/README.md`).
 Déployé le 23 nov. 2026 (TODO 2.28) ; l'URL n'est que dans `Config.xcconfig` (ignoré par Git).

@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Developer screen, Debug builds only, opened from Settings (not in the design).
 /// Content: demo mode switch (TODO 1.17); Apple Health (TODO 1.28+); Spotify outside demo mode
-/// (TODO 1.18+); current features and state (TODO 2.22).
+/// (TODO 1.18+); current features and state (TODO 2.22); song scores (TODO 2.34).
 struct DebugView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Query private var tracks: [Track]
@@ -27,6 +27,7 @@ struct DebugView: View {
             }
             HealthDebugSection()
             StateDebugSection()
+            ScoresDebugSection()
             if demoMode {
                 Section("Demo health samples, last 14 days") {
                     ForEach(Self.signals, id: \.self) { signal in

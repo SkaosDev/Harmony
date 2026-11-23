@@ -39,7 +39,7 @@ real implementation and a **demo** one (synthetic data), so the app runs entirel
 | `MusicProvider` + Spotify / Demo | sign-in (PKCE), library import, lookup, playback, save | sign-in, import, demo done; playback to do |
 | `HealthProvider` + HealthKit / Demo | consents, anchored reads of heart rate, steps, HRV, sleep | done |
 | `SummaryStore` / `BaselineCalculator` | hourly and nightly summaries, 14-day personal baselines | summaries done; baselines to do |
-| `SongScorer` | energy / positivity per song: MuSe, then LLM via the Worker, cached | to do |
+| `SongScorer` | energy / positivity per song: MuSe, then LLM via the Worker, cached | done (run from the Debug screen) |
 | `FeatureBuilder` + `StateEstimator` | the 13 features of `PROJECT.md` §6, Core ML inference | model and fixtures ready; Swift to do |
 | `SituationSuggester` | which of the 4 situations to highlight | to do |
 | `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | to do |
