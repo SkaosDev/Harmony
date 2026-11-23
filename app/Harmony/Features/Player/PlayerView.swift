@@ -334,17 +334,6 @@ struct MiniPlayer: View {
 
 // MARK: Parts
 
-/// Spotify's full green logo in the design's 24 pt high slot (NFR6).
-private struct SpotifyLogo: View {
-    var body: some View {
-        Image("SpotifyFullLogoGreen")
-            .resizable()
-            .scaledToFit()
-            .frame(height: 24)
-            .accessibilityLabel("Spotify")
-    }
-}
-
 /// A 26 pt icon in a 44 pt round button.
 private struct IconButton<Icon: View>: View {
     let label: String
