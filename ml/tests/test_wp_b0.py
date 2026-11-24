@@ -131,6 +131,14 @@ class WPB0Tests(unittest.TestCase):
         np.testing.assert_allclose(result["z_hr_30"], (values - values.mean()) / values.std(ddof=1))
         np.testing.assert_array_equal(result["raw_hr_30"], values)
 
+    def test_grid_points_without_heart_rate_are_not_worn(self):
+        t = 21 * F.DAY_MS
+        times = t - np.arange(3, 0, -1) * F.DAY_MS + 8 * 60 * F.MIN_MS - F.KST_MS
+        grid = {name: np.array([60., np.nan, np.nan]) if name.startswith("hr")
+                else np.array([1., 2., np.nan]) for name in F.QUANTITIES}
+        rows = F.rank_reference(t, times, grid, {}, columns=F.FEATURES_V2)
+        np.testing.assert_array_equal(rows["raw_log_steps_30"], [1.])  # steps alone: not worn
+
     def test_raw_windows_keep_feature_prefix_and_distinguish_unknown_from_zero(self):
         t = np.array([12 * 60 * F.MIN_MS, 14 * 60 * F.MIN_MS])
         ht = np.array([t[0] - 30 * F.MIN_MS, t[0] - 5 * F.MIN_MS])

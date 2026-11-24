@@ -902,12 +902,14 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
   étiquetées disponibles, la variante « rang puis personnel » utilise la
   probabilité personnelle. Cette variante est simulée à titre de comparaison.
+  Un point de grille compte comme montre portée s'il a une FC dans ses 30 min
+  (des pas seuls ne suffisent pas, §6.4).
 
   | Jours | Modèle commun | Rang | Personnel en ombre | Rang puis personnel |
   |---|---:|---:|---:|---:|
-  | 1–3 | 0,467 | 0,482 | 0,467 | 0,482 |
+  | 1–3 | 0,467 | 0,485 | 0,467 | 0,485 |
   | 4–7 | 0,525 | 0,527 | 0,726 | 0,608 |
-  | 8–14 | 0,524 | 0,536 | 0,809 | 0,805 |
+  | 8–14 | 0,524 | 0,537 | 0,809 | 0,805 |
   | 15+ | 0,521 | 0,534 | 0,800 | 0,799 |
   | Ensemble | 0,521 | 0,532 | 0,788 | 0,755 |
 

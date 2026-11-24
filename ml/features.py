@@ -239,6 +239,7 @@ def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold, *, raw_w
 def rank_reference(t, grid_t, grid, nights, *, columns=FEATURES):
     """Score-ready rows of the worn grid, using one reference at t (§4.3).
 
+    Worn grid point = a heart rate in its 30 min (no heart rate = watch not worn, §6.4).
     nights maps local wake days to (minutes asleep, wake minute).
     """
     keep = (grid_t >= t - REFERENCE_DAYS * DAY_MS) & (grid_t < t)
@@ -246,7 +247,7 @@ def rank_reference(t, grid_t, grid, nights, *, columns=FEATURES):
     values = {name: value[keep] for name, value in grid.items()}
     days = local_minute(all_times) // 1440
     blocks = block(all_times)
-    worn = ~np.isnan(values["hr_30"]) | ~np.isnan(values["log_steps_30"])
+    worn = ~np.isnan(values["hr_30"])
     times = all_times[worn]
     out = time_features(times)
     for name in QUANTITIES:
