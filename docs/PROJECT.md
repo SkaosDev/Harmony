@@ -60,7 +60,7 @@ tâches** à la phase de conception.
 | M1 | 15 nov. | Connexion Spotify et import testés avec un vrai compte, lecture Apple Health, mode démo |
 | M2 | 29 nov. | Scores des morceaux ; modèle d'état entraîné sur EmoPhone, testé sur personnes et vague tenues à part |
 | M3 | 6 déc. | Construction de la file, lecture, feedback, explication, écran données |
-| M4 | 7 déc. → fin du semestre | Pilote (~2 semaines, ≤ 5 comptes), évaluation, rapport final, démo |
+| M4 | 26 nov. → 4 déc. (fin du projet) | Pilote (1 semaine, du 26 nov. au 2 déc., un participant), évaluation, rapport final, démo |
 
 ---
 
@@ -139,13 +139,13 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 | Décision du 23 nov. 2026 : **aucune pénalité** pour un score LLM dans le choix des morceaux (§8 ; l'ancienne règle mettait +0,1) | Toute pénalité fixe ne laissait que des morceaux MuSe dans les files : sur une vraie bibliothèque (2 045 titres, 233 dans MuSe, §5.2), un morceau MuSe est presque toujours à moins de 0,01 de la cible. Simulation (233 MuSe, 1 812 LLM, 2 000 files) : 0 % de morceaux LLM avec une pénalité de 0,1, 0,05 ou 0,02 ; 0,4 % avec 0,01 ; 90,5 % sans pénalité |
 | Décision 5.8/5.9 (22 nov. 2026) : modèle EmoPhone gardé, UC Irvine non intégré | Le critère ci-dessus est satisfait (+0,044 d'AUROC, +0,030 de balanced accuracy, +0,028 sur « heure seule »), mais il ne teste que sur UC Irvine, le terrain du modèle UCI. Lu dans les deux sens, chaque modèle ne gagne que sur ses propres données : sur EmoPhone D-3, le modèle EmoPhone (D-1 + D-2) fait 0,576 contre 0,528 pour UCI (§6.5). EmoPhone reste plus proche de nos utilisateurs (étiquettes du moment, étudiants coréens) et a la meilleure AUROC sur ses propres données (0,563–0,576 contre 0,538). Sur UCI, la FC n'apporte rien et le sommeil estimé n'est pas corrélé au sommeil Oura mesuré (−0,001). |
 | **Modèle d'état v2 (23 nov. 2026)** : A « modèle commun soigné » + B « Harmony apprend de toi » retenus ; C (HRV, respiration, température, lumière, bruit, modèles plus gros) écarté. Design : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` ; preuves : `docs/research/2026-11-23-modele-etat-v2/` | Plus de capacité ou plus d'entrées montre ne change presque rien ; les réponses de l'utilisateur sont le seul levier à gain important (design v2 §2–§3). Lignes D1–D9 ci-dessus et ci-dessous |
-| D4 : couche personnelle en mode **ombre** pendant le pilote (calculée et journalisée, ne pilote pas la file ; toutes les files en stratégie S1) ; mode **actif** pour la démo finale | Garde propre l'A/B « corps vs heure seule » (4.4) et mesure une vraie courbe d'apprentissage (design v2 §4.5, §4.6) |
+| D4 : couche personnelle en mode **ombre** pendant le pilote (calculée et journalisée, ne pilote pas la file ; toutes les files en stratégie S1) ; mode **actif** pour la démo finale | Mesure une vraie courbe d'apprentissage sans changer les files du pilote (design v2 §4.5, §4.6) |
 | D5 : consentement écrit du pilote incluant les questions, les notifications et les journaux locaux ; export limité aux agrégats et aux paires (probabilité, étiquette, jour d'utilisation) | Les check-ins sont traités comme des données de santé (§11) ; App Store 5.1.3 (design v2 §6, §15) |
 | D6 : pas de smileys dans les questions | Zone grise « émotion nommée » (design v2 §5.1) |
 | D7 : 3 stratégies de file par situation, S1 « progressif » (règle §8 actuelle), S2 « demi-pas », S3 « correspondance longue » ; à faire valider par le customer | Définies pour être implémentables telles quelles ; toutes partent de `e0` et respectent les règles §8 (design v2 §4.6) |
 | D9 : questions facultatives, désactivables, jamais bloquantes (N1, NFR5 ≤ 2 taps) | Besoin N1 « zéro effort » ; l'absence de réponse n'est jamais une réponse « basse » (design v2 §5.3) |
-| Périmètre du pilote « collecte seule » : couche personnelle en ombre, énergie seulement, 2 notifications/jour, aucun nouvel écran sur Home, file inchangée ; bandit, état 2-D et ligne énergie sur Home après le cours | Charge face à M3 (~3–4 jours après la simulation 6.5) ; le pilote mesure quand même la courbe commune vs personnelle sur de vrais utilisateurs Apple Watch (design v2 §15) |
-| Pilote à une personne : Clément, du 7 au 20 déc. 2026 (décision de Clément, 23 nov. 2026) ; protocole et consentement : `docs/pilot-protocol.md` (TODO 4.1) | Reste dans les 5 comptes Spotify ; appareil et compte déjà en place, donc 4.2 et 4.3 sans objet. Test de faisabilité seulement : participant développeur (pas d'aveugle), intervalles par bootstrap sur les **jours** et non sur les personnes ; plan d'analyse fixé avant les données |
+| Périmètre du pilote « collecte seule » : couche personnelle en ombre, énergie seulement, 2 notifications/jour, aucun nouvel écran sur Home, file inchangée ; bandit, état 2-D et ligne énergie sur Home après le cours | Charge avant le pilote du 26 nov. (~3–4 jours après la simulation 6.5) ; le pilote mesure quand même la courbe commune vs personnelle sur de vrais utilisateurs Apple Watch (design v2 §15) |
+| Pilote à une personne : Clément (décision de Clément, 23 nov. 2026), **1 semaine, du 26 nov. au 2 déc. 2026, avec les données de la montre tous les jours** (décision de Clément, 24 nov. 2026 : le projet se termine le 4 déc.) ; protocole et consentement : `docs/pilot-protocol.md` (TODO 4.1) | Reste dans les 5 comptes Spotify ; appareil et compte déjà en place, donc 4.2 et 4.3 sans objet. Test de faisabilité seulement : participant développeur, pas de file de comparaison, intervalles par bootstrap sur les **jours** et non sur les personnes ; plan d'analyse fixé avant les données |
 | LifeSnaps (Fitbit Sense, CC BY 4.0) = test externe secondaire seulement, jamais dans l'entraînement ; facultatif, après le cours (§5.5) | Signaux de nuit sans gain, effet de l'heure inversé par rapport à EmoPhone (design v2 §2) |
 
 ---
@@ -807,8 +807,7 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   réponses D-1 + D-2 + D-3 ; `model_params.json` passe en version 2 avec un bloc `time_only` au
   même schéma (2,2 Ko). Le modèle 13 features est identique à la version 1 (mêmes valeurs, donc
   `StateModel.mlmodel` inchangé). C'est `prior(heure)` du rapport : l'app l'utilise sans
-  référence ou sans FC sur 30 min, et le pilote (4.4) le compare au modèle complet. Les
-  fixtures donnent sa probabilité attendue (`time_only_probability`).
+  référence ou sans FC sur 30 min. Les fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
 ### 6.8 Modèle d'état v2 (décidé le 23 nov. 2026, non implémenté)
@@ -826,8 +825,8 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   règles d'inconnu et d'imputation par médiane d'entraînement que v1.
 - **Mode « corps » en v2** : corps si `raw_hr_30` est connu (au moins une FC rééchantillonnée dans
   les 30 dernières minutes), sinon heure seule ; les z-scores inconnus sont imputés par la médiane.
-  En v1, la règle reste « corps si `z_hr_30` connu » (§6.7). Le tirage du pilote (TODO 4.4) et le
-  champ `estimateMode` suivent la règle du modèle livré.
+  En v1, la règle reste « corps si `z_hr_30` connu » (§6.7). Le champ `estimateMode` suit la
+  règle du modèle livré.
 - **A priori d'agrément** `z_V` : par défaut la constante `logit(0,566)` (taux de base de « valence
   au-dessus de la moyenne personnelle » sur D-1 + D-2) ; un modèle valence (bloc `valence` de
   `model_params.json`) seulement s'il passe son critère (6.2). Jamais utilisé seul pour la file.
@@ -1157,19 +1156,16 @@ suggéré automatiquement (modèle trop faible sur le stress).
   l'animation d'ouverture du lecteur (~0,35 s). Aucune de ces files n'a eu besoin du repli MuSe :
   le pire cas, jusqu'à 15 `GET /tracks/{id}` à la suite (3 essais × 5 places), n'est pas mesuré.
   La musique démarre ensuite, sans bloquer l'écran (playlist puis App Remote : ~3 s sur un essai).
-  Mesure faite avant le recalcul de l'état à chaque tap (TODO 4.4), qui ajoute une estimation
+  Mesure faite avant le recalcul de l'état à chaque tap (23 nov.), qui ajoute une estimation
   (0,13–0,15 s, §12).
-- **Pilote (TODO 4.4–4.5, 23 nov. ; protocole `docs/pilot-protocol.md`)** : tirage par blocs de
-  2 jours (`Core/Pilot/PilotSchedule.swift`) : dans chaque bloc, l'ordre body / time only vient
-  d'une graine tirée au démarrage, le 2e jour prend l'autre type (7/7 sur 14 jours). Jour de
-  départ et graine dans UserDefaults (`pilot.startDay`, `pilot.seed`, effacés par « Delete
-  everything ») ; Debug › Pilot pour démarrer, arrêter, voir le jour et le type du jour. Un jour
-  « time only », la file part de `CurrentState.timeOnly` (heure seule, même si la montre a une FC
-  récente) ; le badge de Home garde l'état réel. L'état est recalculé à chaque tap (Home peut rester
-  ouvert des heures). `QueueRecord.kind` = type tiré (`.body` hors pilote), `QueueRecord.stateMode`
-  = estimation réellement utilisée (un jour body sans FC récente part de l'heure seule ; nil pour
-  les files d'avant). Export anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug ›
-  Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
+- **Pilote (TODO 4.4–4.5 ; protocole `docs/pilot-protocol.md`)** : une semaine, données de la
+  montre tous les jours. Jour de départ dans UserDefaults (`pilot.startDay`, effacé par « Delete
+  everything ») ; Debug › Pilot pour démarrer, arrêter et voir le jour du pilote. L'état est
+  recalculé à chaque tap (Home peut rester ouvert des heures). `QueueRecord.stateMode` =
+  estimation réellement utilisée (sans FC récente, la file part de l'heure seule ; nil pour les
+  files d'avant). Le tirage quotidien par blocs de 2 jours écrit le 23 nov. (`PilotSchedule.swift`,
+  `QueueRecord.kind`) est encore dans le code : il est retiré avant le pilote (TODO 4.4). Export
+  anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug › Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
   `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Les paires v2 et les
   comptes `PromptLog` (4.5) viendront avec 6.7/6.8, dans un nouveau format.
 
@@ -1425,19 +1421,23 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (§4.5) ; aucune clé dans Git ni dans l'app (§11). Vérifié sur l'iPhone 16 de Clément ; textes
   relus par Cyprien.
 
-- *Pilote et rapport, 23 nov. 2026 (TODO 4.1, 4.4–4.12)* : protocole et consentement
-  (`docs/pilot-protocol.md`, un seul participant : Clément, du 7 au 20 déc., §3) ; tirage quotidien
-  body / time only par blocs de 2 jours et export anonyme dans Debug (§8) ; script d'analyse
+- *Pilote et rapport, 23 nov. 2026 (TODO 4.1, 4.5–4.12)* : protocole et consentement
+  (`docs/pilot-protocol.md`, un seul participant : Clément, §3) ; export anonyme dans Debug (§8) ;
+  script d'analyse
   `ml/pilot_analysis.py` testé sur un export synthétique ; rapport : sections Design (architecture,
   modules, répartition des tâches tirée de Git), Use Cases et Evaluation and Discussion dans
   `docs/main.tex` (résultats du pilote en `\tbd`). 4.2 et 4.3 cochées : une installation, un compte.
+- *Pilote revu, 24 nov. 2026 (décision de Clément)* : une semaine, du 26 nov. au 2 déc., avec les
+  données de la montre tous les jours, car le projet se termine le 4 déc. ; protocole, TODO,
+  rapport, design v2 et blog mis à jour ; retrait du tirage dans le code : TODO 4.4.
 - *Playlists « Harmony », 23 nov.* : l'ancienne playlist ne sortait pas de la bibliothèque (403,
   scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
   file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.
 
 **Pas encore fait**
 - Démo M3 au customer (3.24).
-- Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
+- Pilote lui-même (26 nov.–2 déc.) : retrait du tirage dans le code avant le jour 1 (4.4), point à
+  mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
 - Pilote et modèle d'état v2 (Phase 6).
 
@@ -1452,11 +1452,11 @@ suggéré automatiquement (modèle trop faible sur le stress).
 | Fréquence de mesure FC Apple Watch | Features vides | Mesurer sur une vraie montre en M1 ; features v1 adaptées |
 | Couverture MuSe de vos bibliothèques | Beaucoup d'appels LLM | Mesurée (2.35) : 11,4 % sur 2 045 titres, 88,6 % notés par le LLM ; premier scoring 158 s → à lancer en arrière-plan à l'onboarding (3.16) |
 | Gain réel de pas + sommeil | Modèle plus complexe sans gain | Tester sur D-2/D-3 et au pilote ; repli heure + FC |
-| Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Comparer files « corps » et « heure seule » au pilote (4.4, 4.7) ; mode heure seule si aucun gain |
+| Transfert entre populations : EmoPhone → UC Irvine 0,494, UC Irvine → EmoPhone D-3 0,528 (§6.5) | Sur Apple Watch et étudiants de Hanyang (3e population), le modèle peut ne rien apporter | Si les check-ins sont dans le build du pilote : AUROC du modèle commun sur les réponses (6.15), indicative (14 réponses au plus en 1 semaine) ; sinon, limite écrite dans le rapport ; mode heure seule si aucun gain |
 | Coût Claude Pro (160 $) annoncé dans le rapport | Doit correspondre à la réalité | Confirmer qui s'abonne |
-| Charge du modèle v2 face à M3 (6 déc.) : build du pilote « collecte seule » ~3–4 jours après la simulation 6.5 | Check-ins absents du pilote, ou M3 en retard | Faire d'abord le sous-ensemble « build du pilote » de la Phase 6 ; s'il ne tient pas, le pilote garde le modèle actuel et B passe après le cours |
+| Charge du modèle v2 avant le pilote (26 nov.) : build du pilote « collecte seule » ~3–4 jours après la simulation 6.5 | Check-ins absents du pilote | Faire d'abord le sous-ensemble « build du pilote » de la Phase 6 ; s'il ne tient pas, le pilote garde le modèle actuel et B passe après le cours |
 | Transfert de la simulation : étudiants EmoPhone payés (~7 réponses/jour), référence « habitude » plus riche que dans l'app | Gain de la couche personnelle surestimé ou plus tardif | Simuler la règle exacte de l'app avant tout code Swift (6.5) ; toujours dire « simulé sur EmoPhone » |
-| Taux de réponse sans paiement, fatigue, tension avec N1 | Trop peu d'étiquettes (cible 30–60 par personne en 2 semaines) | Questions en un geste, 2 par jour au plus, facultatives ; taux mesuré au pilote |
+| Taux de réponse sans paiement, fatigue, tension avec N1 | Trop peu d'étiquettes (au pilote : 14 réponses au plus en 1 semaine, à 2 notifications par jour) | Questions en un geste, 2 par jour au plus, facultatives ; taux mesuré au pilote |
 | Notifications relayées sur l'Apple Watch sans app watchOS, réponse téléphone verrouillé | Réponses perdues | Tester sur un vrai iPhone verrouillé et une vraie montre avant le pilote (6.10) |
 | Éthique : le pilote enregistre des auto-évaluations liées à la santé (App Store 5.1.3) | Pilote contesté | Consentement écrit couvrant les questions (D5) ; demander à l'enseignant si un avis éthique est requis (6.14) |
 | `sleep_unknown` a l'un des plus gros coefficients : il reflète l'habitude EmoPhone de ne pas porter la montre la nuit | Signal présenté à tort comme « du corps » | Ne pas le présenter comme un signal corporel |
