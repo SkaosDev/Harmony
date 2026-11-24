@@ -32,6 +32,9 @@ FEATURES = (
     "z_sleep_min", "hours_since_wake", "sleep_unknown",
 )
 
+RAW_WINDOWS = ("hr_30", "hr_60", "log_steps_30", "log_steps_60")
+FEATURES_V2 = FEATURES + tuple("raw_" + name for name in RAW_WINDOWS)
+
 
 def local_minute(t):
     """Minutes since 1970-01-01 00:00, Korean time."""
@@ -180,11 +183,11 @@ def night(minute_hr_, minute_steps_, threshold, wake_day, until=None, slot_min=S
     return np.nan, np.nan, coverage
 
 
-def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold):
+def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold, *, raw_windows=False):
     """The v1 features of one participant at each answer time (ms UTC).
 
     hr_ts/hr_v: raw heart rate; st_ts/st_v: step counts; threshold: sleep_threshold() of the
-    participant. Returns {feature name: array}, keys = FEATURES.
+    participant. Returns arrays in FEATURES order, or FEATURES_V2 with raw_windows=True.
     """
     answer_t = np.asarray(answer_t, dtype=np.int64)
     st_ts = np.asarray(st_ts, dtype=np.int64)
@@ -228,7 +231,41 @@ def participant_features(answer_t, hr_ts, hr_v, st_ts, st_v, threshold):
         out["hours_since_wake"][i] = (minute[i] - wake) / 60 if minute[i] >= wake else np.nan
         out["sleep_unknown"][i] = int(np.isnan(sleep))
     out["sleep_unknown"] = out["sleep_unknown"].astype(int)
-    return {name: out[name] for name in FEATURES}
+    if raw_windows:
+        out.update({"raw_" + name: now[name] for name in RAW_WINDOWS})
+    return {name: out[name] for name in (FEATURES_V2 if raw_windows else FEATURES)}
+
+
+def rank_reference(t, grid_t, grid, nights, *, columns=FEATURES):
+    """Score-ready rows of the worn grid, using one reference at t (§4.3).
+
+    nights maps local wake days to (minutes asleep, wake minute).
+    """
+    keep = (grid_t >= t - REFERENCE_DAYS * DAY_MS) & (grid_t < t)
+    all_times = grid_t[keep]
+    values = {name: value[keep] for name, value in grid.items()}
+    days = local_minute(all_times) // 1440
+    blocks = block(all_times)
+    worn = ~np.isnan(values["hr_30"]) | ~np.isnan(values["log_steps_30"])
+    times = all_times[worn]
+    out = time_features(times)
+    for name in QUANTITIES:
+        out["z_" + name] = zscore(values[name][worn], *reference(values[name], days))
+    _, std = reference(values["hr_30"], days)
+    means = np.array([reference(np.where(blocks == b, values["hr_30"], np.nan), days)[0]
+                      for b in range(8)])
+    out["zb_hr_30"] = zscore(values["hr_30"][worn], means[blocks[worn]], std)
+    day = local_minute(t) // 1440
+    past = np.arange(day - REFERENCE_DAYS, day)
+    sleep_ref = reference([nights.get(d, (np.nan, np.nan))[0] for d in past], past, MIN_KNOWN_NIGHTS)
+    measures = np.array([nights.get(d, (np.nan, np.nan)) for d in days[worn]]).reshape(-1, 2)
+    sleep, wake = measures.T
+    minute = local_minute(times)
+    out["z_sleep_min"] = zscore(sleep, *sleep_ref)
+    out["hours_since_wake"] = np.where(minute >= wake, (minute - wake) / 60, np.nan)
+    out["sleep_unknown"] = np.isnan(sleep).astype(int)
+    out.update({"raw_" + name: values[name][worn] for name in RAW_WINDOWS})
+    return pd.DataFrame(out, columns=list(columns))
 
 
 def rescale_d3(values):
