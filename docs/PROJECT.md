@@ -150,7 +150,16 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 
 ---
 
+**Critères 6.2, fixés avant les résultats de WP-A1 (design §9).** Sur les mêmes
+réponses, comparer v1 (mode corps si `z_hr_30` connu) et v2 (mode corps si
+`raw_hr_30` connu), avec repli heure seule. Noter aussi les scores des modèles
+complets sur toutes les réponses. Sur les cinq groupes déterministes D-1 + D-2,
+l'AUROC énergie v2 doit être ≥ v1 − 0,002. Au test unique D-3, elle doit être
+≥ v1 et ≥ heure seule + 0,02. Le modèle valence remplace la constante s'il
+dépasse l'heure seule valence d'au moins 0,01 en CV et sur D-3.
+
 ## 4. Architecture
+
 
 ### 4.1 Vue d'ensemble
 
@@ -761,6 +770,44 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   car les égalités du nombre de réponses sont départagées par un tri non stable. À corriger avant
   toute nouvelle comparaison (TODO 6.1).
 
+**6.1, CV v1 après fixation des groupes.** Tri des participants par nombre de réponses
+décroissant puis identifiant croissant. Chaque groupe entier va au pli le moins chargé,
+puis au pli de plus petit indice en cas d'égalité. Le test synthétique vérifie la même
+affectation lorsque l'ordre des lignes est inversé. Sur les 31 301 réponses D-1 + D-2,
+AUROC moyenne ± écart-type : heure seule 0,534 ± 0,014, heure + FC 0,554 ± 0,012,
+modèle complet 0,563 ± 0,008. Reproduction sur un second ordinateur à vérifier.
+
+**6.3, confirmation WP-A1.** Les tables locales v2 contiennent 10 259 / 21 042 /
+21 838 réponses (92 / 99 / 106 participants-vagues). La valence est lue dans
+`EsmResponse.csv`, sans remise à l'échelle sur D-3. Cible valence : réponse
+strictement supérieure à la moyenne de la personne. D-3 a été évaluée une fois.
+Le contrôle des tables locales confirme les mêmes réponses et les mêmes valeurs
+pour les 13 colonnes historiques, y compris les valeurs manquantes.
+Chaque cellule donne AUROC / balanced accuracy. En CV, l'écart-type porte sur l'AUROC.
+
+| Cible et variante | CV D-1 + D-2 | Confirmation D-3 |
+|---|---:|---:|
+| Énergie, heure seule | 0,5344 ± 0,0135 / 0,5070 | 0,5340 / 0,5109 |
+| Énergie v1, complet | 0,5628 ± 0,0083 / 0,5382 | 0,5755 / 0,5409 |
+| Énergie v1, règle app | 0,5604 ± 0,0121 / 0,5228 | 0,5780 / 0,5415 |
+| Énergie v2, complet | 0,5716 ± 0,0175 / 0,5448 | 0,5970 / 0,5563 |
+| Énergie v2, règle app | 0,5715 ± 0,0180 / 0,5346 | 0,5978 / 0,5557 |
+| Valence, heure seule | 0,5332 ± 0,0101 / 0,5000 | 0,5263 / 0,5000 |
+| Valence v1, complet | 0,5428 ± 0,0160 / 0,5139 | 0,5441 / 0,5188 |
+| Valence v1, règle app | 0,5450 ± 0,0141 / 0,5135 | 0,5467 / 0,5182 |
+| Valence v2, complet | 0,5560 ± 0,0175 / 0,5285 | 0,5555 / 0,5254 |
+| Valence v2, règle app | 0,5561 ± 0,0172 / 0,5282 | 0,5552 / 0,5246 |
+
+**Verdict §3.** Les deux candidats passent. Énergie v2 : +0,0111 en CV et +0,0198
+sur D-3 par rapport à v1 en mode app, +0,0638 par rapport à l'heure seule sur D-3.
+Valence : +0,0229 en CV et +0,0289 sur D-3 par rapport à l'heure seule.
+Le fichier agrégé local `data/results/wp-a1.json` détaille les cinq plis.
+
+**6.4.** Le lancement du 26 nov. conserve le modèle v1 à 13 features et son
+export v2. Les scripts d'entraînement final, d'export v3 et de fixtures sont
+préparés. Entraînement final, export Core ML et validation Swift S9 sont reportés
+au 2 déc., après le gel du pilote.
+
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
 2. Test unique sur **D-3** (vague tenue à part), puis sur UC Irvine (TODO 5.6–5.8). Le critère
@@ -811,7 +858,7 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
-### 6.8 Modèle d'état v2 (décidé le 23 nov. 2026, non implémenté)
+### 6.8 Modèle d'état v2 (candidat évalué, intégration iOS à venir)
 
 Source détaillée : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` (formules, données,
 paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touche le contrat §6.
@@ -840,6 +887,42 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   réponses de la personne sur les 14 jours précédents (au moins 5). Formule : design v2 §4.4.
   **Les hyper-paramètres (`T`, `τ_E`, `τ_V`, seuil) et les fixtures golden viennent de la simulation
   de la règle exacte de l'app (TODO 6.5), avant tout code Swift.**
+- **Protocole WP-B0 (6.5)** : 5 plis extérieurs D-1 + D-2, 3 graines et tirage
+  de 1, 2 ou 4 réponses ESM par jour. Une prédiction est évaluée sur une réponse
+  étiquetée à partir des seules réponses tirées dans les 14 jours précédents.
+  Le scénario à 3 niveaux arrondit vers −2, 0 ou +2, avec les égalités vers 0.
+  Les réponses EmoPhone ne renseignent ni la lecture d'une file ni la fin de
+  lecture. L'exclusion pendant et jusqu'à 60 min après une file est donc hors simulation.
+  Fixtures synthétiques : `ml/fixtures/personal_layer_cases.json` et
+  `ml/fixtures/rank_cases.json`.
+- **Résultats WP-B0.** AUROC poolée, énergie à trois niveaux, 2 réponses/jour
+  (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
+  étiquetées disponibles, la variante « rang puis personnel » utilise la
+  probabilité personnelle. Cette variante est simulée à titre de comparaison.
+
+  | Jours | Modèle commun | Rang | Personnel en ombre | Rang puis personnel |
+  |---|---:|---:|---:|---:|
+  | 1–3 | 0,467 | 0,482 | 0,467 | 0,482 |
+  | 4–7 | 0,525 | 0,527 | 0,726 | 0,608 |
+  | 8–14 | 0,524 | 0,536 | 0,809 | 0,805 |
+  | 15+ | 0,521 | 0,534 | 0,800 | 0,799 |
+  | Ensemble | 0,521 | 0,532 | 0,788 | 0,755 |
+
+  À 1 / 2 / 4 réponses par jour, AUROC personnelle : 0,732 / 0,788 / 0,811 à
+  trois niveaux et 0,616 / 0,654 / 0,681 à sept. Avec 2 réponses par jour,
+  l'agrément personnel donne 0,705 avec le modèle valence et 0,701 avec la
+  constante. Les cibles quantifiées et celles à sept niveaux diffèrent.
+  Ces chiffres décrivent des réponses EmoPhone simulées.
+
+  Les courbes et fixtures utilisent les paramètres du design : T = 2 jours,
+  τ_E = 1, τ_V = 1,5, et cinq réponses pour l'étiquette. Le contrôle de
+  sensibilité donne une log-loss énergie de 0,579 au réglage nominal, 0,567
+  avec T = 4 et 0,543 avec τ_E = 2. Pour l'agrément constant, le réglage nominal
+  donne la meilleure log-loss des variantes comparées (0,623). Les variantes
+  ont été mesurées sur les mêmes plis et ne constituent pas une validation
+  indépendante d'un réglage de remplacement. Détail agrégé dans
+  `data/results/wp-b0.json`. Les tests Python vérifient les fixtures et la
+  parité entre l'implémentation scalaire et la simulation.
 - **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
   (§3, D4 et périmètre « collecte seule »).
 
@@ -1406,7 +1489,12 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (`docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md`) ; décisions D1–D9 et périmètre du
   pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
   Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
-  **Rien n'est implémenté.**
+  *Suivi ML, 24 nov. 2026* : groupes déterministes et CV v1 reproduite sous Windows
+  (§6.5), critères inscrits avant la CV (§3), candidats énergie v2 et valence validés
+  (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8). Les scripts de
+  préparation v3 sont prêts. L'entraînement final et la validation Core ML/Swift
+  restent à faire à partir du 2 déc. Le pilote débute le 26 nov. avec le modèle à
+  13 features.
 - *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
   choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
   règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
@@ -1439,7 +1527,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Démo M3 au customer (3.24).
 - Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Pilote et modèle d'état v2 (Phase 6).
+- Phase 6 : reproduire les groupes sur Mac, finaliser l'export v3 et le port Swift.
+  L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
 ## 13. Risques et questions ouvertes
 
