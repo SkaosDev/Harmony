@@ -98,8 +98,10 @@ def build_case(name, description, answer_t, kwargs, rng, params):
     keep = st_ts <= answer_t
     st_ts, st_v = st_ts[keep], st_v[keep]
     threshold = F.sleep_threshold(hr_ts, hr_v)
-    feats = F.participant_features(np.array([answer_t]), hr_ts, hr_v, st_ts, st_v, threshold)
-    row = [float(feats[f][0]) for f in F.FEATURES]
+    columns = params["features"]
+    feats = F.participant_features(np.array([answer_t]), hr_ts, hr_v, st_ts, st_v, threshold,
+                                   raw_windows=params["version"] == 3)
+    row = [float(feats[f][0]) for f in columns]
     mhr, mst = F.minute_hr(hr_ts, hr_v), F.minute_steps(st_ts, st_v)
     day = int(F.local_minute(answer_t) // 1440)
     nights = []
@@ -119,9 +121,10 @@ def build_case(name, description, answer_t, kwargs, rng, params):
         "steps": [[(int(t) - origin) // F.MIN_MS, int(v)] for t, v in zip(st_ts, st_v)],
         "nights": nights,
         "answer_night": {"sleep_min": _num(sleep), "wake_minute": _num(wake)},
-        "features": {f: _num(v) for f, v in zip(F.FEATURES, row)},
+        "features": {f: _num(v) for f, v in zip(columns, row)},
         "probability": export.predict(params, row),
         "time_only_probability": export.predict(params["time_only"], row[:3]),
+        **({"valence_probability": export.predict(params["valence"], row)} if "valence" in params else {}),
     }
 
 
@@ -133,6 +136,7 @@ def _num(x):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", type=Path, help="joblib of train.py --final (default: app params)")
+    ap.add_argument("--out", type=Path, default=OUT)
     args = ap.parse_args()
     if args.model:
         import joblib
@@ -141,10 +145,12 @@ def main():
         params = json.loads(PARAMS.read_text())
     rng = np.random.default_rng(SEED)
     out = [build_case(*c, rng, params) for c in cases()]
-    OUT.write_text(json.dumps({"version": 1, "model_version": params["version"],
-                               "features": list(F.FEATURES), "cases": out},
+    if params["version"] == 3 and args.out.resolve() == OUT.resolve():
+        ap.error("write v3 fixtures separately from the active app fixtures")
+    args.out.write_text(json.dumps({"version": 1, "model_version": params["version"],
+                               "features": params["features"], "cases": out},
                               separators=(",", ":")) + "\n")
-    print(f"{OUT}: {len(out)} cases, {OUT.stat().st_size // 1024} KB")
+    print(f"{args.out}: {len(out)} cases, {args.out.stat().st_size // 1024} KB")
     for c in out:
         unknown = [f for f, v in c["features"].items() if v is None]
         print(f"  {c['name']:<22} P={c['probability']:.4f}, unknown: {', '.join(unknown) or '-'}")

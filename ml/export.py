@@ -18,7 +18,7 @@ from pathlib import Path
 import joblib
 import numpy as np
 
-from features import FEATURES
+from features import FEATURES, FEATURES_V2
 
 VERSION = 2                         # 2: adds the "time only" model (same 13-feature model as 1)
 APP_RESOURCES = Path(__file__).resolve().parents[1] / "app" / "Harmony" / "Resources"
@@ -29,13 +29,18 @@ COREML_TOLERANCE = 1e-6
 def build_params(saved):
     """model_params dict from the joblib saved by `train.py --final`."""
     columns = list(saved["features"])
-    if columns != list(FEATURES):
-        raise ValueError("the saved model does not use the 13 features of features.FEATURES")
+    if columns not in (list(FEATURES), list(FEATURES_V2)):
+        raise ValueError("the saved model does not use a supported feature order")
     if saved["time_only_features"] != columns[:3]:
         raise ValueError("the time only model does not use hour_sin, hour_cos, weekend")
-    return {"version": VERSION, "label": saved["label"],
-            **_logistic(saved["model"], columns),
-            "time_only": _logistic(saved["time_only"], saved["time_only_features"])}
+    params = {"version": 3 if columns == list(FEATURES_V2) else VERSION, "label": saved["label"],
+              **_logistic(saved["model"], columns),
+              "time_only": _logistic(saved["time_only"], saved["time_only_features"])}
+    if "valence" in saved:
+        if params["version"] != 3:
+            raise ValueError("valence requires the v3 contract")
+        params["valence"] = _logistic(saved["valence"], columns)
+    return params
 
 
 def _logistic(model, columns):
@@ -77,6 +82,8 @@ def main():
     args = ap.parse_args()
     saved = joblib.load(args.model)   # our own file from train.py --final: never load an unknown joblib
     params = build_params(saved)
+    if params["version"] == 3 and args.out.resolve() == APP_RESOURCES.resolve():
+        ap.error("export v3 to a staging directory until the Swift port and pilot freeze permit rollout")
     args.out.mkdir(parents=True, exist_ok=True)
     size = write_params(params, args.out / "model_params.json")
     print(f"model_params.json: {size} bytes, {len(params['features'])} features")
