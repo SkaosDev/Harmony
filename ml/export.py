@@ -6,7 +6,8 @@ Usage:
 
 Writes app/Harmony/Resources/model_params.json: feature order, imputation medians,
 standardization means / scales, logistic coefficients and intercept (docs/PROJECT.md §6.7), and
-the same fields for the "time only" model under `time_only` (TODO 2.21).
+the same fields for the "time only" model under `time_only` (TODO 2.21). Version 3 (17 features)
+adds `valence` and `valence_time_only` when the valence model is adopted (TODO 6.3).
 The Swift app reads this file; `predict` below is the reference it must match.
 --coreml also writes StateModel.mlmodel and checks it against scikit-learn on 100 rows.
 Publishing the coefficients is allowed by the EmoPhone authors (TODO 2.14b).
@@ -18,24 +19,31 @@ from pathlib import Path
 import joblib
 import numpy as np
 
-from features import FEATURES
+from features import FEATURES, FEATURES_V2
 
 VERSION = 2                         # 2: adds the "time only" model (same 13-feature model as 1)
-APP_RESOURCES = Path(__file__).resolve().parents[1] / "app" / "Harmony" / "Resources"
-MAX_BYTES = 5 * 1024
+APP = Path(__file__).resolve().parents[1] / "app"
+APP_RESOURCES = APP / "Harmony" / "Resources"
+MAX_BYTES = 8 * 1024                # v2: 2.2 KB (TODO 2.15: < 5 KB); v3 with both valence blocks: ~5.5 KB
 COREML_TOLERANCE = 1e-6
 
 
 def build_params(saved):
     """model_params dict from the joblib saved by `train.py --final`."""
     columns = list(saved["features"])
-    if columns != list(FEATURES):
-        raise ValueError("the saved model does not use the 13 features of features.FEATURES")
+    if columns not in (list(FEATURES), list(FEATURES_V2)):
+        raise ValueError("the saved model does not use a supported feature order")
     if saved["time_only_features"] != columns[:3]:
         raise ValueError("the time only model does not use hour_sin, hour_cos, weekend")
-    return {"version": VERSION, "label": saved["label"],
-            **_logistic(saved["model"], columns),
-            "time_only": _logistic(saved["time_only"], saved["time_only_features"])}
+    params = {"version": 3 if columns == list(FEATURES_V2) else VERSION, "label": saved["label"],
+              **_logistic(saved["model"], columns),
+              "time_only": _logistic(saved["time_only"], saved["time_only_features"])}
+    if "valence" in saved:
+        if params["version"] != 3:
+            raise ValueError("valence requires the v3 contract")
+        params["valence"] = _logistic(saved["valence"], columns)
+        params["valence_time_only"] = _logistic(saved["valence_time_only"], saved["time_only_features"])
+    return params
 
 
 def _logistic(model, columns):
@@ -61,6 +69,13 @@ def predict(params, row):
     return float(1 / (1 + np.exp(-(z @ params["coefficients"] + params["intercept"]))))
 
 
+def is_within(path, target):
+    """True if `path` is `target` or lies inside it. Compares on disk, so a path that differs
+    only by letter case (case-insensitive APFS, the macOS default) is caught too."""
+    path = Path(path).resolve()
+    return Path(target).exists() and any(p.exists() and p.samefile(target) for p in (path, *path.parents))
+
+
 def write_params(params, path):
     text = json.dumps(params, indent=2) + "\n"
     if len(text.encode()) >= MAX_BYTES:
@@ -77,6 +92,8 @@ def main():
     args = ap.parse_args()
     saved = joblib.load(args.model)   # our own file from train.py --final: never load an unknown joblib
     params = build_params(saved)
+    if params["version"] == 3 and is_within(args.out, APP):
+        ap.error("export v3 outside app/ until the Swift port and pilot freeze permit rollout")
     args.out.mkdir(parents=True, exist_ok=True)
     size = write_params(params, args.out / "model_params.json")
     print(f"model_params.json: {size} bytes, {len(params['features'])} features")

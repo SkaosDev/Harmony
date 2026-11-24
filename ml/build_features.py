@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from explore_d1 import night_sleep, read_participant
-from features import (FEATURES, KST_MS, label_high, local_minute, minute_hr, minute_steps,
+from features import (FEATURES, FEATURES_V2, KST_MS, label_high, local_minute, minute_hr, minute_steps,
                       night, participant_features, rescale_d3, sleep_threshold)
 
 WAVES = ("D1", "D2", "D3")
@@ -52,16 +52,18 @@ def compare_with_v0(pcode, answer_t, hr, st, f, counts):
     counts["to_known"] += (~known_v0 & known_v1).sum()
 
 
-def build_wave(wave_dir, wave, check_v0):
+def build_wave(wave_dir, wave, check_v0, *, v2=False):
+    targets = ["arousal", "stress"] + (["valence"] if v2 else [])
+    features = FEATURES_V2 if v2 else FEATURES
     esm = pd.read_csv(wave_dir / "EsmResponse.csv",
-                      usecols=["pcode", "actualTriggerTime", "arousal", "stress"])
+                      usecols=["pcode", "actualTriggerTime", *targets])
     if wave == "D3":
         esm["stress"] = rescale_d3(esm.stress)       # 0..+6 -> -3..+3, before the label
     tables, counts = [], dict.fromkeys(
         ["nights", "differences", "answers", "known_v0", "known_v1", "to_unknown", "to_known"], 0)
     for archive in sorted((wave_dir / "Sensor").glob("*_Sensor_P*.tar.gz")):
         pcode = archive.name.split("_")[2].split(".")[0]
-        e = esm[esm.pcode == pcode].sort_values("actualTriggerTime")
+        e = esm[esm.pcode == pcode].sort_values("actualTriggerTime", kind="stable")
         if e.empty:
             continue
         hr, st = read_participant(archive)
@@ -71,16 +73,18 @@ def build_wave(wave_dir, wave, check_v0):
         t = e.actualTriggerTime.to_numpy(dtype=np.int64)
         f = participant_features(t, hr.timestamp.values, hr.value.values,
                                  st.timestamp.values, st.value.values,
-                                 sleep_threshold(hr.timestamp.values, hr.value.values))
+                                 sleep_threshold(hr.timestamp.values, hr.value.values), raw_windows=v2)
         table = pd.DataFrame({"participant": f"{wave}_{pcode}", "t": t,
-                              "arousal": e.arousal.values, "stress": e.stress.values})
-        tables.append(pd.concat([table, pd.DataFrame(f)[list(FEATURES)]], axis=1))
+                              **{target: e[target].to_numpy() for target in targets}})
+        tables.append(pd.concat([table, pd.DataFrame(f)[list(features)]], axis=1))
         if check_v0:
             compare_with_v0(pcode, t, hr, st, f, counts)
     table = pd.concat(tables, ignore_index=True)
-    for label in ("arousal", "stress"):
+    for label in targets:
+        if v2 and table[label].isna().any():
+            raise ValueError(f"{wave}: missing {label} responses")
         table[f"{label}_high"] = label_high(table[label], table.participant)
-    columns = ["participant", "t", "arousal", "stress", "arousal_high", "stress_high", *FEATURES]
+    columns = ["participant", "t", *targets, *(f"{label}_high" for label in targets), *features]
     return table[columns], counts
 
 
@@ -89,14 +93,18 @@ def main():
     ap.add_argument("--data", type=Path, required=True, help="folder holding D1, D2 and D3")
     ap.add_argument("--out", type=Path, required=True, help="output folder (inside data/)")
     ap.add_argument("--check-v0", action="store_true", help="compare the nights with v0")
+    ap.add_argument("--v2", action="store_true", help="append raw windows and valence")
+    ap.add_argument("--waves", nargs="+", choices=WAVES, default=WAVES)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    for wave in WAVES:
-        table, c = build_wave(args.data / wave, wave, args.check_v0)
-        table.to_csv(args.out / f"v1_{wave}.csv", index=False)
+    for wave in args.waves:
+        table, c = build_wave(args.data / wave, wave, args.check_v0, v2=args.v2)
+        path = args.out / f"v{2 if args.v2 else 1}_{wave}.csv"
+        table.to_csv(path, index=False)
         print(f"{wave}: {len(table)} rows, {table.participant.nunique()} participants "
-              f"-> {args.out / f'v1_{wave}.csv'}")
-        print("  missing share: " + ", ".join(f"{n} {table[n].isna().mean():.3f}" for n in FEATURES))
+              f"-> {path}")
+        print("  missing share: " + ", ".join(f"{n} {table[n].isna().mean():.3f}"
+                                             for n in (FEATURES_V2 if args.v2 else FEATURES)))
         if args.check_v0:
             print(f"  v0 rules: {c['nights']} nights (participant x day) compared, "
                   f"{c['differences']} differences with explore_d1")

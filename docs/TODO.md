@@ -257,11 +257,14 @@
 > figé pendant tout le pilote.
 
 ### 6.ML
-- [ ] **6.1** Groupes de validation déterministes dans `ml/train.py` (design §7, WP-0). — ✔ deux machines donnent les mêmes écarts-types ; PROJECT.md §6.5 mis à jour.
-- [ ] **6.2** Critères d'adoption v2 et valence écrits avant résultats (design §9). — ✔ notés dans PROJECT.md §3.
-- [ ] **6.3** Features v2 (17) + valence : CV D-1 + D-2, test unique D-3, décision selon 6.2. — ✔ chiffres dans PROJECT.md §6.5.
+- [x] **6.1** Groupes de validation déterministes dans `ml/train.py` (design §7, WP-0). — ✔ deux machines donnent les mêmes écarts-types ; PROJECT.md §6.5 mis à jour.
+  — Implémenté et vérifié sur Windows, y compris après inversion de l'ordre des lignes ; reproduit à l'identique sur Mac le 24 nov. ; tableau §6.5 et rapport mis à jour.
+- [x] **6.2** Critères d'adoption v2 et valence écrits avant résultats (design §9). — ✔ notés dans PROJECT.md §3.
+- [x] **6.3** Features v2 (17) + valence : CV D-1 + D-2, test unique D-3, décision selon 6.2. — ✔ deux critères satisfaits, chiffres dans PROJECT.md §6.5.
 - [ ] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat), puis `FeatureBuilder` et `StateEstimator` Swift en v3 (17 features + valence, S9). — ✔ tests Python et Swift passent.
+  — Scripts prêts et format JSON v3 testé sur des données synthétiques. Entraînement final, Core ML et Swift prévus à partir du 2 déc. Le pilote démarre le 26 nov. avec le modèle à 13 features.
 - [ ] **6.5** Simulation de la règle exacte de l'app (WP-B0) + fixtures de la couche personnelle et du rang. — ✔ hyper-paramètres et courbe notés dans PROJECT.md ; fixtures dans `ml/fixtures/`.
+  — Simulation, courbe, sensibilité et fixtures faites (PROJECT.md §6.8). Reste à décider `T`, `τ_E` et `τ_V` (design §4.4 : à régler et confirmer avant le code Swift S2) : le réglage nominal n'a pas la meilleure log-loss énergie ; régénérer les fixtures s'il change.
 
 ### 6.DESIGN
 - [ ] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.

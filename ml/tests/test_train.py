@@ -22,6 +22,13 @@ def synthetic_table(n_participants=23, rows=40, seed=0):
 
 
 class FoldTests(unittest.TestCase):
+    def test_folds_are_reproducible_when_group_sizes_tie(self):
+        # The old GroupKFold path left this tie to a non-stable ordering.
+        participants = np.repeat(["D2_P010", "D1_P002", "D1_P001", "D2_P009", "D1_P003"], 4)
+        for ordered in (participants, participants[::-1]):
+            self.assertEqual([ordered[test[0]] for _, test in T.folds(ordered)],
+                             sorted(set(participants)))
+
     def test_folds_keep_whole_participants_apart(self):
         table = synthetic_table()
         splits = T.folds(table.participant)

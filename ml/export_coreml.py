@@ -41,7 +41,8 @@ def max_gap(mlmodel, saved, rows):
 
 def check_rows(saved, features_folder):
     """100 rows of the local tables (D-1 first rows), NaN kept; only the gap is printed."""
-    table = pd.read_csv(Path(features_folder) / "v1_D1.csv")
+    version = 2 if len(saved["features"]) == 17 else 1
+    table = pd.read_csv(Path(features_folder) / f"v{version}_D1.csv")
     nan_rows = table[table[list(saved["features"])].isna().any(axis=1)].head(CHECK_ROWS // 2)
     full_rows = table.dropna(subset=list(saved["features"])).head(CHECK_ROWS - len(nan_rows))
     return pd.concat([nan_rows, full_rows])

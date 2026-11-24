@@ -35,3 +35,25 @@ python ml/train.py --features data/features
 
 The EmoPhone files stay outside the repository (`data/` is ignored by Git). Never commit them,
 never paste them into a chat, never ship them in the app (NFR9).
+
+## Phase 6 — évaluation locale du modèle d'état
+
+Les critères sont dans `docs/PROJECT.md` §3. Les tables et les fichiers joblib
+restent dans `data/`. Le build du 26 nov. garde son modèle à 13 features.
+Les résultats agrégés sont résumés dans `docs/PROJECT.md` §6.5 et §6.8.
+
+```text
+python ml/build_features.py --data data/emophone --out data/features --v2 --waves D1 D2
+python ml/evaluate_v2.py
+python ml/build_features.py --data data/emophone --out data/features --v2 --waves D3
+python ml/evaluate_v2.py --confirm-d3 data/results/wp-a1.json
+python ml/simulate_wp_b0.py --out data/results/wp-b0.json
+```
+
+Après adoption de l'énergie v2, `ml/evaluate_v2.py --final data/results/wp-a1.json
+data/models/state_v3.joblib` entraîne le candidat. Utiliser ensuite `ml/export.py
+--model data/models/state_v3.joblib --out data/models/v3 --coreml` sur macOS et
+`ml/make_fixtures.py --model data/models/state_v3.joblib --out data/models/v3/state_cases.json`.
+WP-B0 utilise le contrat v1 du pilote par défaut. L'option `--v2` simule le candidat.
+Fixtures synthétiques de la couche personnelle et du rang : `python ml/make_personal_fixtures.py`
+et `python ml/make_rank_fixtures.py` (tests : `ml.tests.test_personal_layer`, `ml.tests.test_wp_b0`).

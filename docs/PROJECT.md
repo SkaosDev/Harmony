@@ -150,7 +150,16 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 
 ---
 
+**Critères 6.2, fixés avant les résultats de WP-A1 (design §9).** Sur les mêmes
+réponses, comparer v1 (mode corps si `z_hr_30` connu) et v2 (mode corps si
+`raw_hr_30` connu), avec repli heure seule. Noter aussi les scores des modèles
+complets sur toutes les réponses. Sur les cinq groupes déterministes D-1 + D-2,
+l'AUROC énergie v2 doit être ≥ v1 − 0,002. Au test unique D-3, elle doit être
+≥ v1 et ≥ heure seule + 0,02. Le modèle valence remplace la constante s'il
+dépasse l'heure seule valence d'au moins 0,01 en CV et sur D-3.
+
 ## 4. Architecture
+
 
 ### 4.1 Vue d'ensemble
 
@@ -658,18 +667,20 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 `python ml/train.py --features data/features`. 31 301 réponses, 191 participants (`vague + pcode`),
 5 groupes par participant, mêmes groupes pour toutes les variantes ; modèle §6.3 (médiane,
 standardisation, régression logistique, ajustées dans chaque groupe d'entraînement). Arousal ;
-moyenne ± écart-type sur les 5 groupes.
+moyenne ± écart-type sur les 5 groupes. Chiffres refaits le 24 nov. avec les groupes déterministes
+(TODO 6.1), mêmes AUROC sous Windows et sur Mac ; les anciens groupes donnaient 0,535 ± 0,017,
+0,554 ± 0,012 et 0,563 ± 0,010.
 
 | Entrées | Nombre | AUROC | Balanced accuracy |
 |---|---:|---:|---:|
-| Heure seule (référence) | 3 | 0,535 ± 0,017 | 0,505 ± 0,008 |
-| Heure + FC | 7 | 0,554 ± 0,012 | 0,516 ± 0,009 |
-| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,010 | 0,540 ± 0,004 |
+| Heure seule (référence) | 3 | 0,534 ± 0,014 | 0,507 ± 0,005 |
+| Heure + FC | 7 | 0,554 ± 0,012 | 0,513 ± 0,006 |
+| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,008 | 0,538 ± 0,005 |
 
 Les deux modèles battent l'heure seule. En v1, heure + FC est plus bas qu'en v0 (0,576/0,570 sur
 D-1/D-2 seules) ; causes possibles, non mesurées une à une : FC à 1 mesure / 5 min, références sur les 14 jours précédents seulement, et
 z-scores FC inconnus (puis imputés) pour 43–51 % des réponses. Pas et sommeil ajoutent +0,009
-d'AUROC, moins que l'écart entre groupes, mais +0,024 de balanced accuracy.
+d'AUROC, du même ordre que l'écart entre groupes, mais +0,025 de balanced accuracy.
 
 **Test unique sur D-3, vague tenue à part (TODO 2.11)** — 20 nov. 2026,
 `python ml/train.py --features data/features --test-d3`, lancé une seule fois, code figé avant.
@@ -757,9 +768,48 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   0,704. Simulé sur des étudiants EmoPhone : le gain arrivera probablement plus tard dans l'app.
 - **Reproductibilité** : `train.folds()` redonne les mêmes moyennes (0,534 / 0,554 / 0,563) d'une
   machine à l'autre, mais pas les mêmes écarts-types (heure seule : 0,009 sur le Mac de Clément
-  contre 0,017 ci-dessus),
+  contre 0,017 dans le tableau du 20 nov.),
   car les égalités du nombre de réponses sont départagées par un tri non stable. À corriger avant
   toute nouvelle comparaison (TODO 6.1).
+
+**6.1, CV v1 après fixation des groupes.** Tri des participants par nombre de réponses
+décroissant puis identifiant croissant. Chaque groupe entier va au pli le moins chargé,
+puis au pli de plus petit indice en cas d'égalité. Le test synthétique vérifie la même
+affectation lorsque l'ordre des lignes est inversé. Sur les 31 301 réponses D-1 + D-2,
+AUROC moyenne ± écart-type : heure seule 0,534 ± 0,014, heure + FC 0,554 ± 0,012,
+modèle complet 0,563 ± 0,008. Reproduit à l'identique sur Mac le 24 nov. (Python 3.12.6,
+scikit-learn 1.5.2), de même que les dix lignes CV de WP-A1 ci-dessous.
+
+**6.3, confirmation WP-A1.** Les tables locales v2 contiennent 10 259 / 21 042 /
+21 838 réponses (92 / 99 / 106 participants-vagues). La valence est lue dans
+`EsmResponse.csv`, sans remise à l'échelle sur D-3. Cible valence : réponse
+strictement supérieure à la moyenne de la personne. D-3 a été évaluée une fois.
+Le contrôle des tables locales confirme les mêmes réponses et les mêmes valeurs
+pour les 13 colonnes historiques, y compris les valeurs manquantes.
+Chaque cellule donne AUROC / balanced accuracy. En CV, l'écart-type porte sur l'AUROC.
+
+| Cible et variante | CV D-1 + D-2 | Confirmation D-3 |
+|---|---:|---:|
+| Énergie, heure seule | 0,5344 ± 0,0135 / 0,5070 | 0,5340 / 0,5109 |
+| Énergie v1, complet | 0,5628 ± 0,0083 / 0,5382 | 0,5755 / 0,5409 |
+| Énergie v1, règle app | 0,5604 ± 0,0121 / 0,5228 | 0,5780 / 0,5415 |
+| Énergie v2, complet | 0,5716 ± 0,0175 / 0,5448 | 0,5970 / 0,5563 |
+| Énergie v2, règle app | 0,5715 ± 0,0180 / 0,5346 | 0,5978 / 0,5557 |
+| Valence, heure seule | 0,5332 ± 0,0101 / 0,5000 | 0,5263 / 0,5000 |
+| Valence v1, complet | 0,5428 ± 0,0160 / 0,5139 | 0,5441 / 0,5188 |
+| Valence v1, règle app | 0,5450 ± 0,0141 / 0,5135 | 0,5467 / 0,5182 |
+| Valence v2, complet | 0,5560 ± 0,0175 / 0,5285 | 0,5555 / 0,5254 |
+| Valence v2, règle app | 0,5561 ± 0,0172 / 0,5282 | 0,5552 / 0,5246 |
+
+**Verdict §3.** Les deux candidats passent. Énergie v2 : +0,0111 en CV et +0,0198
+sur D-3 par rapport à v1 en mode app, +0,0638 par rapport à l'heure seule sur D-3.
+Valence : +0,0229 en CV et +0,0289 sur D-3 par rapport à l'heure seule.
+Le fichier agrégé local `data/results/wp-a1.json` détaille les cinq plis.
+
+**6.4.** Le lancement du 26 nov. conserve le modèle v1 à 13 features et son
+export v2. Les scripts d'entraînement final, d'export v3 et de fixtures sont
+préparés. Entraînement final, export Core ML et validation Swift S9 sont reportés
+au 2 déc., après le gel du pilote.
 
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
@@ -810,7 +860,7 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   référence ou sans FC sur 30 min. Les fixtures donnent sa probabilité attendue (`time_only_probability`).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
-### 6.8 Modèle d'état v2 (décidé le 23 nov. 2026, non implémenté)
+### 6.8 Modèle d'état v2 (candidat évalué, intégration iOS à venir)
 
 Source détaillée : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` (formules, données,
 paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touche le contrat §6.
@@ -830,6 +880,9 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
 - **A priori d'agrément** `z_V` : par défaut la constante `logit(0,566)` (taux de base de « valence
   au-dessus de la moyenne personnelle » sur D-1 + D-2) ; un modèle valence (bloc `valence` de
   `model_params.json`) seulement s'il passe son critère (6.2). Jamais utilisé seul pour la file.
+  Il suit la règle adoptée en 6.3 (« règle app ») : modèle valence si `raw_hr_30` est connu,
+  sinon son modèle heure seule (bloc `valence_time_only`, même schéma que `time_only`). Les
+  fixtures v3 donnent `valence_probability` et `valence_time_only_probability`.
 - **`e0` sans réponse** : rang de la prédiction courante parmi les prédictions de la même personne
   sur la grille de référence (§6.4 : toutes les 30 min, 08:00–23:30, 14 jours précédents, montre
   portée), dès 32 points de grille ; sinon la probabilité brute (design v2 §4.3).
@@ -839,6 +892,49 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   réponses de la personne sur les 14 jours précédents (au moins 5). Formule : design v2 §4.4.
   **Les hyper-paramètres (`T`, `τ_E`, `τ_V`, seuil) et les fixtures golden viennent de la simulation
   de la règle exacte de l'app (TODO 6.5), avant tout code Swift.**
+- **Protocole WP-B0 (6.5)** : 5 plis extérieurs D-1 + D-2, 3 graines et tirage
+  de 1, 2 ou 4 réponses ESM par jour. Une prédiction est évaluée sur une réponse
+  étiquetée à partir des seules réponses tirées dans les 14 jours précédents.
+  Le scénario à 3 niveaux arrondit vers −2, 0 ou +2, avec les égalités vers 0.
+  Les réponses EmoPhone ne renseignent ni la lecture d'une file ni la fin de
+  lecture. L'exclusion pendant et jusqu'à 60 min après une file est donc hors simulation.
+  Fixtures synthétiques : `ml/fixtures/personal_layer_cases.json` (dont les bornes de la
+  fenêtre de 14 jours et les réponses sans étiquette), `ml/fixtures/rank_cases.json`
+  (percentile) et `ml/fixtures/rank_grid_cases.json` (`python ml/make_rank_fixtures.py` :
+  valeurs de grille → lignes scorées avec la référence à t → probabilités selon la règle de
+  mode → `e0`).
+- **Résultats WP-B0.** AUROC poolée, énergie à trois niveaux, 2 réponses/jour
+  (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
+  étiquetées disponibles, la variante « rang puis personnel » utilise la
+  probabilité personnelle. Cette variante est simulée à titre de comparaison.
+  Un point de grille compte comme montre portée s'il a une FC dans ses 30 min
+  (des pas seuls ne suffisent pas, §6.4).
+
+  | Jours | Modèle commun | Rang | Personnel en ombre | Rang puis personnel |
+  |---|---:|---:|---:|---:|
+  | 1–3 | 0,467 | 0,485 | 0,467 | 0,485 |
+  | 4–7 | 0,525 | 0,527 | 0,726 | 0,608 |
+  | 8–14 | 0,524 | 0,537 | 0,809 | 0,805 |
+  | 15+ | 0,521 | 0,534 | 0,800 | 0,799 |
+  | Ensemble | 0,521 | 0,532 | 0,788 | 0,755 |
+
+  À 1 / 2 / 4 réponses par jour, AUROC personnelle : 0,732 / 0,788 / 0,811 à
+  trois niveaux et 0,616 / 0,654 / 0,681 à sept. Avec 2 réponses par jour,
+  l'agrément personnel donne 0,705 avec le modèle valence et 0,701 avec la
+  constante. Les cibles quantifiées et celles à sept niveaux diffèrent.
+  Ces chiffres décrivent des réponses EmoPhone simulées.
+
+  Les courbes et fixtures utilisent les paramètres du design : T = 2 jours,
+  τ_E = 1, τ_V = 1,5, et cinq réponses pour l'étiquette. Le contrôle de
+  sensibilité donne une log-loss énergie de 0,579 au réglage nominal, 0,567
+  avec T = 4 et 0,543 avec τ_E = 2. Pour l'agrément constant, le réglage nominal
+  donne la meilleure log-loss des variantes comparées (0,623). Les variantes
+  ont été mesurées sur les mêmes plis et ne constituent pas une validation
+  indépendante d'un réglage de remplacement. **Hyper-paramètres pas encore décidés** (TODO 6.5) :
+  le design (§4.4) demande de régler et confirmer `T`, `τ_E` et `τ_V` avant le code Swift ; les
+  fixtures de la couche personnelle seront régénérées s'ils changent. Détail agrégé dans
+  `data/results/wp-b0.json`. Les tests Python vérifient les fixtures et la
+  parité entre l'implémentation scalaire et la simulation.
 - **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
   (§3, D4 et périmètre « collecte seule »).
 
@@ -1402,7 +1498,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (`docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md`) ; décisions D1–D9 et périmètre du
   pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
   Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
-  **Rien n'est implémenté.**
+  *Suivi ML, 24 nov. 2026* : groupes déterministes et CV v1 reproduite sous Windows
+  et sur Mac (§6.5), critères inscrits avant la CV (§3), candidats énergie v2 et valence validés
+  (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8), hyper-paramètres de la couche
+  personnelle encore à décider (TODO 6.5). Les scripts de
+  préparation v3 sont prêts. L'entraînement final et la validation Core ML/Swift
+  restent à faire à partir du 2 déc. Le pilote débute le 26 nov. avec le modèle à
+  13 features.
 - *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
   choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
   règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
@@ -1439,7 +1541,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Pilote lui-même (26 nov.–2 déc.) : retrait du tirage dans le code avant le jour 1 (4.4), point à
   mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Pilote et modèle d'état v2 (Phase 6).
+- Phase 6 : décider `T`, `τ_E`, `τ_V` (6.5), finaliser l'export v3 et le port Swift.
+  L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
 ## 13. Risques et questions ouvertes
 
