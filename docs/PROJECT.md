@@ -667,18 +667,20 @@ situation *Stress* est choisie par l'utilisateur, pas déclenchée automatiqueme
 `python ml/train.py --features data/features`. 31 301 réponses, 191 participants (`vague + pcode`),
 5 groupes par participant, mêmes groupes pour toutes les variantes ; modèle §6.3 (médiane,
 standardisation, régression logistique, ajustées dans chaque groupe d'entraînement). Arousal ;
-moyenne ± écart-type sur les 5 groupes.
+moyenne ± écart-type sur les 5 groupes. Chiffres refaits le 24 nov. avec les groupes déterministes
+(TODO 6.1), mêmes AUROC sous Windows et sur Mac ; les anciens groupes donnaient 0,535 ± 0,017,
+0,554 ± 0,012 et 0,563 ± 0,010.
 
 | Entrées | Nombre | AUROC | Balanced accuracy |
 |---|---:|---:|---:|
-| Heure seule (référence) | 3 | 0,535 ± 0,017 | 0,505 ± 0,008 |
-| Heure + FC | 7 | 0,554 ± 0,012 | 0,516 ± 0,009 |
-| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,010 | 0,540 ± 0,004 |
+| Heure seule (référence) | 3 | 0,534 ± 0,014 | 0,507 ± 0,005 |
+| Heure + FC | 7 | 0,554 ± 0,012 | 0,513 ± 0,006 |
+| Heure + FC + pas + sommeil | 13 | 0,563 ± 0,008 | 0,538 ± 0,005 |
 
 Les deux modèles battent l'heure seule. En v1, heure + FC est plus bas qu'en v0 (0,576/0,570 sur
 D-1/D-2 seules) ; causes possibles, non mesurées une à une : FC à 1 mesure / 5 min, références sur les 14 jours précédents seulement, et
 z-scores FC inconnus (puis imputés) pour 43–51 % des réponses. Pas et sommeil ajoutent +0,009
-d'AUROC, moins que l'écart entre groupes, mais +0,024 de balanced accuracy.
+d'AUROC, du même ordre que l'écart entre groupes, mais +0,025 de balanced accuracy.
 
 **Test unique sur D-3, vague tenue à part (TODO 2.11)** — 20 nov. 2026,
 `python ml/train.py --features data/features --test-d3`, lancé une seule fois, code figé avant.
@@ -766,7 +768,7 @@ groupes d'entraînement seulement, **D-3 jamais ouverte**. Scripts et sorties ag
   0,704. Simulé sur des étudiants EmoPhone : le gain arrivera probablement plus tard dans l'app.
 - **Reproductibilité** : `train.folds()` redonne les mêmes moyennes (0,534 / 0,554 / 0,563) d'une
   machine à l'autre, mais pas les mêmes écarts-types (heure seule : 0,009 sur le Mac de Clément
-  contre 0,017 ci-dessus),
+  contre 0,017 dans le tableau du 20 nov.),
   car les égalités du nombre de réponses sont départagées par un tri non stable. À corriger avant
   toute nouvelle comparaison (TODO 6.1).
 
@@ -775,7 +777,8 @@ décroissant puis identifiant croissant. Chaque groupe entier va au pli le moins
 puis au pli de plus petit indice en cas d'égalité. Le test synthétique vérifie la même
 affectation lorsque l'ordre des lignes est inversé. Sur les 31 301 réponses D-1 + D-2,
 AUROC moyenne ± écart-type : heure seule 0,534 ± 0,014, heure + FC 0,554 ± 0,012,
-modèle complet 0,563 ± 0,008. Reproduction sur un second ordinateur à vérifier.
+modèle complet 0,563 ± 0,008. Reproduit à l'identique sur Mac le 24 nov. (Python 3.12.6,
+scikit-learn 1.5.2), de même que les dix lignes CV de WP-A1 ci-dessous.
 
 **6.3, confirmation WP-A1.** Les tables locales v2 contiennent 10 259 / 21 042 /
 21 838 réponses (92 / 99 / 106 participants-vagues). La valence est lue dans
@@ -928,7 +931,9 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   avec T = 4 et 0,543 avec τ_E = 2. Pour l'agrément constant, le réglage nominal
   donne la meilleure log-loss des variantes comparées (0,623). Les variantes
   ont été mesurées sur les mêmes plis et ne constituent pas une validation
-  indépendante d'un réglage de remplacement. Détail agrégé dans
+  indépendante d'un réglage de remplacement. **Hyper-paramètres pas encore décidés** (TODO 6.5) :
+  le design (§4.4) demande de régler et confirmer `T`, `τ_E` et `τ_V` avant le code Swift ; les
+  fixtures de la couche personnelle seront régénérées s'ils changent. Détail agrégé dans
   `data/results/wp-b0.json`. Les tests Python vérifient les fixtures et la
   parité entre l'implémentation scalaire et la simulation.
 - **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
@@ -1498,8 +1503,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   pilote « collecte seule » notés en §3 ; résumé en §6.8 et §8 ; tâches en TODO Phase 6.
   Corrections EmoPhone reportées (§5.1 ; 282 personnes, items maison, fichiers D-3, Polar H10).
   *Suivi ML, 24 nov. 2026* : groupes déterministes et CV v1 reproduite sous Windows
-  (§6.5), critères inscrits avant la CV (§3), candidats énergie v2 et valence validés
-  (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8). Les scripts de
+  et sur Mac (§6.5), critères inscrits avant la CV (§3), candidats énergie v2 et valence validés
+  (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8), hyper-paramètres de la couche
+  personnelle encore à décider (TODO 6.5). Les scripts de
   préparation v3 sont prêts. L'entraînement final et la validation Core ML/Swift
   restent à faire à partir du 2 déc. Le pilote débute le 26 nov. avec le modèle à
   13 features.
@@ -1535,7 +1541,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Démo M3 au customer (3.24).
 - Pilote lui-même (7–20 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Phase 6 : reproduire les groupes sur Mac, finaliser l'export v3 et le port Swift.
+- Phase 6 : décider `T`, `τ_E`, `τ_V` (6.5), finaliser l'export v3 et le port Swift.
   L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
 ## 13. Risques et questions ouvertes
