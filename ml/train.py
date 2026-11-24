@@ -32,7 +32,6 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score
-from sklearn.model_selection import GroupKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -66,9 +65,31 @@ def scores(y, p):
 
 
 def folds(participant):
-    """5 folds of whole participants: (train index, test index) pairs."""
-    participant = np.asarray(participant)
-    return list(GroupKFold(n_splits=N_FOLDS).split(participant, groups=participant))
+    """Five deterministic, participant-disjoint folds.
+
+    ``GroupKFold`` is intentionally not used here: its handling of groups with equal
+    row counts depended on the ordering supplied by the installed scikit-learn
+    version.  We first order groups by ``(-row_count, participant_id)`` and then
+    greedily put each group in the currently smallest fold (with the fold number
+    as the final tie-break).  This preserves the old balancing intent while making
+    the exact membership reproducible across machines.
+    """
+    participant = np.asarray(participant, dtype=str)
+    names, inverse, counts = np.unique(participant, return_inverse=True, return_counts=True)
+    if len(names) < N_FOLDS:
+        raise ValueError(f"need at least {N_FOLDS} participants, got {len(names)}")
+
+    order = sorted(range(len(names)), key=lambda i: (-int(counts[i]), names[i]))
+    fold_groups = [[] for _ in range(N_FOLDS)]
+    fold_sizes = np.zeros(N_FOLDS, dtype=int)
+    for group in order:
+        fold = min(range(N_FOLDS), key=lambda i: (fold_sizes[i], i))
+        fold_groups[fold].append(group)
+        fold_sizes[fold] += counts[group]
+
+    all_rows = np.arange(len(participant))
+    return [(all_rows[~np.isin(inverse, groups)], all_rows[np.isin(inverse, groups)])
+            for groups in fold_groups]
 
 
 def cross_validate(table, columns, splits):
