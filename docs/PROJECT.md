@@ -878,6 +878,9 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
 - **A priori d'agrément** `z_V` : par défaut la constante `logit(0,566)` (taux de base de « valence
   au-dessus de la moyenne personnelle » sur D-1 + D-2) ; un modèle valence (bloc `valence` de
   `model_params.json`) seulement s'il passe son critère (6.2). Jamais utilisé seul pour la file.
+  Il suit la règle adoptée en 6.3 (« règle app ») : modèle valence si `raw_hr_30` est connu,
+  sinon son modèle heure seule (bloc `valence_time_only`, même schéma que `time_only`). Les
+  fixtures v3 donnent `valence_probability` et `valence_time_only_probability`.
 - **`e0` sans réponse** : rang de la prédiction courante parmi les prédictions de la même personne
   sur la grille de référence (§6.4 : toutes les 30 min, 08:00–23:30, 14 jours précédents, montre
   portée), dès 32 points de grille ; sinon la probabilité brute (design v2 §4.3).

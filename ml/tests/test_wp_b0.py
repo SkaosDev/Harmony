@@ -1,6 +1,7 @@
 """Synthetic checks for WP-B0 and the v2 feature contract."""
 import json
 import sys
+import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,7 +12,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features as F
-from export import build_params, predict
+from export import MAX_BYTES, build_params, predict, write_params
 from personal_layer import Observation, estimate, past_label
 from simulate_wp_b0 import chronological, rank, rank_rows
 from evaluate_v2 import TIME, decision, fit, mixed_logits
@@ -35,15 +36,21 @@ class WPB0Tests(unittest.TestCase):
         table["valence_high"] = (table["raw_hr_30"] > 0).astype(int)
         table.loc[0, "raw_hr_30"] = np.nan
         valence = fit(table, F.FEATURES_V2, "valence")
+        valence_time = fit(table, TIME, "valence")
         params = build_params({"features": list(F.FEATURES_V2), "label": "arousal_high",
                                "model": fit(table, F.FEATURES_V2, "arousal"),
                                "time_only_features": list(TIME), "time_only": fit(table, TIME, "arousal"),
-                               "valence": valence})
+                               "valence": valence, "valence_time_only": valence_time})
         self.assertEqual(params["version"], 3)
         self.assertEqual(params["features"], list(F.FEATURES_V2))
+        self.assertEqual(params["valence_time_only"]["features"], list(TIME))
         row = table.loc[[0], list(F.FEATURES_V2)].to_numpy()
         self.assertAlmostEqual(predict(params["valence"], row[0]),
                                valence.predict_proba(row)[0, 1], places=12)
+        self.assertAlmostEqual(predict(params["valence_time_only"], row[0, :3]),
+                               valence_time.predict_proba(row[:, :3])[0, 1], places=12)
+        with tempfile.TemporaryDirectory() as folder:   # the v3 file stays under the size limit
+            self.assertLess(write_params(params, Path(folder) / "model_params.json"), MAX_BYTES)
 
     def test_v2_uses_raw_hr_even_without_baseline(self):
         class Constant:

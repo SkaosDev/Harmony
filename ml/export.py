@@ -6,7 +6,8 @@ Usage:
 
 Writes app/Harmony/Resources/model_params.json: feature order, imputation medians,
 standardization means / scales, logistic coefficients and intercept (docs/PROJECT.md §6.7), and
-the same fields for the "time only" model under `time_only` (TODO 2.21).
+the same fields for the "time only" model under `time_only` (TODO 2.21). Version 3 (17 features)
+adds `valence` and `valence_time_only` when the valence model is adopted (TODO 6.3).
 The Swift app reads this file; `predict` below is the reference it must match.
 --coreml also writes StateModel.mlmodel and checks it against scikit-learn on 100 rows.
 Publishing the coefficients is allowed by the EmoPhone authors (TODO 2.14b).
@@ -22,7 +23,7 @@ from features import FEATURES, FEATURES_V2
 
 VERSION = 2                         # 2: adds the "time only" model (same 13-feature model as 1)
 APP_RESOURCES = Path(__file__).resolve().parents[1] / "app" / "Harmony" / "Resources"
-MAX_BYTES = 5 * 1024
+MAX_BYTES = 8 * 1024                # v2: 2.2 KB (TODO 2.15: < 5 KB); v3 with both valence blocks: ~5.5 KB
 COREML_TOLERANCE = 1e-6
 
 
@@ -40,6 +41,7 @@ def build_params(saved):
         if params["version"] != 3:
             raise ValueError("valence requires the v3 contract")
         params["valence"] = _logistic(saved["valence"], columns)
+        params["valence_time_only"] = _logistic(saved["valence_time_only"], saved["time_only_features"])
     return params
 
 

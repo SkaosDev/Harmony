@@ -80,7 +80,9 @@ def main():
                  "model": fit(all_waves, FEATURES_V2, "arousal"),
                  "time_only_features": list(TIME), "time_only": fit(all_waves, TIME, "arousal")}
         if adopted["valence_model"]:
+            # Adopted rule ("valence_v2_app"): valence model if raw_hr_30 is known, else time only.
             saved["valence"] = fit(all_waves, FEATURES_V2, "valence")
+            saved["valence_time_only"] = fit(all_waves, TIME, "valence")
         output.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(saved, output)
         return
