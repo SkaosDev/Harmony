@@ -55,3 +55,5 @@ data/models/state_v3.joblib` entraîne le candidat. Utiliser ensuite `ml/export.
 --model data/models/state_v3.joblib --out data/models/v3 --coreml` sur macOS et
 `ml/make_fixtures.py --model data/models/state_v3.joblib --out data/models/v3/state_cases.json`.
 WP-B0 utilise le contrat v1 du pilote par défaut. L'option `--v2` simule le candidat.
+Fixtures synthétiques de la couche personnelle et du rang : `python ml/make_personal_fixtures.py`
+et `python ml/make_rank_fixtures.py` (tests : `ml.tests.test_personal_layer`, `ml.tests.test_wp_b0`).

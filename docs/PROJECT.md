@@ -896,8 +896,11 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   Le scénario à 3 niveaux arrondit vers −2, 0 ou +2, avec les égalités vers 0.
   Les réponses EmoPhone ne renseignent ni la lecture d'une file ni la fin de
   lecture. L'exclusion pendant et jusqu'à 60 min après une file est donc hors simulation.
-  Fixtures synthétiques : `ml/fixtures/personal_layer_cases.json` et
-  `ml/fixtures/rank_cases.json`.
+  Fixtures synthétiques : `ml/fixtures/personal_layer_cases.json` (dont les bornes de la
+  fenêtre de 14 jours et les réponses sans étiquette), `ml/fixtures/rank_cases.json`
+  (percentile) et `ml/fixtures/rank_grid_cases.json` (`python ml/make_rank_fixtures.py` :
+  valeurs de grille → lignes scorées avec la référence à t → probabilités selon la règle de
+  mode → `e0`).
 - **Résultats WP-B0.** AUROC poolée, énergie à trois niveaux, 2 réponses/jour
   (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
   étiquetées disponibles, la variante « rang puis personnel » utilise la

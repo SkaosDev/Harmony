@@ -266,7 +266,7 @@ def rank_reference(t, grid_t, grid, nights, *, columns=FEATURES):
     out["hours_since_wake"] = np.where(minute >= wake, (minute - wake) / 60, np.nan)
     out["sleep_unknown"] = np.isnan(sleep).astype(int)
     out.update({"raw_" + name: values[name][worn] for name in RAW_WINDOWS})
-    return pd.DataFrame(out, columns=list(columns))
+    return pd.DataFrame(out, columns=list(columns), index=pd.Index(times, name="t"))
 
 
 def rescale_d3(values):

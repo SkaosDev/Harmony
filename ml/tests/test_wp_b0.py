@@ -18,7 +18,7 @@ from export import MAX_BYTES, build_params, predict, write_params
 from personal_layer import Observation, estimate, past_label
 from simulate_wp_b0 import chronological, rank, rank_rows
 import evaluate_v2
-from evaluate_v2 import TIME, decision, fit, mixed_logits
+from evaluate_v2 import TIME, decision, fit, gate, mixed_logits
 
 
 class WPB0Tests(unittest.TestCase):
@@ -130,6 +130,29 @@ class WPB0Tests(unittest.TestCase):
         result = F.rank_reference(t, times, grid, {}, columns=F.FEATURES_V2)
         np.testing.assert_allclose(result["z_hr_30"], (values - values.mean()) / values.std(ddof=1))
         np.testing.assert_array_equal(result["raw_hr_30"], values)
+
+    def test_rank_grid_fixtures(self):
+        root = Path(__file__).resolve().parents[2]
+        fixture = json.loads((root / "ml" / "fixtures" / "rank_grid_cases.json").read_text(encoding="utf-8"))
+        params = json.loads((root / "app" / "Harmony" / "Resources" / "model_params.json").read_text())
+        self.assertEqual(fixture["model_version"], params["version"])
+        unknown = lambda value: np.nan if value is None else value
+        columns = params["features"]
+        for case in fixture["cases"]:
+            origin = case["origin_ms"]
+            grid = np.array([[unknown(v) for v in point] for point in case["grid"]], dtype=float)
+            nights = {n["day"]: (unknown(n["sleep_min"]), unknown(n["wake_minute"])) for n in case["nights"]}
+            rows = F.rank_reference(origin + case["t_minute"] * F.MIN_MS,
+                                    origin + grid[:, 0].astype(np.int64) * F.MIN_MS,
+                                    dict(zip(fixture["quantities"], grid[:, 1:].T)), nights,
+                                    columns=fixture["features"])
+            expected = np.array([[unknown(v) for v in row] for row in case["rows"]], dtype=float)
+            np.testing.assert_array_equal((rows.index - origin) // F.MIN_MS, expected[:, 0], case["name"])
+            np.testing.assert_allclose(rows.to_numpy(dtype=float), expected[:, 1:], rtol=0, atol=1e-12)
+            probabilities = [predict(params, row[columns]) if pd.notna(row[gate(columns)])
+                             else predict(params["time_only"], row.iloc[:3]) for _, row in rows.iterrows()]
+            np.testing.assert_allclose(probabilities, case["row_probabilities"], rtol=0, atol=1e-12)
+            self.assertEqual(rank(case["probability"], np.array(probabilities)), case["e0"], case["name"])
 
     def test_grid_points_without_heart_rate_are_not_worn(self):
         t = 21 * F.DAY_MS

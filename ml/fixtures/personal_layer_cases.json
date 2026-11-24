@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "window_days": 14,
   "decay_days": 2.0,
   "prior_std": 1.0,
   "minimum_past_responses": 5,
@@ -178,6 +179,65 @@
       "usable_labelled_count": 6
     },
     {
+      "name": "window_boundaries",
+      "now": "2026-12-21T12:00:00Z",
+      "z_energy": 0.1,
+      "observations": [
+        {
+          "answered_at": "2026-12-07T11:59:00Z",
+          "energy": 2,
+          "z_energy": 0.4,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-07T12:00:00Z",
+          "energy": -1,
+          "z_energy": -0.3,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-18T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0.1,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-19T12:00:00Z",
+          "energy": 1,
+          "z_energy": 0.2,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-20T12:00:00Z",
+          "energy": -2,
+          "z_energy": -0.5,
+          "label": false,
+          "usable": false
+        },
+        {
+          "answered_at": "2026-12-21T00:00:00Z",
+          "energy": 1,
+          "z_energy": 0.0,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-21T12:00:00Z",
+          "energy": 3,
+          "z_energy": 0.6,
+          "label": true,
+          "usable": true
+        }
+      ],
+      "offset": 0.3970192883774055,
+      "probability": 0.6217585976454302,
+      "usable_labelled_count": 3
+    },
+    {
       "name": "past_label",
       "now": "2026-12-07T12:00:00Z",
       "energy": 1,
@@ -213,6 +273,63 @@
         {
           "answered_at": "2026-12-05T12:00:00Z",
           "energy": 2,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        }
+      ],
+      "label": true
+    },
+    {
+      "name": "past_label_window_boundaries",
+      "now": "2026-12-21T12:00:00Z",
+      "energy": 1,
+      "prior_responses": [
+        {
+          "answered_at": "2026-12-07T11:59:00Z",
+          "energy": 3,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-07T12:00:00Z",
+          "energy": -2,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-11T12:00:00Z",
+          "energy": 1,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-15T12:00:00Z",
+          "energy": 1,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-19T12:00:00Z",
+          "energy": 1,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-20T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-21T12:00:00Z",
+          "energy": 3,
           "z_energy": 0,
           "label": null,
           "usable": true

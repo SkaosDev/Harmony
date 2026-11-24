@@ -16,9 +16,10 @@ class PersonalLayerTests(unittest.TestCase):
         self.cases = self.fixture["cases"]
 
     def test_header_gives_the_parameters_used(self):
-        self.assertEqual((self.fixture["decay_days"], self.fixture["prior_std"],
+        self.assertEqual((self.fixture["window_days"], self.fixture["decay_days"], self.fixture["prior_std"],
                           self.fixture["minimum_past_responses"], self.fixture["newton_steps"]),
-                         (P.DECAY_DAYS, P.ENERGY_PRIOR_STD, P.MIN_LABEL_RESPONSES, P.NEWTON_STEPS))
+                         (P.WINDOW.days, P.DECAY_DAYS, P.ENERGY_PRIOR_STD, P.MIN_LABEL_RESPONSES,
+                          P.NEWTON_STEPS))
 
     @staticmethod
     def date(value):
@@ -29,7 +30,7 @@ class PersonalLayerTests(unittest.TestCase):
                              item["label"], item["usable"])
 
     def test_golden_offsets_and_probabilities(self):
-        for case in self.cases[:-1]:
+        for case in (c for c in self.cases if "observations" in c):
             offset, probability, count = P.estimate(self.date(case["now"]), case["z_energy"],
                                                      [self.observation(x) for x in case["observations"]])
             self.assertAlmostEqual(offset, case["offset"], places=12, msg=case["name"])
@@ -37,10 +38,15 @@ class PersonalLayerTests(unittest.TestCase):
             self.assertEqual(count, case["usable_labelled_count"], case["name"])
 
     def test_past_label_fixture(self):
-        case = self.cases[-1]
-        label = P.past_label(self.date(case["now"]), case["energy"],
-                             [self.observation(x) for x in case["prior_responses"]])
-        self.assertEqual(label, case["label"])
+        for case in (c for c in self.cases if "prior_responses" in c):
+            label = P.past_label(self.date(case["now"]), case["energy"],
+                                 [self.observation(x) for x in case["prior_responses"]])
+            self.assertEqual(label, case["label"], case["name"])
+
+    def test_window_boundary_cases(self):
+        cases = {case["name"]: case for case in self.cases}
+        self.assertEqual(cases["window_boundaries"]["usable_labelled_count"], 3)   # 14 days kept, `now` not
+        self.assertIs(cases["past_label_window_boundaries"]["label"], True)
 
 
 if __name__ == "__main__":
