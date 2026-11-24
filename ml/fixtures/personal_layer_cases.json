@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "decay_days": 2,
-  "prior_std": 1,
+  "decay_days": 2.0,
+  "prior_std": 1.0,
   "minimum_past_responses": 5,
   "newton_steps": 5,
   "cases": [

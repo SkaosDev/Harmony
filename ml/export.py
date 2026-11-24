@@ -22,7 +22,8 @@ import numpy as np
 from features import FEATURES, FEATURES_V2
 
 VERSION = 2                         # 2: adds the "time only" model (same 13-feature model as 1)
-APP_RESOURCES = Path(__file__).resolve().parents[1] / "app" / "Harmony" / "Resources"
+APP = Path(__file__).resolve().parents[1] / "app"
+APP_RESOURCES = APP / "Harmony" / "Resources"
 MAX_BYTES = 8 * 1024                # v2: 2.2 KB (TODO 2.15: < 5 KB); v3 with both valence blocks: ~5.5 KB
 COREML_TOLERANCE = 1e-6
 
@@ -68,6 +69,13 @@ def predict(params, row):
     return float(1 / (1 + np.exp(-(z @ params["coefficients"] + params["intercept"]))))
 
 
+def is_within(path, target):
+    """True if `path` is `target` or lies inside it. Compares on disk, so a path that differs
+    only by letter case (case-insensitive APFS, the macOS default) is caught too."""
+    path = Path(path).resolve()
+    return Path(target).exists() and any(p.exists() and p.samefile(target) for p in (path, *path.parents))
+
+
 def write_params(params, path):
     text = json.dumps(params, indent=2) + "\n"
     if len(text.encode()) >= MAX_BYTES:
@@ -84,8 +92,8 @@ def main():
     args = ap.parse_args()
     saved = joblib.load(args.model)   # our own file from train.py --final: never load an unknown joblib
     params = build_params(saved)
-    if params["version"] == 3 and args.out.resolve() == APP_RESOURCES.resolve():
-        ap.error("export v3 to a staging directory until the Swift port and pilot freeze permit rollout")
+    if params["version"] == 3 and is_within(args.out, APP):
+        ap.error("export v3 outside app/ until the Swift port and pilot freeze permit rollout")
     args.out.mkdir(parents=True, exist_ok=True)
     size = write_params(params, args.out / "model_params.json")
     print(f"model_params.json: {size} bytes, {len(params['features'])} features")

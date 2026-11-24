@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 
-from personal_layer import Observation, estimate, past_label
+from personal_layer import (DECAY_DAYS, ENERGY_PRIOR_STD, MIN_LABEL_RESPONSES, NEWTON_STEPS,
+                            Observation, estimate, past_label)
 
 OUT = Path(__file__).resolve().parent / "fixtures" / "personal_layer_cases.json"
 START = datetime(2026, 12, 1, 12, tzinfo=timezone.utc)
@@ -39,8 +40,9 @@ def main():
     output.append({"name": "past_label", "now": (START + timedelta(days=6)).isoformat().replace("+00:00", "Z"),
                    "energy": 1, "prior_responses": [encode(x) for x in labels],
                    "label": past_label(START + timedelta(days=6), 1, labels)})
-    OUT.write_text(json.dumps({"version": 1, "decay_days": 2, "prior_std": 1,
-                               "minimum_past_responses": 5, "newton_steps": 5, "cases": output}, indent=2) + "\n")
+    OUT.write_text(json.dumps({"version": 1, "decay_days": DECAY_DAYS, "prior_std": ENERGY_PRIOR_STD,
+                               "minimum_past_responses": MIN_LABEL_RESPONSES, "newton_steps": NEWTON_STEPS,
+                               "cases": output}, indent=2) + "\n")
 
 
 if __name__ == "__main__":

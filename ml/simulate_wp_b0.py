@@ -9,9 +9,13 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 import features as F
-from evaluate_v2 import TIME, fit, load, logits, mixed_logits
+from evaluate_v2 import TIME, fit, gate, load, logits, mixed_logits
 from explore_d1 import read_participant
 from train import folds
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-np.asarray(z, dtype=float)))
 
 
 def rank(probability, grid):
@@ -46,15 +50,16 @@ def rank_rows(person, data, models, columns):
     mixed_grid = time_grid = np.array([])
     if enough:
         combined = pd.concat(enough, ignore_index=True)
-        time_grid = logits(time, combined, TIME)
-        gate = "raw_hr_30" if columns == F.FEATURES_V2 else "z_hr_30"
-        mixed_grid = np.where(combined[gate].notna(), logits(body, combined, columns), time_grid)
-    for index, (z, z_time) in enumerate(zip(person.energy_z, person.time_z)):
+        time_grid = sigmoid(logits(time, combined, TIME))
+        mixed_grid = np.where(combined[gate(columns)].notna(),
+                              sigmoid(logits(body, combined, columns)), time_grid)
+    # rank() compares probabilities, as in the app (its fallback returns the probability).
+    for index, (p, p_time) in enumerate(zip(sigmoid(person.energy_z), sigmoid(person.time_z))):
         if counts[index]:
             section = slice(starts[index], starts[index + 1])
-            yield rank(z, mixed_grid[section]), rank(z_time, time_grid[section])
+            yield rank(p, mixed_grid[section]), rank(p_time, time_grid[section])
         else:
-            yield tuple(1 / (1 + np.exp(-np.array([z, z_time]))))
+            yield p, p_time
 
 
 def sample(days, rate, rng):

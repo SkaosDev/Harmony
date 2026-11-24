@@ -12,7 +12,13 @@ import personal_layer as P  # noqa: E402
 class PersonalLayerTests(unittest.TestCase):
     def setUp(self):
         fixture = Path(__file__).resolve().parents[1] / "fixtures" / "personal_layer_cases.json"
-        self.cases = json.loads(fixture.read_text())["cases"]
+        self.fixture = json.loads(fixture.read_text())
+        self.cases = self.fixture["cases"]
+
+    def test_header_gives_the_parameters_used(self):
+        self.assertEqual((self.fixture["decay_days"], self.fixture["prior_std"],
+                          self.fixture["minimum_past_responses"], self.fixture["newton_steps"]),
+                         (P.DECAY_DAYS, P.ENERGY_PRIOR_STD, P.MIN_LABEL_RESPONSES, P.NEWTON_STEPS))
 
     @staticmethod
     def date(value):

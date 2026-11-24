@@ -1,4 +1,6 @@
 """Synthetic checks for WP-B0 and the v2 feature contract."""
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -15,6 +17,7 @@ import features as F
 from export import MAX_BYTES, build_params, predict, write_params
 from personal_layer import Observation, estimate, past_label
 from simulate_wp_b0 import chronological, rank, rank_rows
+import evaluate_v2
 from evaluate_v2 import TIME, decision, fit, mixed_logits
 
 
@@ -65,7 +68,27 @@ class WPB0Tests(unittest.TestCase):
         for name in TIME:
             table[name] = 0.
         np.testing.assert_array_equal(mixed_logits(Constant(1), Constant(-1), table, F.FEATURES_V2), [1, -1])
+        np.testing.assert_array_equal(mixed_logits(Constant(1), Constant(-1), table, list(F.FEATURES_V2)),
+                                      [1, -1])                    # a list selects the v2 gate too
         np.testing.assert_array_equal(mixed_logits(Constant(1), Constant(-1), table, F.FEATURES), [-1, -1])
+
+    def test_failed_d3_run_leaves_no_proof_file(self):
+        rng = np.random.default_rng(3)
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            for wave in ("D1", "D2"):
+                table = pd.DataFrame(rng.normal(size=(60, 17)), columns=F.FEATURES_V2)
+                table["participant"] = [f"{wave}_P{i % 6}" for i in range(60)]
+                table["arousal_high"] = rng.integers(0, 2, 60)
+                table["valence_high"] = rng.integers(0, 2, 60)
+                table.to_csv(folder / f"v2_{wave}.csv", index=False)
+            proof = folder / "results" / "wp-a1.json"
+            proof.parent.mkdir()
+            argv = ["evaluate_v2.py", "--features", str(folder), "--confirm-d3", str(proof)]
+            with patch.object(sys, "argv", argv), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaises(FileNotFoundError):          # v2_D3.csv not built yet
+                    evaluate_v2.main()
+            self.assertFalse(proof.exists())
 
     def test_adoption_requires_both_cv_and_holdout(self):
         cv = {"arousal_v1_app": (.56, .5), "arousal_v2_app": (.559, .5),

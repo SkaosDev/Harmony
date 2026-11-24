@@ -21,9 +21,13 @@ def logits(model, table, columns):
     return model.decision_function(table[list(columns)].to_numpy())
 
 
+def gate(columns):
+    """Body mode needs raw_hr_30 with the 17 features (v2), z_hr_30 with the 13 (v1)."""
+    return "raw_hr_30" if tuple(columns) == FEATURES_V2 else "z_hr_30"
+
+
 def mixed_logits(body, time, table, columns):
-    gate = "raw_hr_30" if columns == FEATURES_V2 else "z_hr_30"
-    return np.where(table[gate].notna(), logits(body, table, columns), logits(time, table, TIME))
+    return np.where(table[gate(columns)].notna(), logits(body, table, columns), logits(time, table, TIME))
 
 
 def evaluate(train, test):
@@ -86,15 +90,19 @@ def main():
         output.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(saved, output)
         return
+    if args.confirm_d3 and args.confirm_d3.exists():
+        parser.error(f"{args.confirm_d3} exists: D-3 is evaluated only once")
     cv = [evaluate(table.iloc[train], table.iloc[test]) for train, test in folds(table.participant)]
     for name in cv[0]:
         values = np.array([fold[name] for fold in cv])
         print(f"{name:20} AUROC {values[:, 0].mean():.6f} ± {values[:, 0].std():.6f}"
               f" | BA {values[:, 1].mean():.6f} ± {values[:, 1].std():.6f}")
     if args.confirm_d3:
+        # Compute first: an error must not leave an empty proof file that blocks the retry.
+        d3 = evaluate(table, load(args.features, "D3"))
+        result = {"cv": cv, "d3": d3, "decision": decision(cv, d3)}
+        args.confirm_d3.parent.mkdir(parents=True, exist_ok=True)
         with args.confirm_d3.open("x", encoding="utf-8") as proof:
-            d3 = evaluate(table, load(args.features, "D3"))
-            result = {"cv": cv, "d3": d3, "decision": decision(cv, d3)}
             json.dump(result, proof, indent=2)
         print(json.dumps({"d3": d3, "decision": result["decision"]}, indent=2))
 

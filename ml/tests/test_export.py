@@ -57,6 +57,15 @@ class ParamsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             E.build_params(saved)
 
+    def test_is_within_catches_children_and_letter_case(self):
+        with tempfile.TemporaryDirectory() as root:
+            app = Path(root) / "app"
+            (app / "Harmony").mkdir(parents=True)
+            self.assertTrue(E.is_within(app / "Harmony" / "Resources" / "v3", app))
+            self.assertFalse(E.is_within(Path(root) / "models", app))
+            if (Path(root) / "APP").exists():                    # case-insensitive disk (macOS)
+                self.assertTrue(E.is_within(Path(root) / "APP" / "harmony" / "resources", app))
+
 
 try:
     import coremltools                                           # noqa: F401

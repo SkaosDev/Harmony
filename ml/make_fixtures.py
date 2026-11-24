@@ -148,7 +148,7 @@ def main():
         params = json.loads(PARAMS.read_text())
     rng = np.random.default_rng(SEED)
     out = [build_case(*c, rng, params) for c in cases()]
-    if params["version"] == 3 and args.out.resolve() == OUT.resolve():
+    if params["version"] == 3 and export.is_within(args.out, OUT):
         ap.error("write v3 fixtures separately from the active app fixtures")
     args.out.write_text(json.dumps({"version": 1, "model_version": params["version"],
                                "features": params["features"], "cases": out},
