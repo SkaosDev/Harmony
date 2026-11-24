@@ -170,7 +170,7 @@ Fig.~\ref{fig:overview} shows the app in three parts. The person can always choo
 
 \textbf{An example.} At 11:30 p.m.\ the user taps Wind-down. The heart rate is above the person's usual evening value, so the first two songs have a medium energy and the next ones become calmer step by step. A skip is recorded for future queues.
 
-\textbf{How we will test it.} (1) Song scores: correlation between the LLM estimate and MuSe on shared songs. (2) State estimate: tests on people the model has not seen, never a random split of one person's data, then on a whole held-out wave, compared with a time-of-day baseline; if the model does not beat the baseline, it is not used. (3) Pilot: at most five Spotify accounts (the limit of Spotify's development mode~\cite{spotify2026}) for about two weeks, comparing skip rates and a one-tap ``did this fit?'' answer between our queues and queues built from the time of day only. The pilot measures fit, not health benefits.
+\textbf{How we will test it.} (1) Song scores: correlation between the LLM estimate and MuSe on shared songs. (2) State estimate: tests on people the model has not seen, never a random split of one person's data, then on a whole held-out wave, compared with a time-of-day baseline; if the model does not beat the baseline, it is not used. (3) Pilot: one participant (Spotify's development mode allows at most five accounts~\cite{spotify2026}) for one week, with the watch data used every day; we measure skip rates and a one-tap ``did this fit?'' answer. The pilot measures fit, not health benefits.
 
 \textbf{Limits.} The app is a demonstrator for five users and a wellness companion, not a medical tool. The training data come from a Fitbit and Android phones, not from an Apple Watch, so the pilot measures the remaining gap. Accuracy is modest (Section~\ref{sec:req4}); the one-tap situation choice keeps the app useful when the estimate is wrong.
 
@@ -182,7 +182,7 @@ Each milestone ends with a demo to the customer. The plan of Submission~A put M1
 \item \textbf{M1, Nov.\ 15:} Spotify sign-in and import tested with a live account, reading of Apple Health data, demo mode.
 \item \textbf{M2, Nov.\ 29:} song scores; state model trained on EmoPhone and tested on held-out people and a held-out wave.
 \item \textbf{M3, Dec.\ 6:} queue building, playback, feedback, explanation and data-control screens.
-\item \textbf{M4, Dec.\ 7 to end of term:} pilot (about two weeks), evaluation, final report and demo.
+\item \textbf{M4, Nov.\ 26 to Dec.\ 4 (end of the project):} pilot (one week, Nov.\ 26 to Dec.\ 2), evaluation, final report and demo.
 \end{itemize}
 All code goes through pull requests on GitHub, reviewed by another member; the team meets weekly and decides together.
 
@@ -560,8 +560,8 @@ scores:    { spotifyId, energy, positivity, origin }
 hours:     { hourStart, meanHR, sdnnHRV, steps }
 nights:    { date, sleepMinutes, sleepEnd, worn }
 baselines: { signal, block3h, mean, sd, nDays }
-queues:    { id, situation, startEnergy, kind,
-             reason, items[] }
+queues:    { id, situation, startEnergy, reason,
+             items[] }
 feedback:  { queueId, spotifyId, event, seconds, time }
 consents:  { source, granted, time }
 Keychain:  { accessToken, refreshToken, expiresAt }
@@ -627,7 +627,7 @@ Fig.~\ref{fig:architecture} shows the parts of the system and where they run. Ev
 
 \textbf{Main flows.} (1) When the app becomes active, the summary store reads the new HealthKit samples with anchored queries and keeps hourly and nightly summaries only. (2) At each tap on a situation, the state is computed again: the heart rate, steps and sleep of the last 14 days are read into memory, turned into the 13 features of Requirement~4 against the person's own averages, then given to Core ML (or to the time-of-day model if the watch gave no heart rate in the last 30 minutes); the raw samples are then dropped. (3) The queue maker builds the queue from the local tables and the MuSe table, checks at most two MuSe suggestions on Spotify and writes the reason. (4) The player controller plays the queue in Spotify and records skips, likes, finished songs and the ``Did it fit?'' answer. (5) New songs are scored in the background: MuSe first, then the Worker in batches of 50, else a neutral score.
 
-\textbf{Changes from the specification.} The personal averages are computed in memory at each estimate instead of being stored in a \texttt{baselines} table. The queue is played as a private Spotify playlist named ``Harmony'', created for each queue and played through App Remote, instead of one song plus the Spotify queue. Songs scored by the LLM get no penalty in the song choice (team decision, Nov.\ 23): with any fixed penalty, almost only MuSe songs were chosen. Each queue also records the kind of queue drawn for the pilot and the estimate it really used (Section~\ref{sec:pilot}).
+\textbf{Changes from the specification.} The personal averages are computed in memory at each estimate instead of being stored in a \texttt{baselines} table. The queue is played as a private Spotify playlist named ``Harmony'', created for each queue and played through App Remote, instead of one song plus the Spotify queue. Songs scored by the LLM get no penalty in the song choice (team decision, Nov.\ 23): with any fixed penalty, almost only MuSe songs were chosen. Each queue also records the estimate it really used, from the watch or from the time of day only (Section~\ref{sec:pilot}).
 
 \subsection{Module Structure}
 Table~\ref{tab:modules} lists the modules and the requirements they cover. The app has 80 Swift files and 38 test files; on Nov.\ 23, 2026, the 299 Swift tests and the 62 Python tests pass. Shared ``golden'' files check that Swift computes the same features and probabilities as Python (difference below $10^{-6}$), the same song keys, and reads the same pilot export.
@@ -701,7 +701,7 @@ Cyprien & Data: comparison of the EmoPhone waves, MuSe table, title and artist n
 \begin{enumerate}
 \item Settings $\rightarrow$ My data shows the numbers of songs, scores, health summaries, queues and feedback events.
 \item ``Export as JSON'' gives the whole store as one file through the share sheet (FR13).
-\item ``Delete everything'' asks for a confirmation, then empties the 8 tables, removes the Spotify tokens from the Keychain and the stored keys (HealthKit anchors, import date, pilot draw), and the app starts again at the onboarding. A test checks that every table is empty afterwards.
+\item ``Delete everything'' asks for a confirmation, then empties the 8 tables, removes the Spotify tokens from the Keychain and the stored keys (HealthKit anchors, import date, pilot start day), and the app starts again at the onboarding. A test checks that every table is empty afterwards.
 \end{enumerate}
 
 %=====================================================================
@@ -735,12 +735,12 @@ Time + heart rate + steps + sleep & 0.496 & 0.499 \\ \hline
 The MuSe table keeps 89,269 songs. On a team member's library of 2,045 songs, 11.4\,\% are found in MuSe and 88.6\,\% are scored by the LLM; the first scoring takes 158\,s, in the background. The offline check on 2,000 MuSe songs, with the MuSe scores hidden from the LLM, gives Spearman correlations of 0.26--0.28 for energy and 0.32--0.34 for positivity over three trials (two models, three prompts), below the rule written before the check (0.4), and a mean error in percentiles (0.26--0.28) larger than that of a constant neutral score (0.25). The team still uses the LLM for songs missing from MuSe, because the MuSe reference itself is weak: 65\,\% of its songs have at most three tags.
 
 \subsection{App Performance}
-On the iPhone 16, a queue is on screen 0.28 to 0.37\,s after the tap (median 0.34\,s over 12 queues, library of 2,459 songs; NFR3: under 2\,s), measured before the state was computed again at each tap (TODO 4.4), which adds the time of one state estimate (0.13--0.15\,s measured on the same phone). Music starts two taps after launch (NFR5). Without a watch, without network or without the Spotify app, the app does not crash and says what happens in one sentence; without recent heart rate it falls back on the time of day (NFR4).
+On the iPhone 16, a queue is on screen 0.28 to 0.37\,s after the tap (median 0.34\,s over 12 queues, library of 2,459 songs; NFR3: under 2\,s), measured before the state was computed again at each tap (Nov.\ 23), which adds the time of one state estimate (0.13--0.15\,s measured on the same phone). Music starts two taps after launch (NFR5). Without a watch, without network or without the Spotify app, the app does not crash and says what happens in one sentence; without recent heart rate it falls back on the time of day (NFR4).
 
 \subsection{Pilot}\label{sec:pilot}
-The pilot follows the protocol written before any data (\texttt{docs/pilot-protocol.md}): one participant, a team member, from Dec.\ 7 to Dec.\ 20, 2026. Each day is either a \emph{body} day (queues start from the state estimate) or a \emph{time-only} day (queues start from the time of day only), drawn at random in blocks of two days so that 14 days give 7 of each. The phone exports one anonymous file: for each queue, the pilot day and hour, the situation, the kind drawn and the estimate really used, the score origin of each song, the skip, like and finish events and the ``Did it fit?'' answer, plus watch-coverage counts; no song name, health value or date. Measures: skip rate before 30\,s and share of ``yes'' by kind, with 95\,\% intervals by bootstrap over days; MuSe suggestions; nights with known sleep and hours with a heart rate.
+The pilot follows the protocol written before any data (\texttt{docs/pilot-protocol.md}): one participant, a team member, for one week, from Nov.\ 26 to Dec.\ 2, 2026, with the Apple Watch data used every day: every queue starts from the state estimate, and from the time of day only when the watch gives no recent heart rate, as in normal use. The phone exports one anonymous file: for each queue, the pilot day and hour, the situation, the estimate really used, the score origin of each song, the skip, like and finish events and the ``Did it fit?'' answer, plus watch-coverage counts; no song name, health value or date. Measures: skip rate before 30\,s and share of ``yes'', with 95\,\% intervals by bootstrap over days; MuSe suggestions; nights with known sleep, hours with a heart rate and queues that fell back to the time of day.
 
-\textbf{Results.} \tbd{to be filled after the pilot with \texttt{ml/pilot\_analysis.py}: skip rate and ``yes'' share for body and time-only queues with their intervals; MuSe suggestions; watch coverage.}
+\textbf{Results.} \tbd{to be filled after the pilot with \texttt{ml/pilot\_analysis.py}: skip rate and ``yes'' share with their intervals; MuSe suggestions; watch coverage.}
 
 \subsection{Limitations}
 \begin{itemize}
@@ -748,7 +748,7 @@ The pilot follows the protocol written before any data (\texttt{docs/pilot-proto
 \item \textbf{Transfer.} The model is trained on Fitbit data of Korean students; on another population and other devices (UC Irvine) it does not transfer.
 \item \textbf{Sleep unknown.} The ``sleep unknown'' input has one of the largest weights; it reflects the habit of EmoPhone participants of not wearing the watch at night, not a signal of the body.
 \item \textbf{Song scores.} Most songs are scored by the LLM, whose agreement with MuSe is weak.
-\item \textbf{Pilot.} One participant, who is also a developer of the app and can guess the kind of queue: a feasibility test, not a proof; results hold for this participant only.
+\item \textbf{Pilot.} One participant for one week, who is also a developer of the app, and no comparison queue: a feasibility test, not a proof; results hold for this participant only.
 \end{itemize}
 
 \subsection{Discussion}
