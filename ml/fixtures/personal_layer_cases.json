@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "decay_days": 2,
+  "prior_std": 1,
+  "minimum_past_responses": 5,
+  "newton_steps": 5,
+  "cases": [
+    {
+      "name": "no_label",
+      "now": "2026-12-05T12:00:00Z",
+      "z_energy": 0.25,
+      "observations": [],
+      "offset": 0.0,
+      "probability": 0.5621765008857981,
+      "usable_labelled_count": 0
+    },
+    {
+      "name": "recent_high",
+      "now": "2026-12-03T02:00:00Z",
+      "z_energy": -0.1,
+      "observations": [
+        {
+          "answered_at": "2026-12-01T12:00:00Z",
+          "energy": -2,
+          "z_energy": -0.2,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-01T18:00:00Z",
+          "energy": 0,
+          "z_energy": -0.12000000000000001,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T00:00:00Z",
+          "energy": 1,
+          "z_energy": -0.04000000000000001,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T06:00:00Z",
+          "energy": -1,
+          "z_energy": 0.03999999999999998,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0.12,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T18:00:00Z",
+          "energy": 1,
+          "z_energy": 0.2,
+          "label": true,
+          "usable": true
+        }
+      ],
+      "offset": 0.12727915885502686,
+      "probability": 0.5068193668315907,
+      "usable_labelled_count": 6
+    },
+    {
+      "name": "old_answers_decay",
+      "now": "2026-12-09T12:00:00Z",
+      "z_energy": 0.3,
+      "observations": [
+        {
+          "answered_at": "2026-12-01T12:00:00Z",
+          "energy": -2,
+          "z_energy": -0.2,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-01T18:00:00Z",
+          "energy": 0,
+          "z_energy": -0.12000000000000001,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T00:00:00Z",
+          "energy": 1,
+          "z_energy": -0.04000000000000001,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T06:00:00Z",
+          "energy": -1,
+          "z_energy": 0.03999999999999998,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0.12,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T18:00:00Z",
+          "energy": 1,
+          "z_energy": 0.2,
+          "label": true,
+          "usable": true
+        }
+      ],
+      "offset": 0.009632115995097593,
+      "probability": 0.5767954622805624,
+      "usable_labelled_count": 6
+    },
+    {
+      "name": "unusable_is_ignored",
+      "now": "2026-12-03T02:00:00Z",
+      "z_energy": -0.1,
+      "observations": [
+        {
+          "answered_at": "2026-12-01T12:00:00Z",
+          "energy": -2,
+          "z_energy": -0.2,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-01T18:00:00Z",
+          "energy": 0,
+          "z_energy": -0.12000000000000001,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T00:00:00Z",
+          "energy": 1,
+          "z_energy": -0.04000000000000001,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T06:00:00Z",
+          "energy": -1,
+          "z_energy": 0.03999999999999998,
+          "label": false,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0.12,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T18:00:00Z",
+          "energy": 1,
+          "z_energy": 0.2,
+          "label": true,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T18:00:00Z",
+          "energy": 3,
+          "z_energy": -0.8,
+          "label": true,
+          "usable": false
+        }
+      ],
+      "offset": 0.12727915885502686,
+      "probability": 0.5068193668315907,
+      "usable_labelled_count": 6
+    },
+    {
+      "name": "past_label",
+      "now": "2026-12-07T12:00:00Z",
+      "energy": 1,
+      "prior_responses": [
+        {
+          "answered_at": "2026-12-01T12:00:00Z",
+          "energy": -2,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-02T12:00:00Z",
+          "energy": 0,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-03T12:00:00Z",
+          "energy": 1,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-04T12:00:00Z",
+          "energy": -1,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        },
+        {
+          "answered_at": "2026-12-05T12:00:00Z",
+          "energy": 2,
+          "z_energy": 0,
+          "label": null,
+          "usable": true
+        }
+      ],
+      "label": true
+    }
+  ]
+}

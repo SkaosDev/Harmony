@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "cases": [
+    {"name": "empty", "probability": 0.4, "grid": [], "expected": 0.4},
+    {"name": "below_threshold", "probability": 0.4, "grid": [[0.3, 31]], "expected": 0.4},
+    {"name": "inclusive_ties", "probability": 0.4, "grid": [[0.3, 8], [0.4, 8], [0.6, 16]], "expected": 0.5},
+    {"name": "all_below", "probability": 0.4, "grid": [[0.3, 32]], "expected": 1.0},
+    {"name": "all_above", "probability": 0.4, "grid": [[0.6, 32]], "expected": 0.0}
+  ]
+}
