@@ -153,7 +153,7 @@ iPhone (tout local)
     sinon heure seule. Les z-scores inconnus sont imputés par la médiane, comme à l'entraînement.
     C'est précisément sur ces réponses (z inconnu mais FC présente, 21 % ; première semaine) que les
     valeurs brutes apportent leur gain : garder la règle v1 l'annulerait.
-  - Le « corps » de l'A/B du pilote (TODO 4.4) et le champ `estimateMode` suivent cette règle.
+  - Le champ `estimateMode` suit cette règle.
 - **Modèle « heure seule »** : inchangé. LifeSnaps montre qu'il est propre à la population EmoPhone
   (effet de l'heure inversé en Europe) ; la couche personnelle (B) corrige ce biais pour chaque
   utilisateur qui répond.
@@ -184,10 +184,6 @@ iPhone (tout local)
   heure seule, §4.1).
 - `e0 = rank(t)` s'il y a **au moins 32 points de grille** (≈ une journée de port) ; sinon
   `e0 = σ(z_E)` brut.
-- **Pilote, bras « heure seule » (TODO 4.4)** : même transformation, appliquée aux prédictions
-  heure seule (la prédiction courante et la grille sont scorées par le modèle heure seule). Les deux
-  bras ne diffèrent alors que par la source d'information, pas par l'étalement de `e0`. Conséquence
-  assumée : en bras heure seule, `e0` dit « ce moment de ta journée, d'après l'horloge seule ».
 - Les deux usages de l'état s'appliquent : départ de la file (§8) et seuil « état < 0,4 » de la
   suggestion Low energy (§8, `SituationSuggester`) — avec des probabilités tassées, ce seuil ne se
   déclenche aujourd'hui presque jamais.
@@ -215,8 +211,7 @@ Probabilité personnelle :  p_d(t) = σ( z_d(t) + b_d(t) )
   moyenne des réponses de l'utilisateur sur `[t_i − 14 j, t_i)`, **au moins 5** réponses ;
   sinon pas d'étiquette (réponse gardée, pas encore utilisée). C'est la règle `L_past` simulée.
 - `z_i` = logit du modèle 1 **selon la règle de mode du §4.1** (corps si FC dans les 30 min, sinon
-  heure seule), **au moment de la réponse**, stocké avec le check-in — **indépendamment du bras
-  du jour** de l'A/B du pilote (le bras ne change que la source de `e0` pour la file).
+  heure seule), **au moment de la réponse**, stocké avec le check-in.
   Une réponse donnée téléphone verrouillé (HealthKit illisible) reçoit son `z_i` au prochain
   déverrouillage, calculé pour l'instant de la réponse.
   Si le modèle 1 change (v1 → v2), on remet les décalages à 0 (ou on recalcule `z_i` si les
@@ -255,8 +250,7 @@ Probabilité personnelle :  p_d(t) = σ( z_d(t) + b_d(t) )
     régulièrement de `(e0 + g) / 2` à `g` (on rejoint le but plus vite, sans l'ignorer).
   - **S3 « correspondance longue »** : même `n` ; `m = n − 2` cibles à `e0`, puis deux cibles
     `(e0 + g) / 2` et `g` (on reste plus longtemps avec l'état avant de bouger).
-  - Les trois partent de `e0` (aucune n'ignore l'état, pour ne pas diluer l'A/B corps / heure seule)
-    et respectent les règles §8 (wind-down ne finit jamais plus énergique qu'il ne commence :
+  - Les trois partent de `e0` (aucune n'ignore l'état) et respectent les règles §8 (wind-down ne finit jamais plus énergique qu'il ne commence :
     toutes les cibles sont monotones de `e0` vers `g`).
 - **Récompense r ∈ [0, 1]** par file, calculée depuis `FeedbackEvent` :
   `fitYes` = 1, `fitNo` = 0 ; sans réponse « Did it fit? » : 1 − part des morceaux passés < 30 s ;
@@ -267,13 +261,11 @@ Probabilité personnelle :  p_d(t) = σ( z_d(t) + b_d(t) )
 - **État** : recalculé à la volée depuis l'historique `QueueRecord` + `FeedbackEvent` (pas de table
   dédiée ; la suppression des données le remet à zéro).
 - **Pendant le pilote : pas de bandit** (choix de design). Toutes les files utilisent S1, journalisée
-  (`strategy = S1`, probabilité 1). Raisons : ne pas ajouter de variation dans l'A/B corps / heure
-  seule (4.4, 4.7), et ne pas mettre S2/S3 sur le chemin critique d'avant pilote. Le bandit
+  (`strategy = S1`, probabilité 1). Raisons : garder les files du pilote comparables entre elles
+  (4.7), et ne pas mettre S2/S3 sur le chemin critique d'avant pilote. Le bandit
   commence après le pilote ; les récompenses S1 du pilote servent de point de comparaison.
-- **Jamais** : entraîner le modèle d'état sur « Did it fit? ». Avec 14–40 files par personne en
-  2 semaines, parler d'« adaptation », pas d'« apprentissage ».
-- **Compatibilité pilote** : le tirage quotidien « corps » vs « heure seule » (TODO 4.4,
-  `QueueRecord.kind`) reste indépendant du bras du bandit.
+- **Jamais** : entraîner le modèle d'état sur « Did it fit? ». Avec 7–20 files par personne en
+  1 semaine de pilote, parler d'« adaptation », pas d'« apprentissage ».
 
 ---
 
@@ -316,7 +308,8 @@ Probabilité personnelle :  p_d(t) = σ( z_d(t) + b_d(t) )
 - Interrupteur « Questions » dans Settings ; désactivé → aucune question, couche personnelle gelée
   puis revenue à 0 par l'oubli.
 - **Inconnu ≠ zéro** : notification ignorée ou « Not now » = aucune information, jamais « Low ».
-- Volume attendu sur 2 semaines sans paiement : ≈ 30–60 réponses par personne.
+- Volume attendu sur 2 semaines sans paiement : ≈ 30–60 réponses par personne ; au pilote
+  (1 semaine, 2 notifications par jour) : 14 au plus.
 
 ### 5.4 Design d'abord (règle UI de CLAUDE.md)
 
@@ -435,7 +428,7 @@ Paquets dans l'ordre (dépendances entre parenthèses) :
 
 **Règles de gel** (reprises de la proposition) : le modèle commun est figé pendant tout le pilote ;
 v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comprises, **avant le
-5 déc.** ; sinon le pilote tourne avec v1.
+début du pilote (26 nov.)** ; sinon le pilote tourne avec v1.
 
 **Périmètre du build du pilote** : voir §15 (décision de périmètre).
 
@@ -457,8 +450,8 @@ v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comp
 - **D-3 une seule fois** par changement, code figé avant, résultat noté même s'il déçoit.
 - **Couche personnelle** : fixtures golden Python ↔ Swift (1e-6). Attendu (pas un critère) : courbe
   WP-B0 au-dessus du modèle commun à partir de la 1re–2e semaine.
-- **Pilote (≤ 5 personnes, ~2 semaines)** : c'est un test de faisabilité, pas une preuve
-  statistique. Mesures : taux de réponse, réponses/personne, AUROC chronologique commune vs
+- **Pilote (1 personne, 1 semaine, du 26 nov. au 2 déc., données de la montre tous les jours)** :
+  c'est un test de faisabilité, pas une preuve statistique. Mesures : taux de réponse, réponses/personne, AUROC chronologique commune vs
   personnelle avec intervalles larges, récompense par stratégie, NFR3/NFR5 tenus, aucun mot interdit.
 - **Externe** (facultatif, après le cours) : LifeSnaps comme second test, partie FC et partie heure
   seule notées séparément.
@@ -471,7 +464,7 @@ v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comp
 > **TODO.md fait foi** : en l'ajoutant, 6.7 a reçu `PromptLog` et 6.12 (réduit) est entré dans le
 > build du pilote, pour suivre le §15.
 > Build du pilote (§15, « collecte seule ») : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.13 (réduit),
-> 6.14 ; côté A : 6.2–6.4 si prêts avant le 5 déc., 6.11 (rang seulement) si la file existe.
+> 6.14 ; côté A : 6.2–6.4 si prêts avant le 26 nov., 6.11 (rang seulement) si la file existe.
 
 ```
 ## Phase 6 — Modèle d'état v2 : A + B (design docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md)
@@ -510,7 +503,7 @@ v2 (S9) n'entre dans le build du pilote que s'il est prêt, fixtures golden comp
 | D1 | « Pas d'entraînement sur chaque utilisateur » | Reformuler : « pas de modèle par utilisateur appris de zéro ; un ajustement personnel (2 nombres) appris sur l'iPhone à partir des réponses ; jour 1 = modèle commun » |
 | D2 | « Sortie = plus/moins activé que d'habitude, jamais une émotion » | Ajouter un agrément **interne**, jamais affiché comme émotion |
 | D3 | « Modèle final : 13 features v1 » | 17 features si le critère 6.2 passe |
-| D4 | Mode de la couche personnelle pendant le pilote | **Ombre** (calculée et journalisée, ne pilote pas la file ; toutes les files en S1) pour garder propre l'A/B « corps vs heure seule » (4.4) et mesurer une vraie courbe d'apprentissage ; passage en **actif** pour la démo finale. Alternative : actif dès le pilote (démo plus parlante, A/B mélangé) |
+| D4 | Mode de la couche personnelle pendant le pilote | **Ombre** (calculée et journalisée, ne pilote pas la file ; toutes les files en S1) pour mesurer une vraie courbe d'apprentissage sans changer les files du pilote ; passage en **actif** pour la démo finale. Alternative : actif dès le pilote (démo plus parlante, files du pilote modifiées) |
 | D5 | Consentement / éthique du pilote avec check-ins (App Store 5.1.3, cours) | Consentement écrit incluant les questions ; export limité aux agrégats et paires (probabilité, étiquette, jour) |
 | D6 | Smileys dans la question | Non par défaut (zone grise « émotion nommée ») |
 | D7 | 3 stratégies de file par situation | S1/S2/S3 de §4.6, à valider avec le customer |
@@ -537,7 +530,7 @@ détails visuels (toujours d'après le canvas).
 - **Boucle musique → réponse** : réponses pendant ou juste après une file exclues de l'apprentissage.
 - **Biais de moment** : réponses données surtout quand l'app est ouverte → les notifications au
   hasard le réduisent.
-- **Charge de travail** face à M3 (6 déc.) : la version minimale en mode ombre compte ~5–6 jours ;
+- **Charge de travail** avant le pilote (26 nov.) : la version minimale en mode ombre compte ~5–6 jours ;
   si elle ne tient pas, le pilote garde le modèle actuel et B passe après le cours.
 - **`sleep_unknown`** a l'un des plus gros coefficients (+0,12) : il reflète l'habitude EmoPhone de ne
   pas porter la montre la nuit, pas un signal du corps ; ne pas le présenter comme tel.
@@ -562,7 +555,7 @@ détails visuels (toujours d'après le canvas).
 
 ## 15. Périmètre du build du pilote (décision de Clément, 23 nov. 2026 : « collecte seule »)
 
-**But** : que le pilote du 7 déc. collecte des réponses et mesure la couche personnelle **en ombre**,
+**But** : que le pilote du 26 nov. collecte des réponses et mesure la couche personnelle **en ombre**,
 sans nouvel écran sur Home et sans toucher la file. Charge estimée ~3–4 jours, après WP-B0.
 
 | Dans le build du pilote | Hors du build du pilote (après le cours) |
@@ -579,7 +572,7 @@ sans nouvel écran sur Home et sans toucher la file. Charge estimée ~3–4 jour
 - **Design d'abord** (6.6 réduit) : texte et actions de la notification, étape d'onboarding,
   réglages « Questions » et « Reset », ligne « check-ins » dans My Data.
 - **A** (indépendant de B) : le rang `e0` (S3) entre dans le pilote si le constructeur de file
-  (3.2–3.3) est prêt ; v2 (S9) seulement s'il est prêt avant le 5 déc. (§8, règles de gel).
+  (3.2–3.3) est prêt ; v2 (S9) seulement s'il est prêt avant le 26 nov. (§8, règles de gel).
 - **Analyse (WP-P)** : l'iPhone calcule les paires (`pCommonBefore`, `pPersonalBefore`,
   `labelEnergy`, `dayOfUse`) et les comptes de `PromptLog` ; seules ces paires et ces comptes sont
   exportés, **avec consentement écrit** (D5), comme l'export des feedbacks prévu en 4.5. Ni réponse

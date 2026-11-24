@@ -6,7 +6,7 @@
 >
 > Pistes parallèles après la phase 0 : **APP** (Riad, Clément) · **ML** (Lucas, Clément) ·
 > **CLOUD** (Clément) · **DOC** (tous). Initiales indicatives : R, L, C, Cy.
-> Jalons : M1 15 nov. · M2 29 nov. · M3 6 déc. · M4 pilote → fin du semestre.
+> Jalons : M1 15 nov. · M2 29 nov. · M3 6 déc. · M4 pilote du 26 nov. au 2 déc. → fin du projet le 4 déc.
 
 ---
 
@@ -199,18 +199,18 @@
 
 ---
 
-## Phase 4 — Pilote et rapport final (7 déc. → fin du semestre)
+## Phase 4 — Pilote et rapport final (pilote du 26 nov. au 2 déc. ; fin du projet le 4 déc.)
 
 ### 4.A Préparer le pilote
-- [x] **4.1** Protocole court (durée ~2 semaines, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`. *(23 nov. : `docs/pilot-protocol.md`, en anglais ; un seul participant, Clément, du 7 au 20 déc. (PROJECT.md §3) ; plan d'analyse fixé avant les données ; section check-ins laissée à 6.14.)*
+- [x] **4.1** Protocole court (durée 1 semaine, ≤ 5 comptes, consentement écrit simple ; complété par 6.14 pour les check-ins). — ✔ document dans `docs/`. *(23 nov. : `docs/pilot-protocol.md`, en anglais ; un seul participant, Clément (PROJECT.md §3) ; plan d'analyse fixé avant les données ; section check-ins laissée à 6.14. 24 nov., avant toute donnée : une semaine, du 26 nov. au 2 déc., données de la montre tous les jours.)*
 - [x] **4.2** Installer l'app sur les iPhone des participants (Xcode/UDID ou TestFlight, à vérifier). — ✔ 5 installations OK. *(Pilote à une personne, décision de Clément du 23 nov. : une seule installation, par Xcode sur l'iPhone 16 de Clément ; l'app y tourne, 23 nov.)*
 - [x] **4.3** Ajouter les comptes Spotify des participants (dashboard + liste blanche Worker). — ✔ connexion OK pour chacun. *(Pilote à une personne, décision de Clément du 23 nov. : seul le compte de Clément, déjà dans le dashboard et la liste blanche du Worker ; connexion et scores LLM OK, 23 nov.)*
-- [x] **4.4** Tirage au sort quotidien : files « corps » vs « heure seule ». — ✔ le type est enregistré dans `QueueRecord.kind`. *(23 nov. : `Core/Pilot/PilotSchedule.swift`, blocs de 2 jours (7/7 sur 14 jours) ; `QueueRecord.kind` = type tiré, `stateMode` = estimation utilisée ; tests `PilotScheduleTests`, `QueueMakerTests`, `CurrentStateTests` ; test manuel de Clément sur l'iPhone 16 (pilote lancé dans Debug, files jouées, type lu dans Debug › Last queue) : OK. Migration de la base vérifiée sur simulateur et sur l'iPhone.)*
+- [ ] **4.4** Retirer du code le tirage quotidien « corps » vs « heure seule » du pilote, **avant le jour 1 (26 nov.)** (décision de Clément du 24 nov. : chaque jour du pilote utilise les données de la montre). À retirer : graine et type du jour dans `Core/Pilot/PilotSchedule.swift` (garder le jour de départ), `QueueKind` et `QueueRecord.kind`, `QueueMaker.kind`, le choix du type dans `HomeView`, son affichage dans `PilotDebugSection` et `PlayerDebugSection`, le champ `kind` de `PilotExport` et de `ml/fixtures/pilot_export_example.json`, les tableaux par type de `ml/pilot_analysis.py`, et les tests qui s'y rapportent (`PilotScheduleTests`, `QueueMakerTests`, `PilotExportTests`, `ml/tests/test_pilot_analysis.py`…). À garder : le repli heure seule sans FC récente (2.21), `QueueRecord.stateMode` et le recalcul de l'état à chaque tap. — ✔ aucune file « heure seule » hors repli sur l'iPhone, pilote lancé dans Debug ; tests Swift et Python verts ; migration de la base vérifiée sur l'iPhone.
 - [ ] **4.5** Export anonyme des feedbacks (sans données de santé brutes), avec les paires (`pCommonBefore`, `pPersonalBefore`, `labelEnergy`, `dayOfUse`) et les comptes `PromptLog` du modèle v2, sous consentement écrit (PROJECT.md §3, D5). — ✔ fichier d'export vérifié. *(23 nov., partiel : export `harmony-pilot-1` dans Debug › Pilot (`Core/Pilot/PilotExport.swift`), files, feedbacks et couverture montre, sans ID, titre, valeur santé ni date ; test contre `ml/fixtures/pilot_export_example.json`. Paires v2 et `PromptLog` : après 6.7/6.8.)*
 
 ### 4.B Mener et analyser
-- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes. *(Liste du point du jour 7 dans `docs/pilot-protocol.md` §8.)*
-- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » par type de file. — ✔ tableau de résultats. *(Script prêt : `ml/pilot_analysis.py`, testé sur l'export synthétique ; chiffres après le pilote.)*
+- [ ] **4.6** Point à mi-pilote (bugs, ressentis). — ✔ notes. *(Liste du point du jour 4, 29 nov., dans `docs/pilot-protocol.md` §8.)*
+- [ ] **4.7** Script d'analyse : taux de skip < 30 s et « ça collait ? » sur la semaine, avec intervalles par bootstrap sur les jours. — ✔ tableau de résultats. *(Script prêt : `ml/pilot_analysis.py`, testé sur l'export synthétique ; tableaux par type de file retirés en 4.4 ; chiffres après le pilote.)*
 - [ ] **4.8** Fréquence du repli MuSe et taux de skip des suggestions. — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
 - [ ] **4.9** Couverture réelle des données montre (nuits inconnues, FC manquante). — ✔ chiffres notés. *(Calculé par `ml/pilot_analysis.py` ; chiffres après le pilote.)*
 
@@ -224,7 +224,7 @@
 
 ## Phase 5 — UC Irvine (plus tard, non prioritaire)
 
-> Hors jalons M1–M4, à faire si possible **avant la Phase 4** (après M3, avant le pilote) pour que
+> Hors jalons M1–M4, à faire si possible **avant la Phase 4** (avant le pilote du 26 nov.) pour que
 > l'éventuel nouveau modèle soit celui du pilote ; sinon plus tard. Ne bloque aucune autre tâche.
 > Objectif : refaire avec UC Irvine (Labbaf et al., Dryad doi:10.7280/D1WH6T, 21 étudiants,
 > Samsung + Oura) ce qui a été fait avec EmoPhone. Mêmes règles de confidentialité (jamais sur Git,
@@ -250,8 +250,9 @@
 > Décisions D1–D9 et périmètre du pilote prises le 23 nov. 2026 (PROJECT.md §3) ; résumé en
 > PROJECT.md §6.8 et §8 ; preuves dans `docs/research/2026-11-23-modele-etat-v2/`.
 > **Build du pilote** (design §15, « collecte seule ») : à faire **avant la Phase 4** (pilote le
-> 7 déc.) : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.12 (réduit), 6.13 (réduit), 6.14 ; côté A :
-> 6.2–6.4 si prêts avant le 5 déc., 6.11 (rang seulement) si la file (3.2–3.3) existe.
+> 26 nov.) : 6.1, 6.5, 6.6 (réduit), 6.7, 6.8, 6.10, 6.12 (réduit), 6.13 (réduit), 6.14 ; côté A :
+> 6.2–6.4 si prêts avant le 26 nov., 6.11 (rang seulement) si la file (3.2–3.3) existe. Sinon, le
+> pilote tourne avec le build actuel, sans check-ins (design §13).
 > Le reste (6.6b, 6.9, 6.11 branchement actif, 6.12b, 6.13 complet, 6.15) vient après le pilote. Le modèle commun est
 > figé pendant tout le pilote.
 

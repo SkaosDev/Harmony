@@ -51,7 +51,7 @@
 
    Le modèle bat l'heure seule sur les deux évaluations, mais le signal reste **faible** (0,5 = au
    hasard). UC Irvine testé aussi : chaque modèle ne gagne que sur ses propres données → modèle
-   EmoPhone gardé. Le pilote (phase 4) comparera files « corps » et « heure seule ».
+   EmoPhone gardé. Le pilote (26 nov.–2 déc.) utilise les données de la montre tous les jours.
    - Quand la montre a une FC récente et une référence prête (mode *Body*, 51,6 % des réponses) :
      **0,573** contre 0,524 pour l'heure seule sur les mêmes réponses.
    - Plus gros modèles testés (gradient boosting, réseau, ensembles) : aucun ne bat cette
@@ -67,8 +67,9 @@
    - **Simulé sur EmoPhone** (2 réponses par jour) : AUROC énergie 0,640 contre 0,571 pour le modèle
      commun aux jours 4–7, 0,555 → 0,666 sur la période. Le gain vient surtout des réponses, pas de
      la montre ; dans l'app il arrivera probablement plus tard.
-   - Pilote (7 déc.) en « collecte seule » : la couche personnelle est calculée en ombre, la file
-     ne change pas ; on mesurera la vraie courbe sur nos Apple Watch.
+   - Pilote (26 nov.–2 déc.) en « collecte seule », si les questions sont prêtes avant : la couche
+     personnelle est calculée en ombre, la file ne change pas ; on mesurera la vraie courbe sur une
+     Apple Watch.
 
 6. **Limites dites franchement (1 min)**
    - Scores LLM : la règle fixée avant (Spearman ≥ 0,4) n'est pas atteinte (0,26–0,34 sur trois
