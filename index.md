@@ -102,9 +102,9 @@ For an AI course, the project raises a real question: can a cheap wrist sensor t
 2. **All the AI on the phone.** The model is converted to Core ML, so heart rate and sleep never leave the iPhone.
 3. **Scores for any song**, even songs that no dataset knows, using a large language model (LLM).
 4. **An app that learns from each user.** Short answers ("energy right now?"), skips and likes adjust the model and the way queues are built for that person.
-5. **A two-week pilot** with real Apple Watch data, comparing queues that use the body with queues that use the clock only.
+5. **A one-week pilot** with real Apple Watch data used every day, to see how the app holds up in daily life and how often its songs are skipped.
 
-**Where we are on November 24.** Points 1 to 3 are done, and the app works from start to finish on an iPhone 16 (Sections III and IV). Point 4 is designed and tested in simulation, and is being built (Section III-F). The pilot runs from December 7 to December 20.
+**Where we are on November 24.** Points 1 to 3 are done, and the app works from start to finish on an iPhone 16 (Sections III and IV). Point 4 is designed and tested in simulation, and is being built (Section III-F). The pilot runs from November 26 to December 2, and the project ends on December 4.
 
 ---
 
@@ -264,7 +264,7 @@ In words: `b` goes up if the person often feels more energetic than the shared m
 
 Two smaller changes come with it. The shared model's probabilities stay between about 0.36 and 0.55, so queues often start from the same point; the app will instead use the **rank** of the current estimate among the person's own estimates of the last 14 days, which spreads the starting point from about 0.03 to 0.98. And a candidate shared model with 17 inputs (it adds the raw heart rate and steps, before the comparison with the usual) and a pleasantness model will be adopted only if they pass a criterion that we write down before looking at the results.
 
-During the pilot, the personal layer is planned to run in **shadow mode**: it is computed and logged at each answer but does not change the queues, and only the energy question is asked. The bandit and the active personal layer come after the pilot, for the final demo.
+If the questions are ready before the pilot starts, the personal layer runs in **shadow mode** during it: it is computed and logged at each answer but does not change the queues, and only the energy question is asked. The bandit and the active personal layer come after the pilot, for the final demo.
 
 ---
 
@@ -357,16 +357,16 @@ The team still uses the language model for songs missing from MuSe, because with
 
 ### G. The Pilot
 
-*Status: planned, December 7 to 20, 2026. The protocol was written before any data.*
+*Status: planned, November 26 to December 2, 2026. The protocol was written before any data.*
 
-One participant, a team member, uses the app for 14 days with an Apple Watch. Each day is drawn at random as a **body** day (queues start from the state estimate) or a **time-only** day (queues start from the time of day only), in blocks of two days so that the 14 days give 7 of each. We will measure:
+One participant, a team member, uses the app for one week with an Apple Watch. The watch data are used every day: each queue starts from the state estimate, and from the time of day only when the watch has no recent heart rate, as in normal use. We will measure:
 
-- the share of songs skipped before 30 s and the share of "yes" to "Did it fit?", for each kind of day, with 95% intervals by bootstrap over days;
+- the share of songs skipped before 30 s and the share of "yes" to "Did it fit?", with 95% intervals by bootstrap over days;
 - how often MuSe suggestions are used and skipped;
-- how often the watch data are missing (unknown nights, hours without heart rate);
-- for the personal layer in shadow mode, the AUROC of the shared and the personal predictions by day of use, on real Apple Watch data.
+- how often the watch data are missing (unknown nights, hours without heart rate, queues that fell back to the time of day);
+- if the questions are in the pilot build, the AUROC of the shared and the personal predictions by day of use, on real Apple Watch data (personal layer in shadow mode).
 
-The phone exports one anonymous file, with no song name, health value or date. With one participant who also built the app, this is a feasibility test, not a proof.
+The phone exports one anonymous file, with no song name, health value or date. With one participant who also built the app, one week and no comparison queue, this is a feasibility test, not a proof.
 
 ---
 
@@ -414,7 +414,7 @@ The whole AI part runs on the phone. The model goes from scikit-learn to Core ML
 
 The main lesson so far is that more model capacity or more watch inputs barely help with this kind of data, while the user's own answers do. This is why the final version learns from each person on the phone, with a personal layer and a queue bandit. The open questions for the final version:
 
-- Do queues built from the body fit better than queues built from the clock, on a real Apple Watch user?
+- How do the queues do with a real Apple Watch user: how often are songs skipped, and how often does a queue fit?
 - Does the personal layer learn fast enough with about two answers a day?
 - Do the estimated song scores give queues that people do not skip?
 
@@ -458,4 +458,4 @@ The main lesson so far is that more model capacity or more watch inputs barely h
 - **November 20.** Final 13 inputs, cross-validation on D-1 + D-2, single test on D-3; model trained on the three waves and converted to Core ML.
 - **November 22.** UC Irvine tested: the EmoPhone model is kept. The model runs in the app, and the golden tests pass on the iPhone.
 - **November 23.** Song scores (MuSe, then Claude Haiku 5.5 through the Cloudflare Worker), queue, player and all screens working on an iPhone 16. Personal layer and queue bandit designed and simulated. Pilot protocol written.
-- **Next.** Build the personal layer for the pilot (December 7 to 20), then the final demo, presentation and video.
+- **Next.** The one-week pilot (November 26 to December 2) and the personal layer, then the final demo, presentation and video.
