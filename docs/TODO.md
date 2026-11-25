@@ -269,7 +269,8 @@
 ### 6.DESIGN
 - [x] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.
   — 25 nov. : canvas version `1795580716-d06c` ; 3 écrans nouveaux (notification, 2.4b, Settings › Questions), 6.1, 6.4 et l'onboarding modifiés ; textes à relire (3.20).
-- [ ] **6.6b** Après le pilote, dessiner le reste du design §5.4 dans le canvas et le copier dans `docs/design/` : ligne « Energy right now? » sur `V2-Accueil`, feuille de check-in (énergie sur 7 crans avec repère « Last », agrément facultatif), paragraphe sur l'apprentissage local dans `V2-APropos` et, si retenu, l'indicateur « Harmony is learning your usual — N answers this week ». — ✔ README du design à jour, avant 6.9 et 6.13 complet.
+- [x] **6.6b** Après le pilote, dessiner le reste du design §5.4 dans le canvas et le copier dans `docs/design/` : ligne « Energy right now? » sur `V2-Accueil`, feuille de check-in (énergie sur 7 crans avec repère « Last », agrément facultatif), paragraphe sur l'apprentissage local dans `V2-APropos` et, si retenu, l'indicateur « Harmony is learning your usual — N answers this week ». — ✔ README du design à jour, avant 6.9 et 6.13 complet.
+  — 25 nov. (avant le pilote) : canvas version `1795581282-7fa3` ; la ligne énergie est dessinée dans la variante `V2-AccueilEnergie` pour que `V2-Accueil` reste le Home du pilote (6.9 les fusionne) ; feuille `V2-CheckIn` ; carte « Your answers » dans `V2-APropos`.
 
 ### 6.APP
 - [ ] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.
