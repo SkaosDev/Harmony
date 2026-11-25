@@ -19,6 +19,7 @@ enum DataControl {
     static var storedKeys: [String] {
         [LibrarySync.importDateKey, RootView.onboardedKey, SpotifyPlaylist.idKey]
             + HealthSignal.allCases.map(HealthKitProvider.anchorKey) + PilotSchedule.keys + CheckInRecorder.keys
+            + QuestionSettings.keys
     }
 
     static func counts(in context: ModelContext) throws -> Counts {

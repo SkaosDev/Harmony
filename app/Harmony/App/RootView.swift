@@ -31,6 +31,7 @@ struct RootView: View {
             case .active:
                 updateHealth()
                 Task { await player.enterForeground() }
+                Task { await CheckInNotifications.shared.refresh(context: context) }
             case .background:
                 player.enterBackground()
             default:

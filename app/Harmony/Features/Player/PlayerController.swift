@@ -40,6 +40,9 @@ final class PlayerController {
     @ObservationIgnored private var tracker = PlaybackTracker(queue: [])
     @ObservationIgnored private var isRecorded = false
     @ObservationIgnored var now: () -> Date = Date.init
+    /// Called once the queue is stored: the app plans the questions again, none in the 80 min
+    /// after a queue starts (TODO 6.10).
+    @ObservationIgnored var onQueueRecorded: (@MainActor (ModelContext, Date) -> Void)?
     @ObservationIgnored var openURL: (URL) -> Void = { UIApplication.shared.open($0) }
     @ObservationIgnored var spotifyIsInstalled: () -> Bool = { UIApplication.shared.canOpenURL(URL(string: "spotify:")!) }
 
@@ -226,6 +229,7 @@ final class PlayerController {
         do {
             try QueueMaker(context: context, catalog: nil, music: music).record(queue, id: queueId, at: now())
             isRecorded = true
+            onQueueRecorded?(context, now())
         } catch {
             print("Queue not recorded: \(error)")
         }
