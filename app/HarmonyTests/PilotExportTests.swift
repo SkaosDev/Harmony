@@ -16,7 +16,7 @@ struct PilotExportTests {
         container = try HarmonyStore.container(inMemory: true)
         context = container.mainContext
         let start = calendar.date(from: DateComponents(year: 2026, month: 12, day: 7))!
-        schedule = PilotSchedule(startDay: start, seed: 7, calendar: calendar)
+        schedule = PilotSchedule(startDay: start, calendar: calendar)
     }
 
     private func at(day: Int, hour: Int, minute: Int = 0) -> Date {
@@ -25,7 +25,7 @@ struct PilotExportTests {
 
     /// One recorded queue: its songs (score origin, MuSe suggestion), its events in order
     /// (position, event, seconds) one minute apart, then the "Did it fit?" answer.
-    private func addQueue(at date: Date, _ situation: Situation, kind: QueueKind, stateMode: QueueKind?,
+    private func addQueue(at date: Date, _ situation: Situation, stateMode: EstimateMode?,
                                    songs: [(ScoreOrigin, Bool)], events: [(Int, FeedbackType, Double?)],
                                    fit: FeedbackType?) {
         let id = UUID()
@@ -37,7 +37,7 @@ struct PilotExportTests {
         let items = songs.enumerated().map { index, song in
             QueueItem(position: index, spotifyId: ids[index], targetEnergy: 0.42, isSuggestion: song.1)
         }
-        context.insert(QueueRecord(id: id, createdAt: date, situation: situation, startEnergy: 0.42, kind: kind,
+        context.insert(QueueRecord(id: id, createdAt: date, situation: situation, startEnergy: 0.42,
                                    stateMode: stateMode, reason: "Short night, morning: calm songs first.", items: items))
         for (offset, event) in events.enumerated() {
             context.insert(FeedbackEvent(queueId: id, spotifyId: ids[event.0], event: event.1, seconds: event.2,
@@ -50,21 +50,21 @@ struct PilotExportTests {
 
     /// The scenario of the fixture: 4 pilot days, 5 queues, a queue before day 1 left out.
     private func fill() throws {
-        addQueue(at: at(day: 0, hour: 20), .wakeUp, kind: .body, stateMode: .body,
+        addQueue(at: at(day: 0, hour: 20), .wakeUp, stateMode: .body,
                  songs: [(.muse, false)], events: [(0, .skip, 4)], fit: .fitYes)
-        addQueue(at: at(day: 1, hour: 8, minute: 10), .wakeUp, kind: .body, stateMode: .body,
+        addQueue(at: at(day: 1, hour: 8, minute: 10), .wakeUp, stateMode: .body,
                  songs: [(.muse, false), (.llm, false), (.muse, false)],
                  events: [(0, .finish, 200), (1, .skip, 12), (2, .like, nil), (2, .finish, 180)], fit: .fitYes)
-        addQueue(at: at(day: 1, hour: 22, minute: 30), .windDown, kind: .body, stateMode: .body,
+        addQueue(at: at(day: 1, hour: 22, minute: 30), .windDown, stateMode: .body,
                  songs: [(.muse, false), (.muse, true), (.llm, false)],
                  events: [(0, .finish, 210), (1, .skip, 8), (2, .skip, 20)], fit: .fitNo)
-        addQueue(at: at(day: 2, hour: 14), .lowEnergy, kind: .timeOnly, stateMode: .timeOnly,
+        addQueue(at: at(day: 2, hour: 14), .lowEnergy, stateMode: .timeOnly,
                  songs: [(.llm, false), (.neutral, false), (.muse, false)],
                  events: [(0, .skip, 5), (1, .finish, 190), (2, .finish, 230)], fit: nil)
-        addQueue(at: at(day: 3, hour: 9), .wakeUp, kind: .timeOnly, stateMode: .timeOnly,
+        addQueue(at: at(day: 3, hour: 9), .wakeUp, stateMode: .timeOnly,
                  songs: [(.muse, false), (.muse, false), (.muse, true)],
                  events: [(0, .finish, 200), (1, .finish, 150), (2, .finish, 170)], fit: .fitYes)
-        addQueue(at: at(day: 4, hour: 7, minute: 45), .stress, kind: .body, stateMode: .timeOnly,
+        addQueue(at: at(day: 4, hour: 7, minute: 45), .stress, stateMode: .timeOnly,
                  songs: [(.llm, false), (.muse, false), (.muse, false)],
                  events: [(0, .skip, 3), (1, .finish, 200)], fit: .fitNo)
 

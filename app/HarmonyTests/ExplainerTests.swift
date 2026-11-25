@@ -64,6 +64,22 @@ struct ExplainerTests {
         #expect(names[20] == "evening" && names[21] == "night" && names[0] == "night")
     }
 
+    /// TODO 6.11, active mode: the answers are said when they moved `e0` far enough.
+    @Test func answersAreSaidWhenTheyMovedTheStart() {
+        func withOffset(_ offset: Double?) -> String {
+            Explainer.reason(situation: .lowEnergy, e0: 0.4,
+                             context: .init(date: at(15), mode: .body, energyOffset: offset), calendar: calendar)
+        }
+        #expect(withOffset(0.9) == "Afternoon, your answers show more energy than usual: medium songs first, then a little more energy.")
+        #expect(withOffset(-0.5) == "Afternoon, your answers show less energy than usual: medium songs first, then a little more energy.")
+        #expect(withOffset(0.3) == withOffset(nil))
+        for offset in [-1.0, 1.0] {
+            for word in withOffset(offset).lowercased().split(whereSeparator: { !$0.isLetter }) {
+                #expect(!Self.forbidden.contains { word.hasPrefix($0) })
+            }
+        }
+    }
+
     @Test func noReasonEverUsesAForbiddenWord() {
         let zs: [Double?] = [nil, -2, 0, 2]
         var reasons = Set<String>()

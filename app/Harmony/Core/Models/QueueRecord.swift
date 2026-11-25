@@ -9,11 +9,18 @@ final class QueueRecord {
     var situation: Situation
     /// Estimated state when the queue was built (e0), 0…1.
     var startEnergy: Double
-    /// Kind drawn for the pilot (TODO 4.4); `.body` outside the pilot.
-    var kind: QueueKind
-    /// Estimate the queue really started from (a body day without recent heart rate falls back to
-    /// time only); nil for queues recorded before TODO 4.4.
-    var stateMode: QueueKind?
+    /// Estimate the queue really started from (without recent heart rate it falls back to time
+    /// only); nil for queues recorded before TODO 4.4.
+    var stateMode: EstimateMode?
+    /// Design v2 log (TODO 6.12), nil for queues recorded before it: the targets' strategy and the
+    /// probability it had of being chosen (S1 and 1 in shadow mode), where `e0` came from, the
+    /// common and personal probabilities at the start, and `v0` when the answers gave it.
+    var strategy: QueueStrategy?
+    var strategyProbability: Double?
+    var e0Source: E0Source?
+    var pCommon: Double?
+    var pPersonal: Double?
+    var v0: Double?
     /// The explanation shown to the user (fixed sentences, never an emotion word).
     var reason: String
     /// Unordered (SwiftData): sort by `QueueItem.position`. Deleted with the queue.
@@ -24,8 +31,13 @@ final class QueueRecord {
         createdAt: Date,
         situation: Situation,
         startEnergy: Double,
-        kind: QueueKind,
-        stateMode: QueueKind? = nil,
+        stateMode: EstimateMode? = nil,
+        strategy: QueueStrategy? = nil,
+        strategyProbability: Double? = nil,
+        e0Source: E0Source? = nil,
+        pCommon: Double? = nil,
+        pPersonal: Double? = nil,
+        v0: Double? = nil,
         reason: String,
         items: [QueueItem]
     ) {
@@ -33,8 +45,13 @@ final class QueueRecord {
         self.createdAt = createdAt
         self.situation = situation
         self.startEnergy = startEnergy
-        self.kind = kind
         self.stateMode = stateMode
+        self.strategy = strategy
+        self.strategyProbability = strategyProbability
+        self.e0Source = e0Source
+        self.pCommon = pCommon
+        self.pPersonal = pPersonal
+        self.v0 = v0
         self.reason = reason
         self.items = items
     }
@@ -63,10 +80,4 @@ final class QueueItem {
 /// The four situations of the home screen (PROJECT.md §2.3).
 enum Situation: String, Codable, CaseIterable {
     case wakeUp, stress, lowEnergy, windDown
-}
-
-/// How the queue was built: from the body state, or from the time of day only
-/// (pilot comparison, TODO 4.4).
-enum QueueKind: String, Codable {
-    case body, timeOnly
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Onboarding step 4 of 5, "Health data" (`docs/design/V2-Onb4-Sante.dc.html`): explains the four
+/// Onboarding step 4 of 6, "Health data" (`docs/design/V2-Onb4-Sante.dc.html`): explains the four
 /// signals before the system sheet (TODO 1.28). Opened from Debug until the onboarding exists (3.16).
 struct HealthPermissionView: View {
     /// "Allow with Apple Health": asks for access, then goes on.
@@ -51,10 +51,10 @@ struct HealthPermissionView: View {
         .preferredColorScheme(.dark)
     }
 
-    /// Onboarding progress: step 4 of 5.
+    /// Onboarding progress: step 4 of 6.
     private var progress: some View {
         HStack(spacing: 4) {
-            ForEach(0..<5) { step in
+            ForEach(0..<6) { step in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(step < 4 ? Theme.textPrimary : Theme.neutralTile)
                     .frame(height: 4)

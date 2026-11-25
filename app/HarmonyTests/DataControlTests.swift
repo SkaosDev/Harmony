@@ -18,18 +18,23 @@ struct DataControlTests {
         defaults = try #require(UserDefaults(suiteName: suite))
     }
 
-    /// One row in each of the 8 tables, and every key the app writes.
+    /// One row in each of the 10 tables, and every key the app writes.
     private func fill() throws {
         context.insert(Track(spotifyId: "a", title: "Song", artists: ["Artist"], coverURL: nil, source: .saved, addedAt: now))
         context.insert(SongScore(spotifyId: "a", energy: 0.4, positivity: 0.6, origin: .muse))
         context.insert(HourSummary(hourStart: now, meanHR: 70, hrCount: 12, sdnnHRV: 40, steps: 300))
         context.insert(NightSummary(date: now, sleepMinutes: 420, sleepEnd: now, wornFraction: 1))
-        let queue = QueueRecord(createdAt: now, situation: .wakeUp, startEnergy: 0.3, kind: .body, stateMode: .timeOnly,
-                                reason: "Morning.",
+        let queue = QueueRecord(createdAt: now, situation: .wakeUp, startEnergy: 0.3, stateMode: .timeOnly,
+                                strategy: .s1, strategyProbability: 1, e0Source: .rank, pCommon: 0.44,
+                                pPersonal: 0.47, reason: "Morning.",
                                 items: [QueueItem(position: 0, spotifyId: "a", targetEnergy: 0.3, isSuggestion: false)])
         context.insert(queue)
         context.insert(FeedbackEvent(queueId: queue.id, spotifyId: "a", event: .like, seconds: nil, time: now))
         context.insert(Consent(source: .heartRate, granted: true, time: now))
+        let checkIn = CheckIn(answeredAt: now, channel: .notification, promptedAt: now, energy: 2, zEnergy: 0.1,
+                              estimateMode: .body, usableForLearning: true, pCommonBefore: 0.52, dayOfUse: 1)
+        context.insert(checkIn)
+        context.insert(PromptLog(scheduledAt: now, deliveredAt: now, outcome: .answered, checkInId: checkIn.id))
         try context.save()
         DataControl.storedKeys.forEach { defaults.set("x", forKey: $0) }
     }
@@ -39,7 +44,7 @@ struct DataControlTests {
         try fill()
 
         #expect(try DataControl.counts(in: context)
-            == DataControl.Counts(songs: 1, scores: 1, healthSummaries: 2, queues: 1, feedback: 1))
+            == DataControl.Counts(songs: 1, scores: 1, healthSummaries: 2, queues: 1, feedback: 1, checkIns: 1))
     }
 
     @Test func exportHoldsEveryTable() throws {
@@ -48,13 +53,22 @@ struct DataControlTests {
 
         let json = try #require(JSONSerialization.jsonObject(with: DataControl.exportJSON(from: context, at: now)) as? [String: Any])
 
-        for table in ["tracks", "songScores", "hourSummaries", "nightSummaries", "queues", "feedback", "consents"] {
+        for table in ["tracks", "songScores", "hourSummaries", "nightSummaries", "queues", "feedback", "consents",
+                      "checkIns", "prompts"] {
             #expect((json[table] as? [Any])?.count == 1, "\(table)")
         }
         let queue = try #require((json["queues"] as? [[String: Any]])?.first)
         #expect((queue["items"] as? [Any])?.count == 1)
-        #expect(queue["kind"] as? String == "body" && queue["stateMode"] as? String == "timeOnly")
+        #expect(queue["kind"] == nil && queue["stateMode"] as? String == "timeOnly")
+        #expect(queue["strategy"] as? String == "s1" && queue["strategyProbability"] as? Double == 1)
+        #expect(queue["e0Source"] as? String == "rank" && queue["pCommon"] as? Double == 0.44)
+        #expect(queue["pPersonal"] as? Double == 0.47 && queue["v0"] == nil)
         #expect(json["exportedAt"] as? String == "2026-09-21T14:13:20Z")
+        let checkIn = try #require((json["checkIns"] as? [[String: Any]])?.first)
+        #expect(checkIn["energy"] as? Int == 2 && checkIn["channel"] as? String == "notification")
+        #expect(checkIn["pCommonBefore"] as? Double == 0.52 && checkIn["dayOfUse"] as? Int == 1)
+        let prompt = try #require((json["prompts"] as? [[String: Any]])?.first)
+        #expect(prompt["outcome"] as? String == "answered" && prompt["checkInId"] as? String == checkIn["id"] as? String)
     }
 
     /// FR13: after deletion, every table is empty, the tokens and the stored keys are gone.
@@ -73,6 +87,8 @@ struct DataControlTests {
         #expect(try context.fetchCount(FetchDescriptor<QueueItem>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<FeedbackEvent>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<Consent>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<CheckIn>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<PromptLog>()) == 0)
         #expect(signedOut)
         #expect(DataControl.storedKeys.allSatisfy { defaults.object(forKey: $0) == nil })
         #expect(DataControl.storedKeys.contains("healthAnchor.heartRate"))

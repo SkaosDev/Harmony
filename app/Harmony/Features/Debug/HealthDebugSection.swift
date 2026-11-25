@@ -114,13 +114,6 @@ struct HealthDebugSection: View {
         let duration = (clock.now - start).formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 1)))
         lastUpdate = "New: \(counts). Rewritten: \(report.hours) hours, \(report.nights) nights, in \(duration)."
         print("Health update: \(lastUpdate!)")
-        // The @Query arrays only refresh with the view: read the store again for the console.
-        let hours = try context.fetch(FetchDescriptor<HourSummary>(sortBy: [SortDescriptor(\.hourStart, order: .reverse)]))
-        let nights = try context.fetch(FetchDescriptor<NightSummary>(sortBy: [SortDescriptor(\.date, order: .reverse)]))
-        print("Health today: steps \(stepsToday(hours)); last heart rate \(lastHeartRate(hours)); last HRV \(lastHRV(hours))")
-        for night in nights.prefix(3) {
-            print("Health night \(night.date.formatted(date: .numeric, time: .omitted)): \(describe(night))")
-        }
     }
 
     /// TODO 1.33: median time between two heart rates over the last 48 h, at night (0–6 h) and
@@ -147,7 +140,6 @@ struct HealthDebugSection: View {
             let narrow = HealthSummaries.night(wakeDay: night.date, heartRate: heartRate, sleep: [], now: now,
                                                calendar: calendar, slotMinutes: 5)
             coverage5[night.date] = narrow?.wornFraction
-            print("Health night \(night.date.formatted(date: .numeric, time: .omitted)): \(describe(night))")
         }
     }
 

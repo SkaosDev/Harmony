@@ -53,8 +53,6 @@ struct StateDebugSection: View {
                 duration = (clock.now - start).formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 2)))
                 order = estimator.params.features
                 self.state = state
-                let features = order.map { "\($0) \(format(state.features[$0] ?? nil))" }.joined(separator: ", ")
-                print("State: \(describe(state.estimate.mode)) \(format(state.estimate.value)) in \(duration!); \(features)")
             } catch {
                 message = "\(error)"
             }

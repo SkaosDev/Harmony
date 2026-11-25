@@ -55,8 +55,10 @@ enum QueueBuilder {
     ///   - library: the user's songs with their scores.
     ///   - suggestions: nil = no MuSe fallback.
     ///   - maxSuggestions: 2, except for the MuSe-only queue.
+    ///   - v0: pleasantness from the answers (active mode); nil = the fixed positivity penalty.
+    ///   - strategy: how the targets reach the goal (S1 but in active mode, TODO 6.12b).
     ///   - check: the music service's view of a suggestion, nil if it must be left out (TODO 3.6).
-    static func build(situation: Situation, e0: Double, library: [QueueCandidate], exclusions: QueueExclusions,
+    static func build(situation: Situation, e0: Double, v0: Double? = nil, strategy: QueueStrategy = .s1, library: [QueueCandidate], exclusions: QueueExclusions,
                       suggestions: SuggestionSource?, maxSuggestions: Int = maxSuggestions,
                       check: (QueueCandidate) async -> TrackInfo?) async -> [QueueEntry] {
         let libraryIds = Set(library.map(\.spotifyId))
@@ -66,13 +68,19 @@ enum QueueBuilder {
         var artists = Set<String>()
         var suggested = 0
 
+        let targets = QueueTargets.targets(e0: e0, situation: situation, strategy: strategy)
+        let positivity = v0.map { QueueTargets.positivityTargets(v0: $0, count: targets.count) }
+        var positivityTarget: Double?
+
         func cost(_ song: QueueCandidate, _ target: Double) -> Double {
-            TrackPicker.cost(song, target: target, situation: situation, artistsInQueue: artists)
+            TrackPicker.cost(song, target: target, situation: situation, artistsInQueue: artists,
+                             positivityTarget: positivityTarget)
         }
 
-        for target in QueueTargets.targets(e0: e0, situation: situation) {
+        for (position, target) in targets.enumerated() {
+            positivityTarget = positivity?[position]
             let best = TrackPicker.pick(target: target, situation: situation, from: eligible,
-                                        usedIds: used, artistsInQueue: artists)
+                                        usedIds: used, artistsInQueue: artists, positivityTarget: positivityTarget)
             var chosen = best.map { QueueEntry(song: $0, target: target, info: nil) }
 
             let closeSongLeft = eligible.contains {

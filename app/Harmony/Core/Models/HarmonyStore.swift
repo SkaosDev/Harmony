@@ -13,6 +13,8 @@ enum HarmonyStore {
             QueueItem.self,
             FeedbackEvent.self,
             Consent.self,
+            CheckIn.self,
+            PromptLog.self,
         ])
     }
 

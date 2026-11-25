@@ -34,6 +34,7 @@ struct DebugView: View {
             PilotDebugSection()
             HealthDebugSection()
             StateDebugSection()
+            PersonalDebugSection()
             ScoresDebugSection()
             if demoMode {
                 Section("Demo health samples, last 14 days") {

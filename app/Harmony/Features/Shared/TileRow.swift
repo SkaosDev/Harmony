@@ -54,15 +54,15 @@ extension TileRow where Trailing == EmptyView {
     }
 }
 
-/// The onboarding's 5-step progress: 4 pt segments (radius 2), 4 pt apart, in a 32 pt row;
+/// The onboarding's 6-step progress: 4 pt segments (radius 2), 4 pt apart, in a 32 pt row;
 /// done steps white, the others `#535353`.
 struct OnboardingProgress: View {
-    /// 1…5.
+    /// 1…6.
     let step: Int
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(1...5, id: \.self) { index in
+            ForEach(1...6, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(index <= step ? Theme.textPrimary : Theme.neutralTile)
                     .frame(height: 4)

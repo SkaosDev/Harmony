@@ -3,7 +3,7 @@
 **Source de vérité :** le canvas claude.ai « Harmony — brand identity + screens »
 https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319 (privé, compte de Clément).
 
-Ce dossier en est une **copie** (version `1795581282-7fa3`, copiée le 25 nov. 2026) pour que toute
+Ce dossier en est une **copie** (version `1795635347-1efa`, copiée le 26 nov. 2026) pour que toute
 l'équipe, et son Claude Code, puisse lire le design sans accès au canvas.
 L'app doit reproduire ces écrans **à l'identique** : couleurs, police, tailles, espacements,
 rayons, textes, icônes.
@@ -70,6 +70,8 @@ seulement, cf. TODO 1.6).
 - Police : Helvetica Neue ; titres en graisse 800 avec interlettrage négatif.
 - Fonds : écran `#121212`, lecteur `#191414`, cartes `#181818`, surfaces `#282828`,
   pastilles `#2A2A2A`, champ de saisie `#242424`, séparateurs `#333333`.
+- Ronds des échelles du check-in (`V2-CheckIn`) : `#535353`. Corrigé le 26 nov. 2026 dans
+  le canevas et cette copie : `#2A2A2A` sur la feuille `#282828` ne se voyait pas.
 - Texte : `#FFFFFF`, secondaire `#B3B3B3` ; bordures `#727272` ; piste de progression `#4D4D4D`.
 - Accent : vert `#1ED760` (texte noir dessus) ; destructif `#E91429` ; bleu `#509BF5`.
 - Situations : Wake-up `#E8A21A`, Stress `#E8115B`, Low energy `#E13300`, Wind-down `#477D95`.

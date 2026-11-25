@@ -10,6 +10,9 @@
 		A1000000000000000000001E /* state_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001D /* state_cases.json */; };
 		A10000000000000000000020 /* normalize_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001F /* normalize_cases.json */; };
 		A10000000000000000000031 /* pilot_export_example.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000030 /* pilot_export_example.json */; };
+		A10000000000000000000033 /* personal_layer_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000032 /* personal_layer_cases.json */; };
+		A10000000000000000000035 /* rank_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000034 /* rank_cases.json */; };
+		A10000000000000000000037 /* rank_grid_cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000036 /* rank_grid_cases.json */; };
 		A10000000000000000000022 /* SpotifyiOS in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000024 /* SpotifyiOS */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +32,9 @@
 		A1000000000000000000001D /* state_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = state_cases.json; path = ../ml/fixtures/state_cases.json; sourceTree = SOURCE_ROOT; };
 		A1000000000000000000001F /* normalize_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = normalize_cases.json; path = ../ml/fixtures/normalize_cases.json; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000030 /* pilot_export_example.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = pilot_export_example.json; path = ../ml/fixtures/pilot_export_example.json; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000032 /* personal_layer_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = personal_layer_cases.json; path = ../ml/fixtures/personal_layer_cases.json; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000034 /* rank_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = rank_cases.json; path = ../ml/fixtures/rank_cases.json; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000036 /* rank_grid_cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = rank_grid_cases.json; path = ../ml/fixtures/rank_grid_cases.json; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -87,6 +93,9 @@
 				A1000000000000000000001D /* state_cases.json */,
 				A1000000000000000000001F /* normalize_cases.json */,
 				A10000000000000000000030 /* pilot_export_example.json */,
+				A10000000000000000000032 /* personal_layer_cases.json */,
+				A10000000000000000000034 /* rank_cases.json */,
+				A10000000000000000000036 /* rank_grid_cases.json */,
 				A1000000000000000000000C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -206,6 +215,9 @@
 				A1000000000000000000001E /* state_cases.json in Resources */,
 				A10000000000000000000020 /* normalize_cases.json in Resources */,
 				A10000000000000000000031 /* pilot_export_example.json in Resources */,
+				A10000000000000000000033 /* personal_layer_cases.json in Resources */,
+				A10000000000000000000035 /* rank_cases.json in Resources */,
+				A10000000000000000000037 /* rank_grid_cases.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

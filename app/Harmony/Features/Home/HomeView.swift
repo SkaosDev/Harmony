@@ -3,14 +3,20 @@ import SwiftUI
 
 /// Home tab (TODO 3.17): the four situations, the suggested one marked "For you"
 /// (`docs/design/V2-Accueil.dc.html`), or "Nothing to play yet" while no song has a score
-/// (`V2-AccueilVide.dc.html`). One tap on a situation starts its queue (NFR5: ≤ 2 taps).
+/// (`V2-AccueilVide.dc.html`). One tap on a situation starts its queue (NFR5: ≤ 2 taps). In
+/// active mode only, the optional "Energy right now?" row comes above them (`V2-AccueilEnergie`,
+/// TODO 6.9); the pilot's Home stays `V2-Accueil`.
 struct HomeView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Environment(\.modelContext) private var context
     @Environment(PlayerController.self) private var player
     @Environment(LibrarySync.self) private var library
     @Query private var scores: [SongScore]
+    @Query(sort: \CheckIn.answeredAt, order: .reverse) private var checkIns: [CheckIn]
+    @State private var asksEnergy = false
     @State private var state: CurrentState?
+    /// The `e0` of a queue started now, for the suggestion (TODO 6.11).
+    @State private var e0: Double?
     @State private var problem: String?
     /// Why "Retry the import" failed (TODO 3.22).
     @State private var importProblem: String?
@@ -24,6 +30,11 @@ struct HomeView: View {
         .background(Theme.background)
         .ignoresSafeArea(edges: .top)
         .task { await computeState() }
+        .sheet(isPresented: $asksEnergy) {
+            CheckInSheet(last: checkIns.first?.energy) { energy, pleasantness in
+                Task { await saveCheckIn(energy: energy, pleasantness: pleasantness) }
+            }
+        }
         .alert("Can't start the queue", isPresented: .constant(problem != nil)) {
             Button("OK") { problem = nil }
         } message: {
@@ -49,6 +60,11 @@ struct HomeView: View {
                     .tracking(-1.2)
                     .designLineHeight(36 * 1.08)
                     .foregroundStyle(Theme.textPrimary)
+            }
+            if PersonalMode.current == .active {
+                EnergyRow(answersThisWeek: checkIns.filter { $0.answeredAt > .now - 7 * 86400 }.count) {
+                    asksEnergy = true
+                }
             }
             VStack(alignment: .leading, spacing: 12) {
                 Text("Pick a situation")
@@ -121,9 +137,9 @@ struct HomeView: View {
 
     /// The situation of `SituationSuggester` (TODO 3.8), once the state is known.
     private var suggestion: Situation? {
-        guard let state else { return nil }
+        guard let state, let e0 else { return nil }
         return SituationSuggester.suggestion(at: state.date, hoursSinceWake: state.features["hours_since_wake"] ?? nil,
-                                             e0: state.estimate.value)
+                                             e0: e0)
     }
 
     /// "Use suggested tracks" with no suggestion: the situation of the time of day (Stress is
@@ -138,37 +154,48 @@ struct HomeView: View {
 
     private func computeState() async {
         do {
-            state = try await CurrentState.computeOrTimeOnly(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
+            let state = try await CurrentState.computeOrTimeOnly(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
+            self.state = state
+            e0 = try QueueStart.make(state: state, context: context).e0
         } catch {
             print("State not computed: \(error)")
         }
     }
 
     /// The state is computed again at each tap: Home can stay open for hours (heart rate and time
-    /// of day). On a pilot time-only day the queue starts from the time of day only (TODO 4.4);
-    /// the badge keeps the real state.
+    /// of day). Without recent heart rate the queue starts from the time of day only (TODO 2.21).
     private func start(_ situation: Situation, museOnly: Bool = false) async {
         let tap = ContinuousClock.now
         do {
             await computeState()
             guard let state else { throw CocoaError(.featureUnsupported) }
-            let kind = PilotSchedule.stored()?.kind(on: state.date) ?? .body
-            let queueState = kind == .timeOnly ? try await CurrentState.timeOnly(estimator: StateEstimator.bundled(), now: state.date)
-                                               : state
             let music = try DemoMode.musicProvider(demoMode)
             let maker = QueueMaker(context: context, catalog: try? MuseCatalog.bundled(), music: music)
-            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: queueState, kind: kind)
-                                 : try await maker.prepare(situation, state: queueState, kind: kind)
+            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: state)
+                                 : try await maker.prepare(situation, state: state)
             guard !queue.entries.isEmpty else {
                 problem = "No song fits this moment yet."
                 return
             }
             // `play` shows the queue before its first wait (TODO 3.21).
             player.queueDelay = ContinuousClock.now - tap
-            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue)")
+            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue), estimate \(queue.stateMode.rawValue), e0 from \(queue.start?.e0Source.rawValue ?? "-")")
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
             problem = UserMessage.text(for: error)
+        }
+    }
+
+    /// The answer before the music: stored at once, completed with the state at its time, and the
+    /// suggestion follows it.
+    private func saveCheckIn(energy: Int, pleasantness: Int?) async {
+        do {
+            try CheckInRecorder(context: context).record(energy: energy, pleasantness: pleasantness, channel: .sheet,
+                                                         at: .now, common: nil)
+            try await CheckInNotifications.shared.complete(context: context)
+            if let state { e0 = try QueueStart.make(state: state, context: context).e0 }
+        } catch {
+            print("Check-in not stored: \(error)")
         }
     }
 

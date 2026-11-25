@@ -41,7 +41,7 @@ struct PlayerDebugSection: View {
                 $0.formatted(.units(allowed: [.seconds], fractionalPart: .show(length: 2)))
             } ?? "–")
             if let queue = player.queue {
-                LabeledContent("Kind / estimate used", value: "\(queue.kind.rawValue) / \(queue.stateMode.rawValue)")
+                LabeledContent("Estimate used", value: queue.stateMode.rawValue)
             }
             if let index = player.currentIndex, let queue = player.queue {
                 LabeledContent("Song", value: "\(index + 1) / \(queue.entries.count)  \(queue.songs[index].title)")

@@ -7,6 +7,13 @@ struct CurrentState {
     /// The 17 features by name; nil = unknown.
     let features: [String: Double?]
     let estimate: StateEstimate
+    /// The probabilities of the worn points of the reference grid, scored with the references of
+    /// `date` (TODO 6.11, design v2 §4.3).
+    var gridProbabilities: [Double] = []
+
+    /// `e0` without answers: the rank of the estimate among the grid probabilities, or the
+    /// estimate itself with fewer than 32 of them.
+    var rank: Double { PersonalRank.e0(probability: estimate.value, grid: gridProbabilities) }
 
     static func compute(provider: any HealthProvider, estimator: StateEstimator, now: Date = .now,
                         calendar: Calendar = .current) async throws -> CurrentState {
@@ -25,9 +32,16 @@ struct CurrentState {
         let nights = wakeDays.compactMap {
             HealthSummaries.night(wakeDay: $0, heartRate: heartRate, sleep: sleep, now: now, calendar: calendar)
         }
-        let features = FeatureBuilder.features(at: now, series: WatchSeries(heartRate: heartRate, steps: steps),
-                                               nights: nights, calendar: calendar)
-        return CurrentState(date: now, features: features, estimate: try estimator.estimate(features))
+        let series = WatchSeries(heartRate: heartRate, steps: steps)
+        let grid = BaselineCalculator.gridValues(before: now, series: series, calendar: calendar)
+        let baseline = BaselineCalculator.baseline(grid: grid, calendar: calendar)
+        let sleepReference = FeatureBuilder.sleepReference(at: now, nights: nights, calendar: calendar)
+        let features = FeatureBuilder.features(at: now, values: series.values(at: now), baseline: baseline,
+                                               sleepReference: sleepReference, nights: nights, calendar: calendar)
+        let rows = PersonalRank.rows(grid: grid, baseline: baseline, sleepReference: sleepReference,
+                                     nights: nights, calendar: calendar)
+        return CurrentState(date: now, features: features, estimate: try estimator.estimate(features),
+                            gridProbabilities: try rows.map { try estimator.gridProbability($0.features) })
     }
 
     /// `compute`, or, when the health data cannot be read, the same as a phone without a watch:
@@ -42,8 +56,8 @@ struct CurrentState {
         }
     }
 
-    /// The time-of-day estimate, whatever the watch gives: the state of a pilot time-only day
-    /// (TODO 4.4).
+    /// The time-of-day estimate, whatever the watch gives: the fallback when the health data
+    /// cannot be read.
     static func timeOnly(estimator: StateEstimator, now: Date = .now, calendar: Calendar = .current) async throws -> CurrentState {
         try await compute(provider: NoWatchData(), estimator: estimator, now: now, calendar: calendar)
     }

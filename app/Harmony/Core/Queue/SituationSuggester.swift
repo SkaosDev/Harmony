@@ -10,7 +10,7 @@ enum SituationSuggester {
 
     /// - Parameters:
     ///   - hoursSinceWake: the `hours_since_wake` feature; nil when last night is unknown.
-    ///   - e0: the state used for the queue (raw estimate until TODO 6.11).
+    ///   - e0: the state the queue starts from (`QueueStart`, TODO 6.11).
     static func suggestion(at date: Date, hoursSinceWake: Double?, e0: Double, calendar: Calendar = .current) -> Situation? {
         if let hours = hoursSinceWake, hours >= 0, hours <= wakeUpHours { return .wakeUp }
         let hour = calendar.component(.hour, from: date)

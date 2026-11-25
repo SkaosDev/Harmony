@@ -1,8 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// First launch (TODO 3.16, PROJECT.md §2.4): the five onboarding screens of the design
-/// (`V2-Onb1-Bienvenue` … `V2-Onb5-Import`). Ends on Home; the import and the scores go on in the
+/// First launch (TODO 3.16, PROJECT.md §2.4): the six onboarding screens of the design
+/// (`V2-Onb1-Bienvenue` … `V2-Onb4b-Questions`, `V2-Onb5-Import`). Ends on Home; the import and the scores go on in the
 /// background.
 struct OnboardingView: View {
     /// "Go to home".
@@ -21,6 +21,7 @@ struct OnboardingView: View {
             case 2: howItWorks
             case 3: spotify
             case 4: HealthPermissionView { Task { await allowHealth() } }
+            case 5: questions
             default: importing
             }
         }
@@ -86,9 +87,36 @@ struct OnboardingView: View {
         }
     }
 
+    /// `V2-Onb4b-Questions` (TODO 6.13): the two daily questions, before the notification sheet.
+    private var questions: some View {
+        page(step: 5) {
+            VStack(alignment: .leading, spacing: 14) {
+                title(CheckInTexts.onboardingTitle)
+                Text(CheckInTexts.onboardingText)
+                    .font(Theme.font(size: 16))
+                    .designLineHeight(16 * 1.4)
+                    .foregroundStyle(Theme.textSecondary)
+                let tiles = CheckInTexts.onboardingTiles
+                TileRow(color: Theme.accent, title: tiles[0].0, detail: tiles[0].1)
+                TileRow(color: Theme.blue, title: tiles[1].0, detail: tiles[1].1)
+                TileRow(color: Theme.wakeUp, title: tiles[2].0, detail: tiles[2].1)
+                TileRow(color: Theme.stress, title: tiles[3].0, detail: tiles[3].1)
+            }
+        } bottom: {
+            VStack(spacing: 12) {
+                note(CheckInTexts.onboardingNote)
+                PillButton(CheckInTexts.allowNotifications, arrow: true) { Task { await allowQuestions() } }
+                PillButton(CheckInTexts.notNow, style: .outline) {
+                    UserDefaults.standard.set(false, forKey: QuestionSettings.enabledKey)
+                    step = 6
+                }
+            }
+        }
+    }
+
     /// `V2-Onb5-Import`
     private var importing: some View {
-        page(step: 5) {
+        page(step: 6) {
             VStack(alignment: .leading, spacing: 16) {
                 title("Importing your library")
                 VStack(alignment: .leading, spacing: 12) {
@@ -189,6 +217,17 @@ struct OnboardingView: View {
             print("Health access failed: \(error)")
         }
         step = 5
+    }
+
+    /// The questions are on only when iOS allows the notifications; the onboarding goes on
+    /// either way.
+    private func allowQuestions() async {
+        let allowed = await CheckInNotifications.shared.requestAuthorization()
+        UserDefaults.standard.set(allowed, forKey: QuestionSettings.enabledKey)
+        if allowed {
+            await CheckInNotifications.shared.reschedule(context: context)
+        }
+        step = 6
     }
 
     private func importLibrary() async {
