@@ -298,6 +298,51 @@ struct QueueAndFeedbackTests {
     }
 }
 
+/// TODO 6.7: check-ins and the log of check-in notifications.
+@MainActor
+struct CheckInModelTests {
+    private let now = Date(timeIntervalSince1970: 1_790_050_000)
+
+    @Test func checkInRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let answer = CheckIn(answeredAt: now, channel: .notification, promptedAt: now - 120, energy: 2,
+                             zEnergy: -0.25, estimateMode: .body, labelEnergy: true, usableForLearning: false,
+                             pCommonBefore: 0.44, pPersonalBefore: 0.51, dayOfUse: 3)
+        context.insert(answer)
+        // Given on the lock screen: everything computed later stays unknown, never 0.
+        context.insert(CheckIn(answeredAt: now + 60, channel: .sheet, energy: -3, pleasantness: 1,
+                               usableForLearning: true, dayOfUse: 3))
+        try context.save()
+
+        let rows = try context.fetch(FetchDescriptor<CheckIn>(sortBy: [SortDescriptor(\.answeredAt)]))
+        #expect(rows.count == 2)
+        let first = rows[0]
+        #expect(first.id == answer.id && first.channel == .notification && first.promptedAt == now - 120)
+        #expect(first.energy == 2 && first.pleasantness == nil)
+        #expect(first.zEnergy == -0.25 && first.estimateMode == .body && first.labelEnergy == true)
+        #expect(!first.usableForLearning && first.pCommonBefore == 0.44 && first.pPersonalBefore == 0.51)
+        #expect(first.dayOfUse == 3)
+        let pending = rows[1]
+        #expect(pending.pleasantness == 1 && pending.zEnergy == nil && pending.labelEnergy == nil)
+        #expect(pending.estimateMode == nil && pending.pCommonBefore == nil)
+    }
+
+    @Test func promptLogRoundTrips() throws {
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let checkIn = UUID()
+        context.insert(PromptLog(scheduledAt: now, deliveredAt: now + 1, outcome: .answered, checkInId: checkIn))
+        context.insert(PromptLog(scheduledAt: now + 7200))
+        try context.save()
+
+        let rows = try context.fetch(FetchDescriptor<PromptLog>(sortBy: [SortDescriptor(\.scheduledAt)]))
+        #expect(rows.count == 2)
+        #expect(rows[0].outcome == .answered && rows[0].checkInId == checkIn && rows[0].deliveredAt == now + 1)
+        #expect(rows[1].outcome == nil && rows[1].deliveredAt == nil && rows[1].checkInId == nil)
+    }
+}
+
 /// A library track with test values; only what a test cares about is a parameter.
 @MainActor
 private func makeTrack(

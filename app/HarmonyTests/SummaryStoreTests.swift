@@ -118,10 +118,12 @@ struct SummaryStoreTests {
         #expect(try context.fetchCount(FetchDescriptor<HourSummary>()) > 13 * 24 / 2)
     }
 
-    /// TODO 1.32: only summaries are stored; the store has no table for raw samples.
+    /// TODO 1.32: only summaries are stored; the store has no table for raw samples (the check-ins
+    /// of TODO 6.7 are the user's answers, not watch samples).
     @Test func noRawSampleIsStored() {
         let tables = Set(HarmonyStore.schema.entities.map(\.name))
-        #expect(tables == ["Track", "SongScore", "HourSummary", "NightSummary", "QueueRecord", "QueueItem", "FeedbackEvent", "Consent"])
+        #expect(tables == ["Track", "SongScore", "HourSummary", "NightSummary", "QueueRecord", "QueueItem", "FeedbackEvent",
+                           "Consent", "CheckIn", "PromptLog"])
     }
 }
 
