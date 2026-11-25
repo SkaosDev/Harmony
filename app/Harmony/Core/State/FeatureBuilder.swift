@@ -17,6 +17,17 @@ enum FeatureBuilder {
     /// - `nights`: the night of t's day (cut at t before 12:00) and the full nights before it.
     static func features(at t: Date, series: WatchSeries, nights: [NightSummary],
                          calendar: Calendar) -> [String: Double?] {
+        features(at: t, values: series.values(at: t),
+                 baseline: BaselineCalculator.baseline(at: t, series: series, calendar: calendar),
+                 sleepReference: sleepReference(at: t, nights: nights, calendar: calendar),
+                 nights: nights, calendar: calendar)
+    }
+
+    /// The features of instant t from its window `values`, compared with `baseline` and
+    /// `sleepReference`: the references of t itself, or, for a point of the rank grid (TODO 6.11,
+    /// design v2 §4.3), those of the prediction instant. The night is the one of t's own day.
+    static func features(at t: Date, values now: [WindowQuantity: Double], baseline: Baseline,
+                         sleepReference: Reference?, nights: [NightSummary], calendar: Calendar) -> [String: Double?] {
         var features: [String: Double?] = [:]
 
         // Time: local hour + minutes / 60; weekend = Saturday or Sunday.
@@ -26,9 +37,7 @@ enum FeatureBuilder {
         features["hour_cos"] = cos(2 * .pi * hour / 24)
         features["weekend"] = clock.weekday == 1 || clock.weekday == 7 ? 1 : 0
 
-        // Heart rate and steps, compared with the 14 days before t.
-        let baseline = BaselineCalculator.baseline(at: t, series: series, calendar: calendar)
-        let now = series.values(at: t)
+        // Heart rate and steps, compared with the 14 days before.
         for quantity in WindowQuantity.allCases {
             features["z_" + quantity.rawValue] = baseline.z(quantity, now[quantity])
         }
@@ -38,19 +47,24 @@ enum FeatureBuilder {
             features["raw_" + quantity.rawValue] = now[quantity]
         }
 
-        // Sleep of the night ending today, compared with the known nights of the 14 days before.
+        // Sleep of the night ending on t's day, compared with the reference.
+        let night = nights.first { $0.date == calendar.startOfDay(for: t) }
+        let sleep = night?.sleepMinutes
+        features["z_sleep_min"] = sleepReference?.z(sleep)
+        features["hours_since_wake"] = hoursSinceWake(t, wake: sleep == nil ? nil : night?.sleepEnd)
+        features["sleep_unknown"] = sleep == nil ? 1 : 0
+        return features
+    }
+
+    /// Sleep reference of t: the known nights of the 14 days before t's day, at least 5 of them.
+    static func sleepReference(at t: Date, nights: [NightSummary], calendar: Calendar) -> Reference? {
         let today = calendar.startOfDay(for: t)
         let firstDay = calendar.date(byAdding: .day, value: -BaselineCalculator.referenceDays, to: today)!
-        let night = nights.first { $0.date == today }
-        let sleep = night?.sleepMinutes
         let previous = nights.compactMap { night -> (value: Double, day: Date)? in
             guard night.date >= firstDay, night.date < today, let minutes = night.sleepMinutes else { return nil }
             return (minutes, night.date)
         }
-        features["z_sleep_min"] = BaselineCalculator.reference(previous, minDays: minKnownNights)?.z(sleep)
-        features["hours_since_wake"] = hoursSinceWake(t, wake: sleep == nil ? nil : night?.sleepEnd)
-        features["sleep_unknown"] = sleep == nil ? 1 : 0
-        return features
+        return BaselineCalculator.reference(previous, minDays: minKnownNights)
     }
 
     /// The model row: `features` in the order of `model_params.json`.

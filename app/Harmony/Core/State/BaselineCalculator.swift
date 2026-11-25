@@ -124,6 +124,12 @@ struct Baseline: Equatable, Sendable {
     }
 }
 
+/// A point of the reference grid and its window values (a missing key is unknown).
+struct GridPoint {
+    let time: Date
+    let values: [WindowQuantity: Double]
+}
+
 /// Personal references on a regular grid, from the 14 days before t only (TODO 2.18, §6).
 enum BaselineCalculator {
     static let referenceDays = 14
@@ -169,16 +175,25 @@ enum BaselineCalculator {
 
     /// The references at t: the window quantities on every grid point, unknown points left out.
     static func baseline(at t: Date, series: WatchSeries, calendar: Calendar) -> Baseline {
+        baseline(grid: gridValues(before: t, series: series, calendar: calendar), calendar: calendar)
+    }
+
+    /// The window values of every grid point of `[t − 14 days, t)`.
+    static func gridValues(before t: Date, series: WatchSeries, calendar: Calendar) -> [GridPoint] {
+        gridPoints(before: t, calendar: calendar).map { GridPoint(time: $0, values: series.values(at: $0)) }
+    }
+
+    /// The references from the window values of the grid points of `[t − 14 days, t)`.
+    static func baseline(grid: [GridPoint], calendar: Calendar) -> Baseline {
         var known: [WindowQuantity: [(value: Double, day: Date)]] = [:]
         var blocks: [Int: [(value: Double, day: Date)]] = [:]
-        for point in gridPoints(before: t, calendar: calendar) {
-            let day = calendar.startOfDay(for: point)
-            let values = series.values(at: point)
-            for (quantity, value) in values {
+        for point in grid {
+            let day = calendar.startOfDay(for: point.time)
+            for (quantity, value) in point.values {
                 known[quantity, default: []].append((value, day))
             }
-            if let hr30 = values[.hr30] {
-                blocks[block(of: point, calendar: calendar), default: []].append((hr30, day))
+            if let hr30 = point.values[.hr30] {
+                blocks[block(of: point.time, calendar: calendar), default: []].append((hr30, day))
             }
         }
         return Baseline(

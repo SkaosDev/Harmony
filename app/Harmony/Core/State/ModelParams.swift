@@ -12,9 +12,23 @@ struct ModelParams: Decodable {
     /// Valence: internal, never shown, never used alone (PROJECT.md §6.8); nil before v3.
     let valence: LogisticParams?
     let valenceTimeOnly: LogisticParams?
+    /// The energy model of `StateModel.mlmodel` as a plain logistic regression (the top-level
+    /// medians, means, scales, coefficients and intercept): the same numbers (6.4: Core ML within
+    /// 1e-16), cheap enough for the ~450 points of the rank grid (TODO 6.11).
+    let energy: LogisticParams
 
     enum CodingKeys: String, CodingKey {
         case version, features, valence, timeOnly = "time_only", valenceTimeOnly = "valence_time_only"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decode(Int.self, forKey: .version)
+        features = try container.decode([String].self, forKey: .features)
+        timeOnly = try container.decode(LogisticParams.self, forKey: .timeOnly)
+        valence = try container.decodeIfPresent(LogisticParams.self, forKey: .valence)
+        valenceTimeOnly = try container.decodeIfPresent(LogisticParams.self, forKey: .valenceTimeOnly)
+        energy = try LogisticParams(from: decoder)
     }
 
     static func bundled(_ bundle: Bundle = .main) throws -> ModelParams {

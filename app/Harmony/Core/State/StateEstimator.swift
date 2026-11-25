@@ -56,6 +56,13 @@ struct StateEstimator {
                              valence: try valence(params.valence, features))
     }
 
+    /// The energy probability by the same mode rule, from `model_params.json` instead of Core ML:
+    /// for the points of the rank grid (TODO 6.11).
+    func gridProbability(_ features: [String: Double?]) throws -> Double {
+        let model = (features["raw_hr_30"] ?? nil) == nil ? params.timeOnly : params.energy
+        return model.probability(try FeatureBuilder.row(features, order: model.features))
+    }
+
     private func valence(_ model: LogisticParams?, _ features: [String: Double?]) throws -> Double? {
         guard let model else { return nil }
         return model.probability(try FeatureBuilder.row(features, order: model.features))
