@@ -906,8 +906,8 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   l'agrément) appris des check-ins des 14 derniers jours, oubli de constante ~2 jours, a priori
   gaussien ; `b = 0` sans réponse. Étiquette d'un check-in = réponse au-dessus de la moyenne des
   réponses de la personne sur les 14 jours précédents (au moins 5). Formule : design v2 §4.4.
-  **Les hyper-paramètres (`T`, `τ_E`, `τ_V`, seuil) et les fixtures golden viennent de la simulation
-  de la règle exacte de l'app (TODO 6.5), avant tout code Swift.**
+  **Hyper-paramètres décidés en 6.5 (25 nov. 2026) : `T` = 2 jours, `τ_E` = 2, `τ_V` = 1,5, seuil de
+  5 réponses** ; fixtures golden issues de la simulation de la règle exacte de l'app.
 - **Protocole WP-B0 (6.5)** : 5 plis extérieurs D-1 + D-2, 3 graines et tirage
   de 1, 2 ou 4 réponses ESM par jour. Une prédiction est évaluée sur une réponse
   étiquetée à partir des seules réponses tirées dans les 14 jours précédents.
@@ -919,8 +919,8 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   (percentile) et `ml/fixtures/rank_grid_cases.json` (`python ml/make_rank_fixtures.py` :
   valeurs de grille → lignes scorées avec la référence à t → probabilités selon la règle de
   mode → `e0`).
-- **Résultats WP-B0.** AUROC poolée, énergie à trois niveaux, 2 réponses/jour
-  (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
+- **Résultats WP-B0** (modèle commun v3, `T` = 2, `τ_E` = 2, 25 nov. 2026). AUROC poolée, énergie
+  à trois niveaux, 2 réponses/jour (24 166 prédictions étiquetées sur trois graines). À partir de cinq réponses
   étiquetées disponibles, la variante « rang puis personnel » utilise la
   probabilité personnelle. Cette variante est simulée à titre de comparaison.
   Un point de grille compte comme montre portée s'il a une FC dans ses 30 min
@@ -928,29 +928,30 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
 
   | Jours | Modèle commun | Rang | Personnel en ombre | Rang puis personnel |
   |---|---:|---:|---:|---:|
-  | 1–3 | 0,467 | 0,485 | 0,467 | 0,485 |
-  | 4–7 | 0,525 | 0,527 | 0,726 | 0,608 |
-  | 8–14 | 0,524 | 0,537 | 0,809 | 0,805 |
-  | 15+ | 0,521 | 0,534 | 0,800 | 0,799 |
-  | Ensemble | 0,521 | 0,532 | 0,788 | 0,755 |
+  | 1–3 | 0,511 | 0,517 | 0,511 | 0,517 |
+  | 4–7 | 0,534 | 0,549 | 0,736 | 0,645 |
+  | 8–14 | 0,516 | 0,540 | 0,820 | 0,817 |
+  | 15+ | 0,507 | 0,532 | 0,810 | 0,808 |
+  | Ensemble | 0,514 | 0,536 | 0,797 | 0,776 |
 
-  À 1 / 2 / 4 réponses par jour, AUROC personnelle : 0,732 / 0,788 / 0,811 à
-  trois niveaux et 0,616 / 0,654 / 0,681 à sept. Avec 2 réponses par jour,
+  À 1 / 2 / 4 réponses par jour, AUROC personnelle : 0,757 / 0,797 / 0,815 à
+  trois niveaux et 0,622 / 0,657 / 0,682 à sept (avant 6.5, modèle v1 et `τ_E` = 1 :
+  0,732 / 0,788 / 0,811 et 0,616 / 0,654 / 0,681). Avec 2 réponses par jour,
   l'agrément personnel donne 0,705 avec le modèle valence et 0,701 avec la
   constante. Les cibles quantifiées et celles à sept niveaux diffèrent.
   Ces chiffres décrivent des réponses EmoPhone simulées.
 
-  Les courbes et fixtures utilisent les paramètres du design : T = 2 jours,
-  τ_E = 1, τ_V = 1,5, et cinq réponses pour l'étiquette. Le contrôle de
-  sensibilité donne une log-loss énergie de 0,579 au réglage nominal, 0,567
-  avec T = 4 et 0,543 avec τ_E = 2. Pour l'agrément constant, le réglage nominal
-  donne la meilleure log-loss des variantes comparées (0,623). Les variantes
-  ont été mesurées sur les mêmes plis et ne constituent pas une validation
-  indépendante d'un réglage de remplacement. **Hyper-paramètres pas encore décidés** (TODO 6.5) :
-  le design (§4.4) demande de régler et confirmer `T`, `τ_E` et `τ_V` avant le code Swift ; les
-  fixtures de la couche personnelle seront régénérées s'ils changent. Détail agrégé dans
-  `data/results/wp-b0.json`. Les tests Python vérifient les fixtures et la
-  parité entre l'implémentation scalaire et la simulation.
+  **Choix de `T` et `τ_E` (TODO 6.5, 25 nov. 2026)**, selon la règle fixée avant les résultats
+  (§3) : `python ml/simulate_wp_b0.py --v2 --nested data/results/wp-b0-nested.json`. Les plis
+  internes, faits des seuls participants d'entraînement, choisissent `T` = 2, `τ_E` = 2 dans
+  les 5 plis externes. Log-loss énergie externe poolée : 0,543 contre 0,580 au réglage nominal
+  (`T` = 2, `τ_E` = 1) ; paires suivantes `T` = 2, `τ_E` = 3 (0,544) et `T` = 4, `τ_E` = 2
+  (0,549). Décision : `T` = 2, `τ_E` = 2. `τ_V` reste 1,5 : pilote énergie seulement, et meilleure
+  log-loss des variantes comparées pour l'agrément constant (0,623, mesurée sur les mêmes plis,
+  à revoir avec le bandit et l'état 2-D après le cours). Courbes ci-dessus, fixtures
+  `personal_layer_cases.json` (a priori 2,0) et contrôle de sensibilité refaits avec ces valeurs.
+  Détail agrégé dans `data/results/wp-b0.json` et `wp-b0-nested.json`. Les tests Python
+  vérifient les fixtures et la parité entre l'implémentation scalaire et la simulation.
 - **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
   (§3, D4 et périmètre « collecte seule »).
 
@@ -1519,7 +1520,8 @@ suggéré automatiquement (modèle trop faible sur le stress).
   (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8), hyper-paramètres de la couche
   personnelle encore à décider (TODO 6.5).
   *25 nov. 2026* : modèle v3 (17 features + valence) entraîné, exporté, porté en Swift et testé
-  (TODO 6.4, §6.7) ; le pilote tourne sur ce modèle, figé (§3).
+  (TODO 6.4, §6.7) ; le pilote tourne sur ce modèle, figé (§3). Couche personnelle : `T` = 2,
+  `τ_E` = 2, `τ_V` = 1,5, choisis par sélection imbriquée (TODO 6.5, §6.8).
 - *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
   choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
   règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
@@ -1556,7 +1558,6 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Pilote lui-même (26 nov.–2 déc.) : retrait du tirage dans le code avant le jour 1 (4.4), point à
   mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Phase 6 : décider `T`, `τ_E`, `τ_V` (6.5).
   L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
 ## 13. Risques et questions ouvertes

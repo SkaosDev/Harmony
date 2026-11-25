@@ -197,7 +197,7 @@ utilisables des 14 derniers jours :
 ```
 w_i(t) = exp( −(t − t_i) / T )                      oubli ; T = 2 jours
 b_d(t) = argmin_b  Σ_i w_i(t) · ℓ( y_i , σ(z_i + b) )  +  b² / (2 τ_d²)
-         ℓ(y, p) = −[ y·log p + (1 − y)·log(1 − p) ]    a priori N(0, τ²) ; τ_E = 1,0 ; τ_V = 1,5
+         ℓ(y, p) = −[ y·log p + (1 − y)·log(1 − p) ]    a priori N(0, τ²) ; τ_E = 2,0 ; τ_V = 1,5
 
 Newton, 3 à 5 pas depuis b = 0 :
   g = Σ_i w_i (σ(z_i + b) − y_i) + b / τ²
@@ -224,6 +224,8 @@ Probabilité personnelle :  p_d(t) = σ( z_d(t) + b_d(t) )
 - **Hyper-paramètres** `T`, `τ_E`, `τ_V`, le seuil de 5 et le passage au personnel (§4.5) viennent
   de la simulation ; `m1d_now` (oubli jusqu'à l'instant de prédiction) n'a été évalué que dans
   l'expérience d'arrêt → **WP-B0 doit le régler et le confirmer avant tout code Swift**.
+  Réglé en 6.5 (25 nov. 2026, sélection imbriquée, PROJECT.md §6.8) : `T` = 2 jours, `τ_E` = 2,0
+  (1,0 au départ), `τ_V` = 1,5, seuil de 5 réponses.
 
 ### 4.5 État utilisé par la file
 
