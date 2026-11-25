@@ -1,5 +1,16 @@
 import Foundation
 
+/// How the targets go from `e0` to the goal (design v2 §4.6, decision D7). Every queue logs its
+/// strategy (`QueueRecord.strategy`); S1 is the rule of PROJECT.md §8.
+nonisolated enum QueueStrategy: String, Codable, CaseIterable {
+    /// « progressif »
+    case s1
+    /// « demi-pas »
+    case s2
+    /// « correspondance longue »
+    case s3
+}
+
 /// The energy each song of a queue aims at (TODO 3.2, PROJECT.md §8; strategy S1 « progressif »
 /// of design v2 §4.6): `m` songs at the current state `e0`, then steps evenly from `e0` to the goal.
 nonisolated enum QueueTargets {

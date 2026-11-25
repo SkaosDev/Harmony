@@ -46,6 +46,9 @@ struct QueueMakerTests {
         #expect(items.map(\.targetEnergy) == QueueTargets.targets(e0: 0.8, situation: .windDown))
         #expect(record.reason == queue.reason && record.startEnergy == 0.8)
         #expect(record.stateMode == .body)
+        // TODO 6.12: the design v2 log of every queue (shadow mode: S1 with probability 1).
+        #expect(record.strategy == .s1 && record.strategyProbability == 1)
+        #expect(record.e0Source == .raw && record.pCommon == 0.8 && record.pPersonal == 0.8 && record.v0 == nil)
 
         // Songs of the queue just played are left out of the next one.
         let next = try await maker.prepare(.windDown, state: state(0.8))
@@ -63,6 +66,7 @@ struct QueueMakerTests {
         #expect(fallback.stateMode == .timeOnly)
         let fallbackRecord = try maker.record(fallback, at: now)
         #expect(fallbackRecord.stateMode == .timeOnly)
+        #expect(fallbackRecord.strategy == .s1 && fallbackRecord.e0Source == .raw && fallbackRecord.pCommon == 0.3)
     }
 
     @Test func museOnlyQueueUsesCheckedSuggestions() async throws {

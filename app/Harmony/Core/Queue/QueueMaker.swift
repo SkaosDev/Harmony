@@ -14,6 +14,9 @@ struct PreparedQueue: Equatable {
     var stateMode: EstimateMode = .body
     /// How `e0` was chosen, with the common and personal probabilities (TODO 6.11, 6.12).
     var start: QueueStart? = nil
+    /// The targets' strategy and the probability it had of being chosen (TODO 6.12).
+    var strategy: QueueStrategy = .s1
+    var strategyProbability = 1.0
 }
 
 /// Builds a queue from what is stored on the phone (TODO 3.2–3.8): library songs with a score,
@@ -59,7 +62,7 @@ struct QueueMaker {
     }
 
     /// Stores the queue once it plays (`QueueRecord`, TODO 1.11), with the estimate it really
-    /// used (TODO 4.4).
+    /// used (TODO 4.4) and the design v2 log (TODO 6.12).
     @discardableResult
     func record(_ queue: PreparedQueue, id: UUID = UUID(), at date: Date = .now) throws -> QueueRecord {
         let items = queue.entries.enumerated().map { position, entry in
@@ -67,7 +70,10 @@ struct QueueMaker {
                       isSuggestion: entry.song.isSuggestion)
         }
         let record = QueueRecord(id: id, createdAt: date, situation: queue.situation, startEnergy: queue.e0,
-                                 stateMode: queue.stateMode, reason: queue.reason, items: items)
+                                 stateMode: queue.stateMode, strategy: queue.strategy,
+                                 strategyProbability: queue.strategyProbability, e0Source: queue.start?.e0Source,
+                                 pCommon: queue.start?.pCommon, pPersonal: queue.start?.pPersonal, v0: queue.start?.v0,
+                                 reason: queue.reason, items: items)
         context.insert(record)
         try context.save()
         return record
