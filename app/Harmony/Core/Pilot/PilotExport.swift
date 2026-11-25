@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 /// The anonymous pilot export (TODO 4.5, `docs/pilot-protocol.md` §7.2, format `harmony-pilot-1`):
-/// for each queue started since pilot day 1, its pilot day and hour, situation, drawn kind,
+/// for each queue started since pilot day 1, its pilot day and hour, situation,
 /// estimate used, songs (position, score origin, MuSe suggestion or not), skip / like / finish
 /// events and "Did it fit?" answer; plus watch coverage counts. Never a Spotify ID, a song title,
 /// the queue reason, the estimated state, a health value or an absolute date.
@@ -23,7 +23,6 @@ enum PilotExport {
         /// Local hour of the start, 0…23.
         let hour: Int
         let situation: String
-        let kind: String
         /// Nil for a queue recorded before TODO 4.4.
         let stateMode: String?
         let items: [Item]
@@ -98,7 +97,7 @@ enum PilotExport {
         }
         return Queue(day: schedule.day(of: record.createdAt) ?? 0,
                      hour: schedule.calendar.component(.hour, from: record.createdAt),
-                     situation: record.situation.rawValue, kind: record.kind.rawValue,
+                     situation: record.situation.rawValue,
                      stateMode: record.stateMode?.rawValue,
                      items: items.map {
                          // A suggestion is a MuSe song outside the library: no `SongScore`.

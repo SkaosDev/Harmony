@@ -43,7 +43,7 @@ struct CurrentStateTests {
         #expect((state.features["z_hr_30"] ?? nil) == nil)
     }
 
-    /// TODO 4.4: a pilot time-only day ignores the watch, even when it has recent heart rate.
+    /// The time-of-day fallback ignores the watch, even when it has recent heart rate.
     @Test func timeOnlyIgnoresTheWatch() async throws {
         let estimator = try StateEstimator.bundled()
         let fixture = try #require(try StateFixtures.load().cases.first { $0.expected("z_hr_30") != nil })

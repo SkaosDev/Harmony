@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import Harmony
 
-/// TODO 4.4: the pilot's daily draw, body days vs time-only days (`docs/pilot-protocol.md` §6).
+/// The pilot's calendar (`docs/pilot-protocol.md` §6): pilot days count from the start day; every
+/// day uses the watch data (TODO 4.4, no daily draw).
 @MainActor
 struct PilotScheduleTests {
     private let calendar = StateFixtures.calendar
@@ -12,48 +13,12 @@ struct PilotScheduleTests {
         calendar.date(byAdding: DateComponents(day: day - 1, hour: hour), to: start)!
     }
 
-    private func kinds(seed: UInt64, days: Int = 14) -> [QueueKind?] {
-        let schedule = PilotSchedule(startDay: start, seed: seed, calendar: calendar)
-        return (1...days).map { schedule.kind(on: date(day: $0, hour: 12)) }
-    }
-
     @Test func pilotDaysCountFromTheStartDay() {
-        let schedule = PilotSchedule(startDay: start, seed: 1, calendar: calendar)
+        let schedule = PilotSchedule(startDay: start, calendar: calendar)
         #expect(schedule.day(of: date(day: 0, hour: 23)) == nil)
-        #expect(schedule.kind(on: date(day: 0, hour: 23)) == nil)
         #expect(schedule.day(of: date(day: 1, hour: 0)) == 1)
         #expect(schedule.day(of: date(day: 1, hour: 23)) == 1)
-        #expect(schedule.day(of: date(day: 14, hour: 8)) == 14)
-    }
-
-    /// Every queue of a day gets the same kind.
-    @Test func aDayKeepsOneKind() {
-        let schedule = PilotSchedule(startDay: start, seed: 42, calendar: calendar)
-        for day in 1...14 {
-            let kinds = Set([0, 7, 13, 23].map { schedule.kind(on: date(day: day, hour: $0)) })
-            #expect(kinds.count == 1, "day \(day)")
-        }
-    }
-
-    /// Blocks of two days with opposite kinds: 14 days give 7 body days and 7 time-only days.
-    @Test func twoDayBlocksBalanceTheKinds() {
-        for seed: UInt64 in [0, 1, 7, 42, .max] {
-            let kinds = kinds(seed: seed)
-            #expect(kinds.allSatisfy { $0 != nil })
-            for block in 0..<7 {
-                #expect(kinds[2 * block] != kinds[2 * block + 1], "seed \(seed), block \(block)")
-            }
-            #expect(kinds.filter { $0 == .body }.count == 7, "seed \(seed)")
-        }
-    }
-
-    /// The same seed gives the same days; the order of a block depends on the seed.
-    @Test func theSeedDecidesTheOrder() {
-        #expect(kinds(seed: 1234) == kinds(seed: 1234))
-        let firstDays = Set((0..<20).map { kinds(seed: UInt64($0), days: 1)[0] })
-        #expect(firstDays == [.body, .timeOnly])
-        let orders = Set((0..<20).map { kinds(seed: UInt64($0)) })
-        #expect(orders.count > 2)
+        #expect(schedule.day(of: date(day: 7, hour: 8)) == 7)
     }
 
     @Test func startingSavesTheScheduleAndStoppingRemovesIt() throws {
@@ -62,13 +27,25 @@ struct PilotScheduleTests {
         defer { defaults.removePersistentDomain(forName: suite) }
         #expect(PilotSchedule.stored(in: defaults, calendar: calendar) == nil)
 
-        let started = PilotSchedule.start(in: defaults, now: date(day: 1, hour: 9), calendar: calendar, seed: .max)
-        #expect(started.startDay == start && started.seed == .max)
+        let started = PilotSchedule.start(in: defaults, now: date(day: 1, hour: 9), calendar: calendar)
+        #expect(started.startDay == start)
         #expect(PilotSchedule.stored(in: defaults, calendar: calendar) == started)
 
         PilotSchedule.stop(in: defaults)
         #expect(PilotSchedule.stored(in: defaults, calendar: calendar) == nil)
         // "Delete everything" also ends the pilot (FR13).
         #expect(Set(PilotSchedule.keys).isSubset(of: DataControl.storedKeys))
+    }
+
+    /// A pilot started before TODO 4.4 left the seed of the draw: stopping removes it too.
+    @Test func stoppingRemovesTheOldSeed() throws {
+        let suite = "PilotScheduleTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        PilotSchedule.start(in: defaults, now: date(day: 1, hour: 9), calendar: calendar)
+        defaults.set("42", forKey: PilotSchedule.oldSeedKey)
+
+        PilotSchedule.stop(in: defaults)
+        #expect(defaults.object(forKey: PilotSchedule.oldSeedKey) == nil)
     }
 }

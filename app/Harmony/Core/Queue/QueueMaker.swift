@@ -10,10 +10,8 @@ struct PreparedQueue: Equatable {
     let entries: [QueueEntry]
     /// Title, artists and cover of each entry, in queue order.
     let songs: [TrackInfo]
-    /// Kind drawn for the pilot (TODO 4.4); `.body` outside the pilot.
-    var kind: QueueKind = .body
     /// Estimate the queue really started from: time only when the watch gave no recent heart rate.
-    var stateMode: QueueKind = .body
+    var stateMode: EstimateMode = .body
 }
 
 /// Builds a queue from what is stored on the phone (TODO 3.2–3.8): library songs with a score,
@@ -27,7 +25,7 @@ struct QueueMaker {
     var calendar: Calendar = .current
 
     /// The queue for a situation, from the library (at most two MuSe suggestions).
-    func prepare(_ situation: Situation, state: CurrentState, kind: QueueKind = .body) async throws -> PreparedQueue {
+    func prepare(_ situation: Situation, state: CurrentState) async throws -> PreparedQueue {
         let tracks = try context.fetch(FetchDescriptor<Track>())
         let scores = Dictionary(try context.fetch(FetchDescriptor<SongScore>()).map { ($0.spotifyId, $0) },
                                 uniquingKeysWith: { first, _ in first })
@@ -45,34 +43,34 @@ struct QueueMaker {
         let suggestions = catalog.map {
             MuseSuggestions(catalog: $0, artistKeys: Set(tracks.map { SongKey.artist($0.artists.first ?? "") }), genres: genres)
         }
-        return try await prepare(situation, state: state, kind: kind, library: library, suggestions: suggestions,
+        return try await prepare(situation, state: state, library: library, suggestions: suggestions,
                                  maxSuggestions: QueueBuilder.maxSuggestions, tracks: tracks)
     }
 
     /// "Use suggested tracks" on the empty Home: MuSe songs only, each one checked, when the
     /// library has no score yet.
-    func prepareMuseOnly(_ situation: Situation, state: CurrentState, kind: QueueKind = .body) async throws -> PreparedQueue {
+    func prepareMuseOnly(_ situation: Situation, state: CurrentState) async throws -> PreparedQueue {
         let suggestions = catalog.map { MuseSuggestions(catalog: $0, artistKeys: [], genres: [], anySong: true) }
-        return try await prepare(situation, state: state, kind: kind, library: [], suggestions: suggestions,
+        return try await prepare(situation, state: state, library: [], suggestions: suggestions,
                                  maxSuggestions: .max, tracks: [])
     }
 
-    /// Stores the queue once it plays (`QueueRecord`, TODO 1.11), with its pilot kind and the
-    /// estimate it really used (TODO 4.4).
+    /// Stores the queue once it plays (`QueueRecord`, TODO 1.11), with the estimate it really
+    /// used (TODO 4.4).
     @discardableResult
     func record(_ queue: PreparedQueue, id: UUID = UUID(), at date: Date = .now) throws -> QueueRecord {
         let items = queue.entries.enumerated().map { position, entry in
             QueueItem(position: position, spotifyId: entry.song.spotifyId, targetEnergy: entry.target,
                       isSuggestion: entry.song.isSuggestion)
         }
-        let record = QueueRecord(id: id, createdAt: date, situation: queue.situation, startEnergy: queue.e0, kind: queue.kind,
+        let record = QueueRecord(id: id, createdAt: date, situation: queue.situation, startEnergy: queue.e0,
                                  stateMode: queue.stateMode, reason: queue.reason, items: items)
         context.insert(record)
         try context.save()
         return record
     }
 
-    private func prepare(_ situation: Situation, state: CurrentState, kind: QueueKind, library: [QueueCandidate],
+    private func prepare(_ situation: Situation, state: CurrentState, library: [QueueCandidate],
                          suggestions: SuggestionSource?, maxSuggestions: Int, tracks: [Track]) async throws -> PreparedQueue {
         let e0 = state.estimate.value
         let exclusions = try QueueHistory.exclusions(for: situation, now: state.date, in: context)
@@ -93,8 +91,7 @@ struct QueueMaker {
         }
         return PreparedQueue(situation: situation, e0: e0,
                              reason: Explainer.reason(situation: situation, e0: e0, context: context, calendar: calendar),
-                             entries: entries, songs: songs, kind: kind,
-                             stateMode: state.estimate.mode == .body ? .body : .timeOnly)
+                             entries: entries, songs: songs, stateMode: state.estimate.mode)
     }
 
     /// The HRV of the last hours against the person's usual (`Explainer.hrvZ`).

@@ -17,7 +17,7 @@ struct QueueHistoryTests {
             QueueItem(position: $0.offset, spotifyId: $0.element.0, targetEnergy: 0.5, isSuggestion: $0.element.1)
         }
         let queue = QueueRecord(createdAt: now - daysAgo * day, situation: situation, startEnergy: 0.5,
-                                kind: .body, reason: "", items: items)
+                                reason: "", items: items)
         context.insert(queue)
         return queue.id
     }

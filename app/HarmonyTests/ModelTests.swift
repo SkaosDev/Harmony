@@ -212,7 +212,7 @@ struct QueueAndFeedbackTests {
             createdAt: now,
             situation: .windDown,
             startEnergy: 0.6,
-            kind: .body,
+            stateMode: .body,
             reason: "Evening: medium songs first, then calmer.",
             items: [
                 QueueItem(position: 2, spotifyId: "t3", targetEnergy: 0.2, isSuggestion: true),
@@ -234,7 +234,7 @@ struct QueueAndFeedbackTests {
         #expect(record.createdAt == now)
         #expect(record.situation == .windDown)
         #expect(record.startEnergy == 0.6)
-        #expect(record.kind == .body)
+        #expect(record.stateMode == .body)
         #expect(record.reason == "Evening: medium songs first, then calmer.")
 
         // SwiftData relationships are unordered: the order comes from `position`.

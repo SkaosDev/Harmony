@@ -17,7 +17,6 @@
         { "origin" : "llm", "position" : 1, "suggestion" : false },
         { "origin" : "muse", "position" : 2, "suggestion" : false }
       ],
-      "kind" : "body",
       "situation" : "wakeUp",
       "stateMode" : "body"
     },
@@ -35,7 +34,6 @@
         { "origin" : "muse", "position" : 1, "suggestion" : true },
         { "origin" : "llm", "position" : 2, "suggestion" : false }
       ],
-      "kind" : "body",
       "situation" : "windDown",
       "stateMode" : "body"
     },
@@ -52,7 +50,6 @@
         { "origin" : "neutral", "position" : 1, "suggestion" : false },
         { "origin" : "muse", "position" : 2, "suggestion" : false }
       ],
-      "kind" : "timeOnly",
       "situation" : "lowEnergy",
       "stateMode" : "timeOnly"
     },
@@ -70,7 +67,6 @@
         { "origin" : "muse", "position" : 1, "suggestion" : false },
         { "origin" : "muse", "position" : 2, "suggestion" : true }
       ],
-      "kind" : "timeOnly",
       "situation" : "wakeUp",
       "stateMode" : "timeOnly"
     },
@@ -87,7 +83,6 @@
         { "origin" : "muse", "position" : 1, "suggestion" : false },
         { "origin" : "muse", "position" : 2, "suggestion" : false }
       ],
-      "kind" : "body",
       "situation" : "stress",
       "stateMode" : "timeOnly"
     }

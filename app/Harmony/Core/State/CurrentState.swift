@@ -42,8 +42,8 @@ struct CurrentState {
         }
     }
 
-    /// The time-of-day estimate, whatever the watch gives: the state of a pilot time-only day
-    /// (TODO 4.4).
+    /// The time-of-day estimate, whatever the watch gives: the fallback when the health data
+    /// cannot be read.
     static func timeOnly(estimator: StateEstimator, now: Date = .now, calendar: Calendar = .current) async throws -> CurrentState {
         try await compute(provider: NoWatchData(), estimator: estimator, now: now, calendar: calendar)
     }

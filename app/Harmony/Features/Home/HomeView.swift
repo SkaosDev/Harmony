@@ -145,27 +145,23 @@ struct HomeView: View {
     }
 
     /// The state is computed again at each tap: Home can stay open for hours (heart rate and time
-    /// of day). On a pilot time-only day the queue starts from the time of day only (TODO 4.4);
-    /// the badge keeps the real state.
+    /// of day). Without recent heart rate the queue starts from the time of day only (TODO 2.21).
     private func start(_ situation: Situation, museOnly: Bool = false) async {
         let tap = ContinuousClock.now
         do {
             await computeState()
             guard let state else { throw CocoaError(.featureUnsupported) }
-            let kind = PilotSchedule.stored()?.kind(on: state.date) ?? .body
-            let queueState = kind == .timeOnly ? try await CurrentState.timeOnly(estimator: StateEstimator.bundled(), now: state.date)
-                                               : state
             let music = try DemoMode.musicProvider(demoMode)
             let maker = QueueMaker(context: context, catalog: try? MuseCatalog.bundled(), music: music)
-            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: queueState, kind: kind)
-                                 : try await maker.prepare(situation, state: queueState, kind: kind)
+            let queue = museOnly ? try await maker.prepareMuseOnly(situation, state: state)
+                                 : try await maker.prepare(situation, state: state)
             guard !queue.entries.isEmpty else {
                 problem = "No song fits this moment yet."
                 return
             }
             // `play` shows the queue before its first wait (TODO 3.21).
             player.queueDelay = ContinuousClock.now - tap
-            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue)")
+            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue), estimate \(queue.stateMode.rawValue)")
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
             problem = UserMessage.text(for: error)

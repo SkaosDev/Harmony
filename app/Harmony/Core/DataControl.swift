@@ -48,7 +48,7 @@ enum DataControl {
             },
             queues: try context.fetch(FetchDescriptor<QueueRecord>(sortBy: [SortDescriptor(\.createdAt)])).map { queue in
                 .init(id: queue.id, createdAt: queue.createdAt, situation: queue.situation.rawValue,
-                      startEnergy: queue.startEnergy, kind: queue.kind.rawValue, stateMode: queue.stateMode?.rawValue,
+                      startEnergy: queue.startEnergy, stateMode: queue.stateMode?.rawValue,
                       reason: queue.reason,
                       items: queue.items.sorted { $0.position < $1.position }.map {
                           .init(position: $0.position, spotifyId: $0.spotifyId, targetEnergy: $0.targetEnergy,
@@ -68,7 +68,7 @@ enum DataControl {
     }
 
     /// Deletes everything (FR13): the 8 tables, the Spotify tokens (`signOut`), the HealthKit
-    /// anchors, the import date, the onboarding flag and the pilot draw. The app then starts again at the
+    /// anchors, the import date, the onboarding flag and the pilot start day. The app then starts again at the
     /// onboarding.
     static func deleteAll(in context: ModelContext, defaults: UserDefaults = .standard,
                           signOut: () throws -> Void) throws {
@@ -104,7 +104,7 @@ enum DataControl {
             let position: Int, spotifyId: String, targetEnergy: Double, isSuggestion: Bool
         }
         struct QueueRow: Encodable {
-            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, kind: String, stateMode: String?
+            let id: UUID, createdAt: Date, situation: String, startEnergy: Double, stateMode: String?
             let reason: String
             let items: [ItemRow]
         }
