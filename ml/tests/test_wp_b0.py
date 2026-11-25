@@ -15,10 +15,28 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features as F
 from export import MAX_BYTES, build_params, predict, write_params
-from personal_layer import Observation, estimate, past_label
-from simulate_wp_b0 import chronological, rank, rank_rows
+from personal_layer import DECAY_DAYS, ENERGY_PRIOR_STD, Observation, estimate, past_label
+from simulate_wp_b0 import (NOMINAL, adopt, chronological, held_out_logits, nested_selection, quantized,
+                            rank, rank_rows)
 import evaluate_v2
 from evaluate_v2 import TIME, decision, fit, gate, mixed_logits
+
+
+def synthetic_answers(people, days=20, per_day=4, seed=5):
+    """Synthetic v2 table: random features and 7-point energy answers, no real person."""
+    rng = np.random.default_rng(seed)
+    n = days * per_day
+    rows = []
+    for i in range(people):
+        table = pd.DataFrame(rng.normal(size=(n, 17)), columns=F.FEATURES_V2)
+        table["participant"] = f"D1_P{i}"
+        table["t"] = (np.repeat(np.arange(days), per_day) * F.DAY_MS
+                      + np.tile(np.arange(per_day), days) * 3 * 3600 * 1000 + 9 * 3600 * 1000 - F.KST_MS)
+        table["arousal"] = rng.integers(-3, 4, n)
+        table["arousal_high"] = (table.arousal > table.arousal.mean()).astype(int)
+        table.loc[rng.random(n) < .2, "raw_hr_30"] = np.nan
+        rows.append(table)
+    return pd.concat(rows, ignore_index=True)
 
 
 class WPB0Tests(unittest.TestCase):
@@ -103,7 +121,8 @@ class WPB0Tests(unittest.TestCase):
         days = [0, 1, 2, 3, 4, 5, 5, 6, 19, 20]
         answers = np.array([-2, 0, 2, 0, -2, 2, -2, 0, 0, 2])
         logits = np.linspace(-.5, .5, len(days))
-        labels, adjusted, counts = chronological(np.array(days) * F.DAY_MS, answers, logits, 1., 2.)
+        labels, adjusted, counts = chronological(np.array(days) * F.DAY_MS, answers, logits,
+                                                 ENERGY_PRIOR_STD, DECAY_DAYS)
         origin = datetime(2026, 1, 1, tzinfo=timezone.utc)
         past = []
         for day, answer, z, label, after, count in zip(days, answers, logits, labels, adjusted, counts):
@@ -114,6 +133,36 @@ class WPB0Tests(unittest.TestCase):
             self.assertAlmostEqual(after, z + offset, places=10)
             self.assertEqual(eligible, count)
             past.append(Observation(now, int(answer), z, expected))
+
+    def test_three_levels_of_the_notification(self):
+        np.testing.assert_array_equal(quantized(np.arange(-3, 4)), [-2, -2, 0, 0, 0, 2, 2])
+
+    def test_adopt_majority_tie_and_nominal_fallback(self):
+        other, third = (4., 2.), (1., .5)
+        inner = [{NOMINAL: .60, other: .58, third: .59}, {NOMINAL: .60, other: .57, third: .55}]
+        outer = {NOMINAL: .60, other: .58, third: .59}
+        self.assertEqual(adopt([other, other, third], inner, outer), other)       # most folds
+        self.assertEqual(adopt([other, third], inner, outer), third)              # tie: inner mean
+        self.assertEqual(adopt([other, third], inner, {**outer, third: .60}), NOMINAL)  # no gain
+        self.assertEqual(adopt([other, third], inner, {**outer, third: .61}), NOMINAL)
+
+    def test_held_out_logits_refuse_shared_participants(self):
+        table = synthetic_answers(6)
+        with self.assertRaises(ValueError):
+            held_out_logits(table, table[table.participant == "D1_P0"], F.FEATURES_V2)
+
+    def test_nested_selection_chooses_from_training_people_only(self):
+        table = synthetic_answers(12)
+        result = nested_selection(table, F.FEATURES_V2, decays=(1., 2.), taus=(1., 2.))
+        self.assertEqual(len(result["folds"]), 5)
+        self.assertEqual(result["nominal"], "T=2,tau_E=1")
+        self.assertIn(result["decision"]["pair"], result["grid"])
+        for fold in result["folds"]:
+            self.assertIn(fold["chosen"], result["grid"])
+            self.assertEqual(fold["chosen"], min(fold["inner_log_loss"], key=fold["inner_log_loss"].get))
+        self.assertTrue(all(np.isfinite(list(result["outer_log_loss"].values()))))
+        with self.assertRaises(ValueError):                                # nominal must be tested
+            nested_selection(table, F.FEATURES_V2, decays=(1.,), taus=(1.,))
 
     def test_rank_threshold_and_ties(self):
         fixture = Path(__file__).resolve().parents[1] / "fixtures" / "rank_cases.json"

@@ -2,7 +2,7 @@
   "version": 1,
   "window_days": 14,
   "decay_days": 2.0,
-  "prior_std": 1.0,
+  "prior_std": 2.0,
   "minimum_past_responses": 5,
   "newton_steps": 5,
   "cases": [
@@ -63,8 +63,8 @@
           "usable": true
         }
       ],
-      "offset": 0.12727915885502686,
-      "probability": 0.5068193668315907,
+      "offset": 0.20770741492053157,
+      "probability": 0.526900852610526,
       "usable_labelled_count": 6
     },
     {
@@ -115,8 +115,8 @@
           "usable": true
         }
       ],
-      "offset": 0.009632115995097593,
-      "probability": 0.5767954622805624,
+      "offset": 0.034697077261065364,
+      "probability": 0.5829018072665434,
       "usable_labelled_count": 6
     },
     {
@@ -174,8 +174,8 @@
           "usable": false
         }
       ],
-      "offset": 0.12727915885502686,
-      "probability": 0.5068193668315907,
+      "offset": 0.20770741492053157,
+      "probability": 0.526900852610526,
       "usable_labelled_count": 6
     },
     {
@@ -233,8 +233,8 @@
           "usable": true
         }
       ],
-      "offset": 0.3970192883774055,
-      "probability": 0.6217585976454302,
+      "offset": 1.032836668365593,
+      "probability": 0.7563620162007494,
       "usable_labelled_count": 3
     },
     {

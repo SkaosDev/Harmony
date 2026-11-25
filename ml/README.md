@@ -48,7 +48,8 @@ python ml/build_features.py --data data/emophone --out data/features --v2 --wave
 python ml/evaluate_v2.py
 python ml/build_features.py --data data/emophone --out data/features --v2 --waves D3
 python ml/evaluate_v2.py --confirm-d3 data/results/wp-a1.json
-python ml/simulate_wp_b0.py --out data/results/wp-b0.json
+python ml/simulate_wp_b0.py --v2 --nested data/results/wp-b0-nested.json   # TODO 6.5
+python ml/simulate_wp_b0.py --v2 --out data/results/wp-b0.json
 ```
 
 Modèle livré (TODO 6.4) : `ml/evaluate_v2.py --final data/results/wp-a1.json
