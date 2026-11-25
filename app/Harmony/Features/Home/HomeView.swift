@@ -11,6 +11,8 @@ struct HomeView: View {
     @Environment(LibrarySync.self) private var library
     @Query private var scores: [SongScore]
     @State private var state: CurrentState?
+    /// The `e0` of a queue started now, for the suggestion (TODO 6.11).
+    @State private var e0: Double?
     @State private var problem: String?
     /// Why "Retry the import" failed (TODO 3.22).
     @State private var importProblem: String?
@@ -121,9 +123,9 @@ struct HomeView: View {
 
     /// The situation of `SituationSuggester` (TODO 3.8), once the state is known.
     private var suggestion: Situation? {
-        guard let state else { return nil }
+        guard let state, let e0 else { return nil }
         return SituationSuggester.suggestion(at: state.date, hoursSinceWake: state.features["hours_since_wake"] ?? nil,
-                                             e0: state.estimate.value)
+                                             e0: e0)
     }
 
     /// "Use suggested tracks" with no suggestion: the situation of the time of day (Stress is
@@ -138,7 +140,9 @@ struct HomeView: View {
 
     private func computeState() async {
         do {
-            state = try await CurrentState.computeOrTimeOnly(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
+            let state = try await CurrentState.computeOrTimeOnly(provider: DemoMode.healthProvider(demoMode), estimator: StateEstimator.bundled())
+            self.state = state
+            e0 = try QueueStart.make(state: state, context: context).e0
         } catch {
             print("State not computed: \(error)")
         }
@@ -161,7 +165,7 @@ struct HomeView: View {
             }
             // `play` shows the queue before its first wait (TODO 3.21).
             player.queueDelay = ContinuousClock.now - tap
-            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue), estimate \(queue.stateMode.rawValue)")
+            print("Queue on screen \(player.queueDelay!) after the tap on \(situation.rawValue), estimate \(queue.stateMode.rawValue), e0 from \(queue.start?.e0Source.rawValue ?? "-")")
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
             problem = UserMessage.text(for: error)

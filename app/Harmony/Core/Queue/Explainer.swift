@@ -26,7 +26,13 @@ enum Explainer {
         var zHeartRate: Double?
         /// Latest HRV against the usual (`hrvZ`).
         var zHRV: Double?
+        /// b_E when the answers chose `e0` (active mode, TODO 6.11): the logit offset of the
+        /// person's recent answers from the common model.
+        var energyOffset: Double? = nil
     }
+
+    /// An answer offset at least this far from 0 is worth saying (provisional, design v2 §4.5).
+    static let notableOffset = 0.5
 
     static func reason(situation: Situation, e0: Double, context: Context, calendar: Calendar = .current) -> String {
         var parts: [String] = []
@@ -34,6 +40,9 @@ enum Explainer {
             parts.append(z < 0 ? "short night" : "long night")
         }
         parts.append(partOfDay(context.date, calendar: calendar))
+        if let offset = context.energyOffset, abs(offset) >= notableOffset {
+            parts.append(offset > 0 ? "your answers show more energy than usual" : "your answers show less energy than usual")
+        }
         if context.mode == .body {
             if let z = context.zHeartRate, abs(z) >= notable {
                 parts.append(z > 0 ? "heart rate higher than usual" : "heart rate lower than usual")

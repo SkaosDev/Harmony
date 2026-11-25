@@ -20,6 +20,16 @@ nonisolated enum QueueTargets {
         return Array(repeating: e0, count: matching) + moving
     }
 
+    /// Where the songs' positivity ends in Stress and Low energy when `v0` is known.
+    static let positivityGoal = 0.7
+
+    /// Active mode with `v0` (design v2 §4.5, provisional form to settle with the customer): the
+    /// positivity each song aims at, evenly from `v0` to max(v0, 0.7), one per energy target.
+    static func positivityTargets(v0: Double, count: Int) -> [Double] {
+        let goal = max(v0, positivityGoal)
+        return (0..<count).map { v0 + (goal - v0) * Double($0) / Double(max(count - 1, 1)) }
+    }
+
     /// The situation's goal, or `e0` when the state is already past it: Wake-up and Low energy
     /// never lower the energy, Stress and Wind-down never raise it (the queue stays flat).
     static func goal(e0: Double, situation: Situation) -> Double {

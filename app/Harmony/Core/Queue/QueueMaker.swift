@@ -12,6 +12,8 @@ struct PreparedQueue: Equatable {
     let songs: [TrackInfo]
     /// Estimate the queue really started from: time only when the watch gave no recent heart rate.
     var stateMode: EstimateMode = .body
+    /// How `e0` was chosen, with the common and personal probabilities (TODO 6.11, 6.12).
+    var start: QueueStart? = nil
 }
 
 /// Builds a queue from what is stored on the phone (TODO 3.2–3.8): library songs with a score,
@@ -23,6 +25,7 @@ struct QueueMaker {
     /// Checks the suggestions (TODO 3.6).
     let music: any MusicProvider
     var calendar: Calendar = .current
+    var mode: PersonalMode = .current
 
     /// The queue for a situation, from the library (at most two MuSe suggestions).
     func prepare(_ situation: Situation, state: CurrentState) async throws -> PreparedQueue {
@@ -72,17 +75,18 @@ struct QueueMaker {
 
     private func prepare(_ situation: Situation, state: CurrentState, library: [QueueCandidate],
                          suggestions: SuggestionSource?, maxSuggestions: Int, tracks: [Track]) async throws -> PreparedQueue {
-        let e0 = state.estimate.value
+        let start = try QueueStart.make(state: state, context: context, mode: mode)
+        let e0 = start.e0
         let exclusions = try QueueHistory.exclusions(for: situation, now: state.date, in: context)
         let music = music
-        let entries = await QueueBuilder.build(situation: situation, e0: e0, library: library, exclusions: exclusions,
+        let entries = await QueueBuilder.build(situation: situation, e0: e0, v0: start.v0, library: library, exclusions: exclusions,
                                                suggestions: suggestions, maxSuggestions: maxSuggestions) {
             await SuggestionCheck.verify($0, using: music)
         }
         let context = Explainer.Context(date: state.date, mode: state.estimate.mode,
                                         zSleep: state.features["z_sleep_min"] ?? nil,
                                         zHeartRate: state.features["z_hr_30"] ?? nil,
-                                        zHRV: try hrvZ(now: state.date))
+                                        zHRV: try hrvZ(now: state.date), energyOffset: start.energyOffset)
         let byId = Dictionary(tracks.map { ($0.spotifyId, $0) }, uniquingKeysWith: { first, _ in first })
         let songs = entries.map { entry in
             entry.info ?? byId[entry.song.spotifyId].map {
@@ -91,7 +95,7 @@ struct QueueMaker {
         }
         return PreparedQueue(situation: situation, e0: e0,
                              reason: Explainer.reason(situation: situation, e0: e0, context: context, calendar: calendar),
-                             entries: entries, songs: songs, stateMode: state.estimate.mode)
+                             entries: entries, songs: songs, stateMode: state.estimate.mode, start: start)
     }
 
     /// The HRV of the last hours against the person's usual (`Explainer.hrvZ`).
