@@ -152,6 +152,29 @@
    "w": 1024,
    "x": 2820,
    "y": 260
+  },
+  "V2-Onb4b-Questions.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "2.4b Quick questions",
+   "w": 390,
+   "x": 0,
+   "y": 3152
+  },
+  "V2-Notification.dc.html": {
+   "h": 844,
+   "title": "7.1 Check-in notification",
+   "w": 390,
+   "x": 470,
+   "y": 3152
+  },
+  "V2-Questions.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "6.6 Questions",
+   "w": 390,
+   "x": 940,
+   "y": 3152
   }
  },
  "createdOnFiles": {
@@ -186,6 +209,21 @@
    "w": 240,
    "x": 0,
    "y": 1928
+  },
+  "t8": {
+   "kind": "title1",
+   "maxW": 2740,
+   "text": "Check-ins (v2)",
+   "w": 240,
+   "x": 0,
+   "y": 2892
+  },
+  "n1": {
+   "x": 470,
+   "y": 4036,
+   "w": 390,
+   "fill": "gray",
+   "text": "Not now comes first: Apple Watch Double Tap picks the first action. No title and no health value in the text (App Store 4.5.4)."
   }
  },
  "order": [
@@ -207,7 +245,10 @@
   "V2-Onb5-Import.dc.html",
   "V2-Reglages.dc.html",
   "V2-Sante.dc.html",
-  "V2-Icone.dc.html"
+  "V2-Icone.dc.html",
+  "V2-Onb4b-Questions.dc.html",
+  "V2-Notification.dc.html",
+  "V2-Questions.dc.html"
  ],
  "pages": [],
  "title": "Harmony \u2014 brand identity + screens"
