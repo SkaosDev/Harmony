@@ -146,6 +146,7 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 | D9 : questions facultatives, désactivables, jamais bloquantes (N1, NFR5 ≤ 2 taps) | Besoin N1 « zéro effort » ; l'absence de réponse n'est jamais une réponse « basse » (design v2 §5.3) |
 | Périmètre du pilote « collecte seule » : couche personnelle en ombre, énergie seulement, 2 notifications/jour, aucun nouvel écran sur Home, file inchangée ; bandit, état 2-D et ligne énergie sur Home après le cours | Charge avant le pilote du 26 nov. (~3–4 jours après la simulation 6.5) ; le pilote mesure quand même la courbe commune vs personnelle sur de vrais utilisateurs Apple Watch (design v2 §15) |
 | Pilote à une personne : Clément (décision de Clément, 23 nov. 2026), **1 semaine, du 26 nov. au 2 déc. 2026, avec les données de la montre tous les jours** (décision de Clément, 24 nov. 2026 : le projet se termine le 4 déc.) ; protocole et consentement : `docs/pilot-protocol.md` (TODO 4.1) | Reste dans les 5 comptes Spotify ; appareil et compte déjà en place, donc 4.2 et 4.3 sans objet. Test de faisabilité seulement : participant développeur, pas de file de comparaison, intervalles par bootstrap sur les **jours** et non sur les personnes ; plan d'analyse fixé avant les données |
+| Pilote sur le modèle commun v3 (17 features + valence, TODO 6.4), figé du 26 nov. au 2 déc. (décision de Clément, 25 nov. 2026) ; remplace le report de l'entraînement final et du port Swift au 2 déc. | v3 a passé le critère 6.2 ; la règle de gel du design v2 (§8) l'admet dans le build du pilote s'il est prêt avant le 26 nov., fixtures golden comprises |
 | LifeSnaps (Fitbit Sense, CC BY 4.0) = test externe secondaire seulement, jamais dans l'entraînement ; facultatif, après le cours (§5.5) | Signaux de nuit sans gain, effet de l'heure inversé par rapport à EmoPhone (design v2 §2) |
 
 ---
@@ -157,6 +158,15 @@ complets sur toutes les réponses. Sur les cinq groupes déterministes D-1 + D-2
 l'AUROC énergie v2 doit être ≥ v1 − 0,002. Au test unique D-3, elle doit être
 ≥ v1 et ≥ heure seule + 0,02. Le modèle valence remplace la constante s'il
 dépasse l'heure seule valence d'au moins 0,01 en CV et sur D-3.
+
+**Règle de sélection 6.5, fixée avant les résultats (25 nov. 2026, D8).** `T` et `τ_E` sont
+choisis par validation imbriquée sur le modèle commun livré (v3, `--v2`), 2 réponses par jour,
+3 graines, étiquette à 3 niveaux. Grille : `T` ∈ {1, 2, 4} jours, `τ_E` ∈ {0,5 ; 1 ; 2 ; 3}.
+Dans chacun des 5 plis externes, la paire retenue est celle de plus petite log-loss énergie
+sur des plis internes formés des seuls participants d'entraînement. On adopte la paire retenue
+dans le plus de plis externes (égalité : plus petite log-loss interne moyenne), sauf si sa
+log-loss externe moyenne n'est pas inférieure à celle du réglage nominal (`T` = 2, `τ_E` = 1) :
+on garde alors le nominal. `τ_V` reste 1,5 (pilote énergie seulement).
 
 ## 4. Architecture
 
@@ -806,10 +816,9 @@ sur D-3 par rapport à v1 en mode app, +0,0638 par rapport à l'heure seule sur 
 Valence : +0,0229 en CV et +0,0289 sur D-3 par rapport à l'heure seule.
 Le fichier agrégé local `data/results/wp-a1.json` détaille les cinq plis.
 
-**6.4.** Le lancement du 26 nov. conserve le modèle v1 à 13 features et son
-export v2. Les scripts d'entraînement final, d'export v3 et de fixtures sont
-préparés. Entraînement final, export Core ML et validation Swift S9 sont reportés
-au 2 déc., après le gel du pilote.
+**6.4.** Décision du 25 nov. (§3) : le pilote tourne sur le modèle v3, figé
+pendant le pilote. Entraînement final, export Core ML, fixtures golden et port
+Swift S9 sont faits avant le 26 nov.
 
 ### 6.6 Protocole d'évaluation (M2)
 1. Validation croisée en 5 groupes par participant sur D-1 + D-2.
