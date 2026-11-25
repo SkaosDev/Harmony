@@ -163,7 +163,7 @@ struct HealthDataView: View {
     }
 }
 
-/// `V2-MesDonnees` (TODO 3.19, FR13): what is stored, "Export as JSON", "Delete everything"
+/// `V2-MesDonnees` (TODO 3.19, 6.13, FR13): what is stored, "Export as JSON", "Delete everything"
 /// after a confirmation; the app then starts again at the onboarding.
 struct MyDataView: View {
     @Environment(\.modelContext) private var context
@@ -186,8 +186,11 @@ struct MyDataView: View {
                 count("Queues", counts.queues)
                 CardDivider()
                 count("Feedback", counts.feedback)
+                CardDivider()
+                count("Check-ins", counts.checkIns)
             }
             .card()
+            CardText(text: "Check-ins are kept for 30 days.")
         } bottom: {
             VStack(spacing: 12) {
                 PillButton("Export as JSON", icon: .download) { exportJSON() }
@@ -199,7 +202,7 @@ struct MyDataView: View {
         .confirmationDialog("Delete everything?", isPresented: $confirmingDelete, titleVisibility: .visible) {
             Button("Delete everything", role: .destructive) { deleteAll() }
         } message: {
-            Text("Songs, scores, health summaries, queues and feedback are deleted from this phone, and Spotify is disconnected. This cannot be undone.")
+            Text("Songs, scores, health summaries, queues, feedback and check-ins are deleted from this phone, and Spotify is disconnected. This cannot be undone.")
         }
         .alert("Something went wrong", isPresented: .constant(problem != nil)) {
             Button("OK") { problem = nil }
@@ -239,6 +242,7 @@ struct MyDataView: View {
     private func deleteAll() {
         do {
             try DataControl.deleteAll(in: context) { try SpotifyAuth.shared.signOut() }
+            CheckInNotifications.shared.removeAll()
             library.forget()
             refresh()
         } catch {
@@ -263,7 +267,8 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
-/// `V2-APropos` (TODO 3.19): what Harmony does and does not do, where the data go, credits.
+/// `V2-APropos` (TODO 3.19, 6.13): what Harmony does and does not do, where the data go, how the
+/// answers are used, credits.
 struct AboutView: View {
     var body: some View {
         SettingsPage(title: "About & privacy", spacing: 12) {
@@ -291,6 +296,12 @@ struct AboutView: View {
                 CardLabel(text: "Your data")
                 CardText(text: "Health: stays on your phone.")
                 CardText(text: "Titles and artists: sent to the scoring service, nothing else.")
+            }
+            .card()
+            VStack(alignment: .leading, spacing: 8) {
+                CardLabel(text: "Your answers")
+                CardText(text: "Your answers to the quick questions tune Harmony to you, on this iPhone only.")
+                CardText(text: "Recent answers count most; older ones fade within a few days. Reset anytime in Settings › Questions.")
             }
             .card()
         } bottom: {
