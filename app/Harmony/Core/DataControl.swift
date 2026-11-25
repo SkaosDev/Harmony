@@ -12,6 +12,7 @@ enum DataControl {
         var healthSummaries = 0
         var queues = 0
         var feedback = 0
+        var checkIns = 0
     }
 
     /// `UserDefaults` keys the app writes; deleting everything removes them.
@@ -26,7 +27,8 @@ enum DataControl {
                healthSummaries: try context.fetchCount(FetchDescriptor<HourSummary>())
                    + context.fetchCount(FetchDescriptor<NightSummary>()),
                queues: try context.fetchCount(FetchDescriptor<QueueRecord>()),
-               feedback: try context.fetchCount(FetchDescriptor<FeedbackEvent>()))
+               feedback: try context.fetchCount(FetchDescriptor<FeedbackEvent>()),
+               checkIns: try context.fetchCount(FetchDescriptor<CheckIn>()))
     }
 
     /// Every table, as JSON (dates in ISO 8601).
@@ -60,6 +62,17 @@ enum DataControl {
             },
             consents: try context.fetch(FetchDescriptor<Consent>(sortBy: [SortDescriptor(\.time)])).map {
                 .init(source: $0.source.rawValue, granted: $0.granted, time: $0.time)
+            },
+            checkIns: try context.fetch(FetchDescriptor<CheckIn>(sortBy: [SortDescriptor(\.answeredAt)])).map {
+                .init(id: $0.id, answeredAt: $0.answeredAt, channel: $0.channel.rawValue, promptedAt: $0.promptedAt,
+                      energy: $0.energy, pleasantness: $0.pleasantness, zEnergy: $0.zEnergy, zPleasantness: $0.zPleasantness,
+                      estimateMode: $0.estimateMode?.rawValue, labelEnergy: $0.labelEnergy,
+                      labelPleasantness: $0.labelPleasantness, usableForLearning: $0.usableForLearning,
+                      pCommonBefore: $0.pCommonBefore, pPersonalBefore: $0.pPersonalBefore, dayOfUse: $0.dayOfUse)
+            },
+            prompts: try context.fetch(FetchDescriptor<PromptLog>(sortBy: [SortDescriptor(\.scheduledAt)])).map {
+                .init(id: $0.id, scheduledAt: $0.scheduledAt, deliveredAt: $0.deliveredAt, outcome: $0.outcome?.rawValue,
+                      checkInId: $0.checkInId)
             })
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -67,7 +80,7 @@ enum DataControl {
         return try encoder.encode(export)
     }
 
-    /// Deletes everything (FR13): the 8 tables, the Spotify tokens (`signOut`), the HealthKit
+    /// Deletes everything (FR13): the 10 tables, the Spotify tokens (`signOut`), the HealthKit
     /// anchors, the import date, the onboarding flag and the pilot start day. The app then starts again at the
     /// onboarding.
     static func deleteAll(in context: ModelContext, defaults: UserDefaults = .standard,
@@ -82,6 +95,8 @@ enum DataControl {
         try context.delete(model: HourSummary.self)
         try context.delete(model: NightSummary.self)
         try context.delete(model: Consent.self)
+        try context.delete(model: CheckIn.self)
+        try context.delete(model: PromptLog.self)
         try context.save()
         try signOut()
         storedKeys.forEach(defaults.removeObject(forKey:))
@@ -114,6 +129,15 @@ enum DataControl {
         struct ConsentRow: Encodable {
             let source: String, granted: Bool, time: Date
         }
+        struct CheckInRow: Encodable {
+            let id: UUID, answeredAt: Date, channel: String, promptedAt: Date?
+            let energy: Int, pleasantness: Int?, zEnergy: Double?, zPleasantness: Double?, estimateMode: String?
+            let labelEnergy: Bool?, labelPleasantness: Bool?, usableForLearning: Bool
+            let pCommonBefore: Double?, pPersonalBefore: Double?, dayOfUse: Int
+        }
+        struct PromptRow: Encodable {
+            let id: UUID, scheduledAt: Date, deliveredAt: Date?, outcome: String?, checkInId: UUID?
+        }
 
         let exportedAt: Date
         let tracks: [TrackRow]
@@ -123,5 +147,7 @@ enum DataControl {
         let queues: [QueueRow]
         let feedback: [FeedbackRow]
         let consents: [ConsentRow]
+        let checkIns: [CheckInRow]
+        let prompts: [PromptRow]
     }
 }
