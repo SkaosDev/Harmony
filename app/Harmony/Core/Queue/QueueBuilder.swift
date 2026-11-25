@@ -56,8 +56,9 @@ enum QueueBuilder {
     ///   - suggestions: nil = no MuSe fallback.
     ///   - maxSuggestions: 2, except for the MuSe-only queue.
     ///   - v0: pleasantness from the answers (active mode); nil = the fixed positivity penalty.
+    ///   - strategy: how the targets reach the goal (S1 but in active mode, TODO 6.12b).
     ///   - check: the music service's view of a suggestion, nil if it must be left out (TODO 3.6).
-    static func build(situation: Situation, e0: Double, v0: Double? = nil, library: [QueueCandidate], exclusions: QueueExclusions,
+    static func build(situation: Situation, e0: Double, v0: Double? = nil, strategy: QueueStrategy = .s1, library: [QueueCandidate], exclusions: QueueExclusions,
                       suggestions: SuggestionSource?, maxSuggestions: Int = maxSuggestions,
                       check: (QueueCandidate) async -> TrackInfo?) async -> [QueueEntry] {
         let libraryIds = Set(library.map(\.spotifyId))
@@ -67,7 +68,7 @@ enum QueueBuilder {
         var artists = Set<String>()
         var suggested = 0
 
-        let targets = QueueTargets.targets(e0: e0, situation: situation)
+        let targets = QueueTargets.targets(e0: e0, situation: situation, strategy: strategy)
         let positivity = v0.map { QueueTargets.positivityTargets(v0: $0, count: targets.count) }
         var positivityTarget: Double?
 

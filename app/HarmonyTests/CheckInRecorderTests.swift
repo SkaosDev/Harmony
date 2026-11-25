@@ -134,9 +134,11 @@ struct CheckInRecorderTests {
         let answers = try answer([-2, -2, -2, -2, -2, 3, 3, 3])
         let later = answers.last!.answeredAt + 3600
         #expect(try recorder.personal(at: later, common: common(0.5)).energy.offset > 0)
-        try recorder.reset()
+        try recorder.reset(now: later)
         let state = try recorder.personal(at: later, common: common(0.5))
         #expect(state.energy.offset == 0 && state.energy.count == 0)
         #expect(defaults.object(forKey: CheckInRecorder.firstDayKey) == nil)
+        // The strategy choice forgets the queues before the reset.
+        #expect(recorder.resetAt == later)
     }
 }

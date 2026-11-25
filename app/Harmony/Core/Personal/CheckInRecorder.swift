@@ -18,7 +18,10 @@ struct CheckInRecorder {
     /// Day 1 of `CheckIn.dayOfUse`: the day of the first answer, again after "Reset what Harmony
     /// learned" or "Delete everything".
     static let firstDayKey = "personal.firstDay"
-    static let keys = [firstDayKey]
+    /// Time of the last "Reset what Harmony learned": the strategy choice only learns from the
+    /// queues after it (`QueueBandit`).
+    static let resetAtKey = "personal.resetAt"
+    static let keys = [firstDayKey, resetAtKey]
     /// Answers given during a queue or within this time after it are not learned from.
     static let afterQueue: TimeInterval = 60 * 60
     /// Check-ins are kept for 30 days (`V2-MesDonnees`); after 14 days they weigh nothing.
@@ -88,12 +91,19 @@ struct CheckInRecorder {
         try context.save()
     }
 
-    /// "Reset what Harmony learned": the answers go, the offsets are back to 0 (TODO 6.13).
-    func reset() throws {
+    /// "Reset what Harmony learned": the answers go, the offsets are back to 0, the day of use
+    /// starts again and the strategy choice forgets the earlier queues (TODO 6.13).
+    func reset(now: Date = .now) throws {
         try context.delete(model: CheckIn.self)
         try context.delete(model: PromptLog.self)
         try context.save()
-        Self.keys.forEach(defaults.removeObject(forKey:))
+        defaults.removeObject(forKey: Self.firstDayKey)
+        defaults.set(now.timeIntervalSince1970, forKey: Self.resetAtKey)
+    }
+
+    /// The last "Reset what Harmony learned", if any.
+    var resetAt: Date? {
+        (defaults.object(forKey: Self.resetAtKey) as? Double).map(Date.init(timeIntervalSince1970:))
     }
 
     // MARK: Rules

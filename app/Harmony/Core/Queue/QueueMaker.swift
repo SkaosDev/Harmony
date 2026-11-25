@@ -83,9 +83,14 @@ struct QueueMaker {
                          suggestions: SuggestionSource?, maxSuggestions: Int, tracks: [Track]) async throws -> PreparedQueue {
         let start = try QueueStart.make(state: state, context: context, mode: mode)
         let e0 = start.e0
+        // Shadow mode (the pilot): always S1, so the pilot's queues stay comparable (design v2 §4.6).
+        var rng = SystemRandomNumberGenerator()
+        let choice = mode == .active
+            ? try QueueBandit.choose(for: situation, since: CheckInRecorder(context: context).resetAt, in: context, using: &rng)
+            : QueueBandit.Choice(strategy: .s1, probability: 1)
         let exclusions = try QueueHistory.exclusions(for: situation, now: state.date, in: context)
         let music = music
-        let entries = await QueueBuilder.build(situation: situation, e0: e0, v0: start.v0, library: library, exclusions: exclusions,
+        let entries = await QueueBuilder.build(situation: situation, e0: e0, v0: start.v0, strategy: choice.strategy, library: library, exclusions: exclusions,
                                                suggestions: suggestions, maxSuggestions: maxSuggestions) {
             await SuggestionCheck.verify($0, using: music)
         }
@@ -101,7 +106,8 @@ struct QueueMaker {
         }
         return PreparedQueue(situation: situation, e0: e0,
                              reason: Explainer.reason(situation: situation, e0: e0, context: context, calendar: calendar),
-                             entries: entries, songs: songs, stateMode: state.estimate.mode, start: start)
+                             entries: entries, songs: songs, stateMode: state.estimate.mode, start: start,
+                             strategy: choice.strategy, strategyProbability: choice.probability)
     }
 
     /// The HRV of the last hours against the person's usual (`Explainer.hrvZ`).

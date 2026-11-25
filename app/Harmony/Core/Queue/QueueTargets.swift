@@ -17,18 +17,34 @@ nonisolated enum QueueTargets {
     /// Above this gap between `e0` and the goal, the queue has 5 songs instead of 3.
     static let longGap = 0.3
 
-    /// `n = 5` if |e0 − g| > 0.3, else 3; `m = 2` matching songs if n = 5, else 1; then
-    /// `n − m` targets evenly spaced up to the goal, the last one exactly at the goal.
-    static func targets(e0: Double, situation: Situation) -> [Double] {
+    /// `n = 5` if |e0 − g| > 0.3, else 3, for every strategy. Then:
+    /// - S1: `m = 2` matching songs if n = 5, else 1; then `n − m` targets evenly spaced up to
+    ///   the goal, the last one exactly at the goal;
+    /// - S2: one song at `e0`, then `n − 1` targets evenly from (e0 + g) / 2 to the goal;
+    /// - S3: `n − 2` songs at `e0`, then (e0 + g) / 2 and the goal.
+    /// All go monotonically from `e0` to the goal: Wind-down never ends more energetic.
+    static func targets(e0: Double, situation: Situation, strategy: QueueStrategy = .s1) -> [Double] {
         let goal = goal(e0: e0, situation: situation)
         let count = abs(e0 - goal) > longGap ? 5 : 3
-        let matching = count == 5 ? 2 : 1
-        let steps = count - matching
-        let moving = (1...steps).map { step in
-            let t = Double(step) / Double(steps)
-            return e0 * (1 - t) + goal * t
+        let half = (e0 + goal) / 2
+        switch strategy {
+        case .s1:
+            let matching = count == 5 ? 2 : 1
+            let steps = count - matching
+            let moving = (1...steps).map { step in
+                let t = Double(step) / Double(steps)
+                return e0 * (1 - t) + goal * t
+            }
+            return Array(repeating: e0, count: matching) + moving
+        case .s2:
+            let steps = count - 2
+            return [e0] + (0...steps).map { step in
+                let t = Double(step) / Double(steps)
+                return half * (1 - t) + goal * t
+            }
+        case .s3:
+            return Array(repeating: e0, count: count - 2) + [half, goal]
         }
-        return Array(repeating: e0, count: matching) + moving
     }
 
     /// Where the songs' positivity ends in Stress and Low energy when `v0` is known.
