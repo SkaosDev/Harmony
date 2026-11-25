@@ -261,14 +261,16 @@
   — Implémenté et vérifié sur Windows, y compris après inversion de l'ordre des lignes ; reproduit à l'identique sur Mac le 24 nov. ; tableau §6.5 et rapport mis à jour.
 - [x] **6.2** Critères d'adoption v2 et valence écrits avant résultats (design §9). — ✔ notés dans PROJECT.md §3.
 - [x] **6.3** Features v2 (17) + valence : CV D-1 + D-2, test unique D-3, décision selon 6.2. — ✔ deux critères satisfaits, chiffres dans PROJECT.md §6.5.
-- [ ] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat), puis `FeatureBuilder` et `StateEstimator` Swift en v3 (17 features + valence, S9). — ✔ tests Python et Swift passent.
-  — Scripts prêts et format JSON v3 testé sur des données synthétiques. Entraînement final, Core ML et Swift prévus à partir du 2 déc. Le pilote démarre le 26 nov. avec le modèle à 13 features.
-- [ ] **6.5** Simulation de la règle exacte de l'app (WP-B0) + fixtures de la couche personnelle et du rang. — ✔ hyper-paramètres et courbe notés dans PROJECT.md ; fixtures dans `ml/fixtures/`.
-  — Simulation, courbe, sensibilité et fixtures faites (PROJECT.md §6.8). Reste à décider `T`, `τ_E` et `τ_V` (design §4.4 : à régler et confirmer avant le code Swift S2) : le réglage nominal n'a pas la meilleure log-loss énergie ; régénérer les fixtures s'il change.
+- [x] **6.4** Si adopté : entraînement final, export v3, Core ML, fixtures golden, PROJECT.md §6 (contrat), puis `FeatureBuilder` et `StateEstimator` Swift en v3 (17 features + valence, S9). — ✔ tests Python et Swift passent.
+  — Scripts prêts et format JSON v3 testé sur des données synthétiques. Décision de Clément du 25 nov. : tout 6.4 avant le pilote, qui tourne sur v3 (figé du 26 nov. au 2 déc., PROJECT.md §3). 25 nov. : preuve WP-A1 recalculée (mêmes chiffres), modèle final, export v3 et Core ML (écart 1e-16), fixtures golden v3, `FeatureBuilder`/`StateEstimator` en v3 ; tests Python et Swift verts.
+- [x] **6.5** Simulation de la règle exacte de l'app (WP-B0) + fixtures de la couche personnelle et du rang. — ✔ hyper-paramètres et courbe notés dans PROJECT.md ; fixtures dans `ml/fixtures/`.
+  — Simulation, courbe, sensibilité et fixtures faites (PROJECT.md §6.8). 25 nov. : `T` = 2, `τ_E` = 2, `τ_V` = 1,5, choisis par sélection imbriquée selon la règle écrite avant (§3) ; fixtures et courbes refaites sur le modèle v3.
 
 ### 6.DESIGN
-- [ ] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.
-- [ ] **6.6b** Après le pilote, dessiner le reste du design §5.4 dans le canvas et le copier dans `docs/design/` : ligne « Energy right now? » sur `V2-Accueil`, feuille de check-in (énergie sur 7 crans avec repère « Last », agrément facultatif), paragraphe sur l'apprentissage local dans `V2-APropos` et, si retenu, l'indicateur « Harmony is learning your usual — N answers this week ». — ✔ README du design à jour, avant 6.9 et 6.13 complet.
+- [x] **6.6** Écrans et notification de check-in dessinés dans le canvas, copiés dans `docs/design/` (design §5.4 ; réduit pour le pilote : notification, étape d'onboarding, réglages « Questions » et « Reset », check-ins dans My Data). — ✔ README du design à jour.
+  — 25 nov. : canvas version `1795580716-d06c` ; 3 écrans nouveaux (notification, 2.4b, Settings › Questions), 6.1, 6.4 et l'onboarding modifiés ; textes à relire (3.20).
+- [x] **6.6b** Après le pilote, dessiner le reste du design §5.4 dans le canvas et le copier dans `docs/design/` : ligne « Energy right now? » sur `V2-Accueil`, feuille de check-in (énergie sur 7 crans avec repère « Last », agrément facultatif), paragraphe sur l'apprentissage local dans `V2-APropos` et, si retenu, l'indicateur « Harmony is learning your usual — N answers this week ». — ✔ README du design à jour, avant 6.9 et 6.13 complet.
+  — 25 nov. (avant le pilote) : canvas version `1795581282-7fa3` ; la ligne énergie est dessinée dans la variante `V2-AccueilEnergie` pour que `V2-Accueil` reste le Home du pilote (6.9 les fusionne) ; feuille `V2-CheckIn` ; carte « Your answers » dans `V2-APropos`.
 
 ### 6.APP
 - [ ] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.

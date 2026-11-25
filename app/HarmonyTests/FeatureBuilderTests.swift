@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Harmony
 
-/// TODO 2.19: the 13 features v1 of PROJECT.md §6, in the order of `model_params.json`.
+/// TODO 2.19, 6.4: the 17 features v3 of PROJECT.md §6 and §6.8, in the order of `model_params.json`.
 private let calendar = StateFixtures.calendar
 
 /// `day` of November 2026 at `hour:minute:second`, Seoul time (Nov 21 is a Saturday).
@@ -40,9 +40,10 @@ struct FeatureBuilderTests {
 
     @Test func noWatchDataIsUnknownNeverZero() {
         let empty = features(at: date(18, 15))
-        #expect(empty.count == 13)
+        #expect(empty.count == 17)
         for name in ["z_hr_15", "z_hr_30", "z_hr_60", "zb_hr_30", "z_log_steps_15", "z_log_steps_30",
-                     "z_log_steps_60", "z_sleep_min", "hours_since_wake"] {
+                     "z_log_steps_60", "z_sleep_min", "hours_since_wake",
+                     "raw_hr_30", "raw_hr_60", "raw_log_steps_30", "raw_log_steps_60"] {
             #expect(empty[name] == .some(nil), "\(name)")
         }
         #expect(empty["sleep_unknown"] == 1)
@@ -82,13 +83,17 @@ struct FeatureBuilderTests {
         #expect(throws: FeatureBuilder.UnknownFeature.self) { try FeatureBuilder.row(values, order: ["c"]) }
     }
 
-    @Test func bundledParamsListTheThirteenFeaturesOfTheFixtures() throws {
+    @Test func bundledParamsListTheSeventeenFeaturesOfTheFixtures() throws {
         let params = try ModelParams.bundled()
-        #expect(params.features == (try StateFixtures.load().features))
-        #expect(params.features.count == 13)
+        let fixtures = try StateFixtures.load()
+        #expect(params.version == 3)
+        #expect(fixtures.modelVersion == params.version)
+        #expect(params.features == fixtures.features)
+        #expect(params.features.count == 17)
+        #expect(params.features.suffix(4) == ["raw_hr_30", "raw_hr_60", "raw_log_steps_30", "raw_log_steps_60"])
     }
 
-    /// Golden check against Python: the 13 features of the 10 fixtures, in model order.
+    /// Golden check against Python: the 17 features of the 10 fixtures, in model order.
     @Test func featuresMatchTheGoldenFixtures() throws {
         let fixtures = try StateFixtures.load()
         let order = try ModelParams.bundled().features

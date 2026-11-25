@@ -1,8 +1,9 @@
 """Core ML conversion of the final state model (TODO 2.16), called by `export.py --coreml`.
 
 The whole sklearn Pipeline (median imputation, standardization, logistic regression) becomes
-one StateModel.mlmodel: 13 double inputs in `features.FEATURES` order (NaN = unknown), output
-P(arousal_high = 1). Needs macOS (to run the check) and coremltools 8.x.
+one StateModel.mlmodel: double inputs in the order of the saved model (v3: the 17 of
+`features.FEATURES_V2`; NaN = unknown), output P(arousal_high = 1). The valence blocks stay in
+`model_params.json`. Needs macOS (to run the check) and coremltools 8.x.
 """
 import copy
 import warnings

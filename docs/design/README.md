@@ -3,7 +3,7 @@
 **Source de vérité :** le canvas claude.ai « Harmony — brand identity + screens »
 https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319 (privé, compte de Clément).
 
-Ce dossier en est une **copie** (version `1795420183-0ba4`, copiée le 23 nov. 2026) pour que toute
+Ce dossier en est une **copie** (version `1795581282-7fa3`, copiée le 25 nov. 2026) pour que toute
 l'équipe, et son Claude Code, puisse lire le design sans accès au canvas.
 L'app doit reproduire ces écrans **à l'identique** : couleurs, police, tailles, espacements,
 rayons, textes, icônes.
@@ -28,9 +28,11 @@ rayons, textes, icônes.
 | `V2-Onb2-Comment.dc.html` | 2.2 How it works | 3.16 |
 | `V2-Onb3-Spotify.dc.html` | 2.3 Connect Spotify | 3.16 |
 | `V2-Onb4-Sante.dc.html` | 2.4 Health data | 3.16 |
+| `V2-Onb4b-Questions.dc.html` | 2.4b Quick questions | 6.13 |
 | `V2-Onb5-Import.dc.html` | 2.5 Library import | 3.16 |
 | `V2-Accueil.dc.html` | 3.1 Home | 1.6 (barre d'onglets), 3.17 |
 | `V2-AccueilVide.dc.html` | 3.2 Home – empty | 3.17 |
+| `V2-AccueilEnergie.dc.html` | 3.3 Home – energy row | 6.9 |
 | `V2-Lecture.dc.html` | 4.1 Now playing | 3.18 |
 | `V2-File.dc.html` | 4.2 Up next | 3.18 |
 | `V2-Feedback.dc.html` | 4.3 Did it fit? | 3.15 |
@@ -40,7 +42,24 @@ rayons, textes, icônes.
 | `V2-CompteSpotify.dc.html` | 6.2 Spotify account | 1.26, 3.19 |
 | `V2-Sante.dc.html` | 6.3 Health & consents | 3.19 |
 | `V2-MesDonnees.dc.html` | 6.4 My data | 3.19 |
-| `V2-APropos.dc.html` | 6.5 About & privacy | 3.19 |
+| `V2-APropos.dc.html` | 6.5 About & privacy | 3.19, 6.13 |
+| `V2-Questions.dc.html` | 6.6 Questions | 6.13 |
+| `V2-Notification.dc.html` | 7.1 Check-in notification | 6.10 |
+| `V2-CheckIn.dc.html` | 7.2 Check-in | 6.9 |
+
+Check-ins du pilote (TODO 6.6, rangée « Check-ins (v2) » du canvas) : la notification, l'étape
+d'onboarding 2.4b (entre 2.4 et 2.5 ; l'onboarding passe à 6 segments), la sous-page
+Settings › Questions (plages 10:00–13:00 et 15:00–19:00, « Reset what Harmony learned »), la
+ligne « Questions » de 6.1 et la ligne « Check-ins » de 6.4. Ces écrans sont **en avance sur
+l'app** jusqu'à 6.10 et 6.13 : l'app actuelle n'a ni l'étape 2.4b ni la ligne « Questions ».
+« Kept for 30 days » est une proposition, à confirmer avec le protocole (6.14). Dans la
+notification, « Not now » vient en premier : le double tap de l'Apple Watch déclenche la
+première action.
+
+Après le pilote (TODO 6.6b) : 3.3 est la variante de Home avec la ligne facultative « Energy
+right now? » et le compteur de réponses ; elle ouvre la feuille 7.2 (énergie sur 7 crans avec le
+repère « Last », agrément facultatif). 3.1 reste le Home du pilote ; 6.9 fusionnera 3.3 dans 3.1.
+6.5 gagne la carte « Your answers » (apprentissage local).
 
 Navigation : 3 onglets **Home / Library / Settings** ; le lecteur s'ouvre depuis Home (une
 situation) ; l'écran Debug n'est pas dans le design (accessible depuis Settings, build Debug

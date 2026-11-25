@@ -1,8 +1,8 @@
 """Export the final state model to the app (TODO 2.15, 2.16).
 
 Usage:
-    python ml/export.py --model data/models/state_model.joblib
-    python ml/export.py --model data/models/state_model.joblib --coreml
+    python ml/export.py --model data/models/state_v3.joblib
+    python ml/export.py --model data/models/state_v3.joblib --coreml
 
 Writes app/Harmony/Resources/model_params.json: feature order, imputation medians,
 standardization means / scales, logistic coefficients and intercept (docs/PROJECT.md §6.7), and
@@ -69,13 +69,6 @@ def predict(params, row):
     return float(1 / (1 + np.exp(-(z @ params["coefficients"] + params["intercept"]))))
 
 
-def is_within(path, target):
-    """True if `path` is `target` or lies inside it. Compares on disk, so a path that differs
-    only by letter case (case-insensitive APFS, the macOS default) is caught too."""
-    path = Path(path).resolve()
-    return Path(target).exists() and any(p.exists() and p.samefile(target) for p in (path, *path.parents))
-
-
 def write_params(params, path):
     text = json.dumps(params, indent=2) + "\n"
     if len(text.encode()) >= MAX_BYTES:
@@ -92,8 +85,6 @@ def main():
     args = ap.parse_args()
     saved = joblib.load(args.model)   # our own file from train.py --final: never load an unknown joblib
     params = build_params(saved)
-    if params["version"] == 3 and is_within(args.out, APP):
-        ap.error("export v3 outside app/ until the Swift port and pilot freeze permit rollout")
     args.out.mkdir(parents=True, exist_ok=True)
     size = write_params(params, args.out / "model_params.json")
     print(f"model_params.json: {size} bytes, {len(params['features'])} features")

@@ -64,9 +64,11 @@ struct CurrentStateTests {
             for name in estimator.params.features {
                 expectClose(state.features[name] ?? nil, fixture.expected(name), "\(fixture.name) \(name)")
             }
-            let body = fixture.expected("z_hr_30") != nil
+            let body = fixture.expected("raw_hr_30") != nil
             #expect(state.estimate.mode == (body ? .body : .timeOnly), "\(fixture.name)")
             expectClose(state.estimate.value, body ? fixture.probability : fixture.timeOnlyProbability, fixture.name)
+            expectClose(state.estimate.valence, body ? fixture.valenceProbability : fixture.valenceTimeOnlyProbability,
+                        "\(fixture.name) valence")
         }
     }
 
@@ -76,7 +78,7 @@ struct CurrentStateTests {
         let provider = try DemoHealthProvider(now: now, calendar: calendar)
         let state = try await CurrentState.compute(provider: provider, estimator: try StateEstimator.bundled(),
                                                    now: now, calendar: calendar)
-        #expect(state.features.count == 13)
+        #expect(state.features.count == 17)
         #expect(state.estimate.value > 0 && state.estimate.value < 1)
     }
 }

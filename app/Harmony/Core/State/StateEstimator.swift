@@ -5,19 +5,23 @@ import Foundation
 /// emotion (NFR7).
 struct StateEstimate: Equatable {
     enum Mode {
-        /// The 13-feature model: time, heart rate, steps and sleep (TODO 2.20).
+        /// The 17-feature model: time, heart rate, steps and sleep (TODO 2.20, 6.4).
         case body
-        /// Time of day only (TODO 2.21): no reference yet, or no heart rate in the last 30 min.
+        /// Time of day only (TODO 2.21): no heart rate in the last 30 min.
         case timeOnly
     }
 
     let value: Double
     let mode: Mode
+    /// How likely the moment is more pleasant than usual, same mode (TODO 6.4). Internal: never
+    /// shown as an emotion, never used alone (PROJECT.md §6.8); nil without a valence model.
+    var valence: Double? = nil
 }
 
-/// Estimates the state from the features of `FeatureBuilder` (TODO 2.20, 2.21). The 13-feature
+/// Estimates the state from the features of `FeatureBuilder` (TODO 2.20, 2.21, 6.4). The energy
 /// model is `StateModel.mlmodel` (`ml/export.py`): imputation of unknown values by the training
-/// medians, standardization and logistic regression, all inside Core ML.
+/// medians, standardization and logistic regression, all inside Core ML. The valence models are
+/// the same computation from `model_params.json` (`LogisticParams`).
 struct StateEstimator {
     let params: ModelParams
     private let model: MLModel
@@ -35,15 +39,23 @@ struct StateEstimator {
                               model: try MLModel(contentsOf: url, configuration: configuration))
     }
 
-    /// Time-only mode when `z_hr_30` is unknown: no heart rate in the last 30 min, no reference
-    /// yet (fewer than 7 days) or a flat reference (standard deviation 0). Otherwise the model.
+    /// Time-only mode when `raw_hr_30` is unknown: no heart rate in the last 30 min. Otherwise
+    /// the model, even without a reference yet: unknown z-scores take the training medians
+    /// (v3 rule, PROJECT.md §6.8). The valence follows the same rule.
     func estimate(_ features: [String: Double?]) throws -> StateEstimate {
-        if (features["z_hr_30"] ?? nil) == nil {
+        if (features["raw_hr_30"] ?? nil) == nil {
             let row = try FeatureBuilder.row(features, order: params.timeOnly.features)
-            return StateEstimate(value: params.timeOnly.probability(row), mode: .timeOnly)
+            return StateEstimate(value: params.timeOnly.probability(row), mode: .timeOnly,
+                                 valence: try valence(params.valenceTimeOnly, features))
         }
         let row = try FeatureBuilder.row(features, order: params.features)
-        return StateEstimate(value: try modelProbability(row), mode: .body)
+        return StateEstimate(value: try modelProbability(row), mode: .body,
+                             valence: try valence(params.valence, features))
+    }
+
+    private func valence(_ model: LogisticParams?, _ features: [String: Double?]) throws -> Double? {
+        guard let model else { return nil }
+        return model.probability(try FeatureBuilder.row(features, order: model.features))
     }
 
     /// Probability of class 1 (`arousal_high`) for a row in `params.features` order;

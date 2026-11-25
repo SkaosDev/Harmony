@@ -1,8 +1,9 @@
 import Foundation
 
-/// The 13 features v1 of the state model at an instant t (TODO 2.19), exactly as
-/// `ml/features.py` computes them (PROJECT.md §6 « Features v1 »). Unknown is nil, never 0.
-/// Sleep is the Apple Watch's (`NightSummary`), not estimated from heart rate as in Python.
+/// The 17 features v3 of the state model at an instant t (TODO 2.19, 6.4), exactly as
+/// `ml/features.py` computes them (PROJECT.md §6 « Features v1 » and §6.8): the 13 of v1 and
+/// the 4 raw windows. Unknown is nil, never 0. Sleep is the Apple Watch's (`NightSummary`), not
+/// estimated from heart rate as in Python.
 enum FeatureBuilder {
     /// z_sleep_min needs this many known nights among the 14 days before the answer day.
     static let minKnownNights = 5
@@ -32,6 +33,10 @@ enum FeatureBuilder {
             features["z_" + quantity.rawValue] = baseline.z(quantity, now[quantity])
         }
         features["zb_hr_30"] = baseline.zBlock(now[.hr30], block: BaselineCalculator.block(of: t, calendar: calendar))
+        // v3: the 30 and 60-min windows before the z-score (PROJECT.md §6.8).
+        for quantity in [WindowQuantity.hr30, .hr60, .logSteps30, .logSteps60] {
+            features["raw_" + quantity.rawValue] = now[quantity]
+        }
 
         // Sleep of the night ending today, compared with the known nights of the 14 days before.
         let today = calendar.startOfDay(for: t)

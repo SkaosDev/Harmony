@@ -14,7 +14,7 @@ from typing import Iterable
 WINDOW = timedelta(days=14)
 MIN_LABEL_RESPONSES = 5
 DECAY_DAYS = 2.0
-ENERGY_PRIOR_STD = 1.0
+ENERGY_PRIOR_STD = 2.0                  # TODO 6.5: nested selection, PROJECT.md §6.8
 NEWTON_STEPS = 5
 
 

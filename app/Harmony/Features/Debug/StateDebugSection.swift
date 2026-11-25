@@ -1,7 +1,7 @@
 #if DEBUG
 import SwiftUI
 
-/// Debug screen, state part (TODO 2.22): the 13 features and the state now, from the watch data
+/// Debug screen, state part (TODO 2.22): the 17 features and the state now, from the watch data
 /// (the demo files in demo mode), before the real screens use them. Also printed, to be read from
 /// the Xcode console.
 struct StateDebugSection: View {
@@ -18,6 +18,7 @@ struct StateDebugSection: View {
             if let state {
                 LabeledContent("Mode", value: describe(state.estimate.mode))
                 LabeledContent("State, 0…1", value: format(state.estimate.value))
+                LabeledContent("Valence (internal), 0…1", value: format(state.estimate.valence))
                 ForEach(order, id: \.self) { name in
                     LabeledContent(name, value: format(state.features[name] ?? nil))
                 }
@@ -34,7 +35,7 @@ struct StateDebugSection: View {
         } header: {
             Text("State")
         } footer: {
-            Text("1 = more activated than usual. Time of day only without a 7-day reference or a heart rate in the last 30 min.")
+            Text("1 = more activated than usual. Time of day only without a heart rate in the last 30 min.")
         }
         .disabled(isWorking)
     }
@@ -63,7 +64,7 @@ struct StateDebugSection: View {
 
     private func describe(_ mode: StateEstimate.Mode) -> String {
         switch mode {
-        case .body: "Body (13 features)"
+        case .body: "Body (17 features)"
         case .timeOnly: "Time of day only"
         }
     }
