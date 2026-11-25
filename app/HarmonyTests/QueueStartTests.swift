@@ -60,8 +60,12 @@ struct QueueStartTests {
         let shadow = try await maker.prepare(.stress, state: state())
         maker.mode = .active
         let active = try await maker.prepare(.stress, state: state())
-        #expect(active == shadow)
-        #expect(shadow.e0 == 16.0 / 40 && shadow.start?.e0Source == .rank)
+        // Same start; only the strategy is drawn in active mode (TODO 6.12b).
+        #expect(active.e0 == shadow.e0 && active.start == shadow.start && active.reason == shadow.reason)
+        #expect(active.entries.map(\.target) == QueueTargets.targets(e0: shadow.e0, situation: .stress,
+                                                                      strategy: active.strategy))
+        if active.strategy == .s1 { #expect(active.entries == shadow.entries) }
+        #expect(shadow.e0 == 16.0 / 40 && shadow.start?.e0Source == .rank && shadow.strategy == .s1)
     }
 
     @Test func positivityTargetsGoFromV0ToTheGoal() {
