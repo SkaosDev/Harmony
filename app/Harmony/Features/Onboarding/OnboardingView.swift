@@ -91,22 +91,22 @@ struct OnboardingView: View {
     private var questions: some View {
         page(step: 5) {
             VStack(alignment: .leading, spacing: 14) {
-                title("Two quick questions a day")
-                Text("How much energy do you have right now? Your answers help Harmony learn your usual.")
+                title(CheckInTexts.onboardingTitle)
+                Text(CheckInTexts.onboardingText)
                     .font(Theme.font(size: 16))
                     .designLineHeight(16 * 1.4)
                     .foregroundStyle(Theme.textSecondary)
-                TileRow(color: Theme.accent, title: "One tap", detail: "Low, Medium or High, right from the notification.")
-                TileRow(color: Theme.blue, title: "Twice a day at most", detail: "At a random time, in the hours you choose.")
-                TileRow(color: Theme.wakeUp, title: "Always optional",
-                        detail: "Ignore it or tap Not now. Harmony works without answers.")
-                TileRow(color: Theme.stress, title: "Stays on your phone", detail: "Your answers never leave your iPhone.")
+                let tiles = CheckInTexts.onboardingTiles
+                TileRow(color: Theme.accent, title: tiles[0].0, detail: tiles[0].1)
+                TileRow(color: Theme.blue, title: tiles[1].0, detail: tiles[1].1)
+                TileRow(color: Theme.wakeUp, title: tiles[2].0, detail: tiles[2].1)
+                TileRow(color: Theme.stress, title: tiles[3].0, detail: tiles[3].1)
             }
         } bottom: {
             VStack(spacing: 12) {
-                note("Turn questions off anytime in Settings.")
-                PillButton("Allow notifications", arrow: true) { Task { await allowQuestions() } }
-                PillButton("Not now", style: .outline) {
+                note(CheckInTexts.onboardingNote)
+                PillButton(CheckInTexts.allowNotifications, arrow: true) { Task { await allowQuestions() } }
+                PillButton(CheckInTexts.notNow, style: .outline) {
                     UserDefaults.standard.set(false, forKey: QuestionSettings.enabledKey)
                     step = 6
                 }

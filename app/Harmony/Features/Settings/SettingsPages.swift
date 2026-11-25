@@ -187,10 +187,10 @@ struct MyDataView: View {
                 CardDivider()
                 count("Feedback", counts.feedback)
                 CardDivider()
-                count("Check-ins", counts.checkIns)
+                count(CheckInTexts.checkIns, counts.checkIns)
             }
             .card()
-            CardText(text: "Check-ins are kept for 30 days.")
+            CardText(text: CheckInTexts.checkInsKept)
         } bottom: {
             VStack(spacing: 12) {
                 PillButton("Export as JSON", icon: .download) { exportJSON() }
@@ -299,9 +299,9 @@ struct AboutView: View {
             }
             .card()
             VStack(alignment: .leading, spacing: 8) {
-                CardLabel(text: "Your answers")
-                CardText(text: "Your answers to the quick questions tune Harmony to you, on this iPhone only.")
-                CardText(text: "Recent answers count most; older ones fade within a few days. Reset anytime in Settings › Questions.")
+                CardLabel(text: CheckInTexts.answersLabel)
+                CardText(text: CheckInTexts.answersTune)
+                CardText(text: CheckInTexts.answersFade)
             }
             .card()
         } bottom: {

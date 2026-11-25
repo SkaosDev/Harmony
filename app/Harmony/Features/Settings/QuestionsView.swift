@@ -12,51 +12,49 @@ struct QuestionsView: View {
     @State private var confirmsReset = false
     @State private var problem: String?
 
-    private static let names = ["Late morning", "Afternoon"]
-
     var body: some View {
-        SettingsPage(title: "Questions") {
-            CardText(text: "Two quick questions a day about your energy. Optional.")
+        SettingsPage(title: CheckInTexts.questions) {
+            CardText(text: CheckInTexts.questionsText)
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Questions")
+                    Text(CheckInTexts.questions)
                         .font(Theme.font(size: 16, bold: true))
                         .designLineHeight(16 * 1.2)
                         .foregroundStyle(Theme.textPrimary)
-                    Text("Up to 2 a day. Never in the hour after music.")
+                    Text(CheckInTexts.questionsSwitch)
                         .font(Theme.font(size: 13))
                         .designLineHeight(13 * 1.3)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                DesignSwitch(isOn: Binding(get: { enabled }, set: { turn($0) }), label: "Questions")
+                DesignSwitch(isOn: Binding(get: { enabled }, set: { turn($0) }), label: CheckInTexts.questions)
             }
             .padding(.vertical, 4)
             VStack(alignment: .leading, spacing: 8) {
-                CardLabel(text: "Ask me between")
+                CardLabel(text: CheckInTexts.askBetween)
                 VStack(spacing: 12) {
                     window(0)
                     CardDivider()
                     window(1)
                 }
                 .card()
-                CardText(text: "One question at a random time in each window.")
+                CardText(text: CheckInTexts.windowsText)
             }
         } bottom: {
             VStack(alignment: .leading, spacing: 12) {
-                CardText(text: "Deletes your answers. Harmony goes back to its day-one estimate.")
-                PillButton("Reset what Harmony learned", style: .outline) { confirmsReset = true }
+                CardText(text: CheckInTexts.resetText)
+                PillButton(CheckInTexts.reset, style: .outline) { confirmsReset = true }
             }
         }
         .sheet(isPresented: Binding(get: { editing != nil }, set: { if !$0 { editing = nil } })) {
             if let editing {
-                WindowPicker(name: Self.names[editing], window: windows[editing]) { save($0, at: editing) }
+                WindowPicker(name: CheckInTexts.windowNames[editing], window: windows[editing]) { save($0, at: editing) }
             }
         }
-        .confirmationDialog("Reset what Harmony learned?", isPresented: $confirmsReset, titleVisibility: .visible) {
-            Button("Reset", role: .destructive) { Task { await reset() } }
+        .confirmationDialog(CheckInTexts.resetQuestion, isPresented: $confirmsReset, titleVisibility: .visible) {
+            Button(CheckInTexts.resetButton, role: .destructive) { Task { await reset() } }
         } message: {
-            Text("Deletes your answers. Harmony goes back to its day-one estimate.")
+            Text(CheckInTexts.resetText)
         }
         .alert("Something went wrong", isPresented: .constant(problem != nil)) {
             Button("OK") { problem = nil }
@@ -68,7 +66,7 @@ struct QuestionsView: View {
     private func window(_ index: Int) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(Self.names[index])
+                Text(CheckInTexts.windowNames[index])
                     .font(Theme.font(size: 16))
                     .designLineHeight(16 * 1.4)
                     .foregroundStyle(Theme.textSecondary)
@@ -79,7 +77,7 @@ struct QuestionsView: View {
             }
             Spacer(minLength: 0)
             Button { editing = index } label: {
-                Text("Change")
+                Text(CheckInTexts.change)
                     .font(Theme.font(size: 13, bold: true))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 16)
@@ -145,7 +143,7 @@ private struct WindowPicker: View {
                 DatePicker("To", selection: $end, in: Self.date(CheckInSchedule.earliest)...Self.date(CheckInSchedule.latest),
                            displayedComponents: .hourAndMinute)
                 if !isValid {
-                    Text("Between 07:00 and 22:00, at least one hour long.")
+                    Text(CheckInTexts.windowRule)
                         .foregroundStyle(.secondary)
                 }
             }

@@ -3,13 +3,17 @@ import SwiftUI
 
 /// Home tab (TODO 3.17): the four situations, the suggested one marked "For you"
 /// (`docs/design/V2-Accueil.dc.html`), or "Nothing to play yet" while no song has a score
-/// (`V2-AccueilVide.dc.html`). One tap on a situation starts its queue (NFR5: ≤ 2 taps).
+/// (`V2-AccueilVide.dc.html`). One tap on a situation starts its queue (NFR5: ≤ 2 taps). In
+/// active mode only, the optional "Energy right now?" row comes above them (`V2-AccueilEnergie`,
+/// TODO 6.9); the pilot's Home stays `V2-Accueil`.
 struct HomeView: View {
     @AppStorage(DemoMode.key) private var demoMode = false
     @Environment(\.modelContext) private var context
     @Environment(PlayerController.self) private var player
     @Environment(LibrarySync.self) private var library
     @Query private var scores: [SongScore]
+    @Query(sort: \CheckIn.answeredAt, order: .reverse) private var checkIns: [CheckIn]
+    @State private var asksEnergy = false
     @State private var state: CurrentState?
     /// The `e0` of a queue started now, for the suggestion (TODO 6.11).
     @State private var e0: Double?
@@ -26,6 +30,11 @@ struct HomeView: View {
         .background(Theme.background)
         .ignoresSafeArea(edges: .top)
         .task { await computeState() }
+        .sheet(isPresented: $asksEnergy) {
+            CheckInSheet(last: checkIns.first?.energy) { energy, pleasantness in
+                Task { await saveCheckIn(energy: energy, pleasantness: pleasantness) }
+            }
+        }
         .alert("Can't start the queue", isPresented: .constant(problem != nil)) {
             Button("OK") { problem = nil }
         } message: {
@@ -51,6 +60,11 @@ struct HomeView: View {
                     .tracking(-1.2)
                     .designLineHeight(36 * 1.08)
                     .foregroundStyle(Theme.textPrimary)
+            }
+            if PersonalMode.current == .active {
+                EnergyRow(answersThisWeek: checkIns.filter { $0.answeredAt > .now - 7 * 86400 }.count) {
+                    asksEnergy = true
+                }
             }
             VStack(alignment: .leading, spacing: 12) {
                 Text("Pick a situation")
@@ -169,6 +183,19 @@ struct HomeView: View {
             await player.play(queue, playback: DemoMode.playback(demoMode), music: music, context: context)
         } catch {
             problem = UserMessage.text(for: error)
+        }
+    }
+
+    /// The answer before the music: stored at once, completed with the state at its time, and the
+    /// suggestion follows it.
+    private func saveCheckIn(energy: Int, pleasantness: Int?) async {
+        do {
+            try CheckInRecorder(context: context).record(energy: energy, pleasantness: pleasantness, channel: .sheet,
+                                                         at: .now, common: nil)
+            try await CheckInNotifications.shared.complete(context: context)
+            if let state { e0 = try QueueStart.make(state: state, context: context).e0 }
+        } catch {
+            print("Check-in not stored: \(error)")
         }
     }
 

@@ -35,7 +35,7 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
     static let shared = CheckInNotifications()
 
     nonisolated static let category = "CHECKIN"
-    static let body = "Quick check: energy right now?"
+    static let body = CheckInTexts.notification
     /// A question left this long without an answer is ignored, and taken off the screen.
     static let ignoredAfter: TimeInterval = 2 * 3600
 
@@ -45,10 +45,10 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
 
         var title: String {
             switch self {
-            case .notNow: "Not now"
-            case .low: "Low"
-            case .medium: "Medium"
-            case .high: "High"
+            case .notNow: CheckInTexts.notNow
+            case .low: CheckInTexts.low
+            case .medium: CheckInTexts.medium
+            case .high: CheckInTexts.high
             }
         }
 
@@ -198,7 +198,7 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
 
     /// Gives the waiting answers their state at the time they were given; stops while Apple
     /// Health cannot be read (phone locked).
-    private func complete(context: ModelContext) async throws {
+    func complete(context: ModelContext) async throws {
         guard let healthProvider else { return }
         let provider = try healthProvider()
         let estimator = try StateEstimator.bundled()

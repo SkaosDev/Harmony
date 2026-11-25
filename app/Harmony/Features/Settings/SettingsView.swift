@@ -13,7 +13,7 @@ struct SettingsView: View {
                 VStack(spacing: 10) {
                     page(Theme.accent, "Spotify account") { SpotifyAccountView() }
                     page(Theme.stress, "Health data") { HealthDataView() }
-                    page(Situation.windDown.color, "Questions") { QuestionsView() }
+                    page(Situation.windDown.color, CheckInTexts.questions) { QuestionsView() }
                     page(Theme.blue, "My data") { MyDataView() }
                     page(Theme.wakeUp, "About & privacy") { AboutView() }
                     TileRow(color: Situation.lowEnergy.color, title: "Demo mode", detail: "Recorded data, no watch needed.") {
