@@ -421,7 +421,7 @@ for batch in chunks(missing, 50):
 \goal{Estimate, between 0 and 1, whether the person is more or less activated than usual.}
 \impl
 \begin{itemize}
-\item \textbf{Training data:} EmoPhone. For each mood answer: the heart rate and the steps in the 15, 30 and 60 minutes before it, last night's sleep duration and the time since waking up, all compared with the person's own average, plus the hour of the day. The label is 1 when the arousal answer is above the person's own average.
+\item \textbf{Training data:} EmoPhone. For each mood answer: the heart rate and the steps in the 15, 30 and 60 minutes before it, last night's sleep duration and the time since waking up, all compared with the person's own average, plus the hour of the day and the raw heart rate and steps of the last 30 and 60 minutes (17 inputs). The label is 1 when the arousal answer is above the person's own average.
 \item \textbf{Sleep in training:} EmoPhone has no watch-measured sleep, so we estimate it the way watches do: the longest period between 21:00 and 12:00 with the watch worn, no steps and a heart rate in the person's lowest 30\%, lasting at least 2 hours. The median is 7.3 hours. The watch was not worn on 34\% of nights; those nights are marked unknown, as in the app.
 \item \textbf{Model:} logistic regression (scikit-learn), tested with a 5-fold split by participant; kept only if it beats the time-of-day baseline; converted with coremltools.
 \item \textbf{On the phone:} the same features come from Requirement~2; Core ML returns a number, never an emotion label (NFR7).
@@ -434,14 +434,15 @@ for batch in chunks(missing, 50):
 x = [z(HR_15), z(HR_30), z(HR_60), z_block(HR_30),
      z(steps_15), z(steps_30), z(steps_60),
      z(sleep), hoursSinceWake, sleepUnknown,
-     sin(hour), cos(hour), weekend]
+     sin(hour), cos(hour), weekend,
+     HR_30, HR_60, logSteps_30, logSteps_60]
 y = arousal > mean arousal of this participant
 for fold in GroupKFold(5, groups=participant):
   fit LogisticRegression; report AUROC, balanced accuracy
 keep if AUROC > time-only baseline -> StateModel.mlmodel
 
 # on the phone
-if no baseline or no heart rate in last 30 min:
+if no heart rate in last 30 min:
   return prior(hour)             # time-of-day mode
 # 0 = calmer than usual .. 1 = more activated
 return StateModel.predict(x)
@@ -625,7 +626,7 @@ Fig.~\ref{fig:architecture} shows the parts of the system and where they run. Ev
 
 \textbf{Layers.} The app has four folders: \texttt{Features} (SwiftUI views), \texttt{Core} (models and pure logic), \texttt{Services} (connectors to Spotify, Apple Health and the Worker) and \texttt{Resources} (Core ML model, its parameters, the MuSe table, demo data). The core never calls Spotify or HealthKit directly: it sees two protocols, \texttt{MusicProvider} and \texttt{HealthProvider}, each with a real and a demo implementation (FR12, FR14, NFR8).
 
-\textbf{Main flows.} (1) When the app becomes active, the summary store reads the new HealthKit samples with anchored queries and keeps hourly and nightly summaries only. (2) At each tap on a situation, the state is computed again: the heart rate, steps and sleep of the last 14 days are read into memory, turned into the 13 features of Requirement~4 against the person's own averages, then given to Core ML (or to the time-of-day model if the watch gave no heart rate in the last 30 minutes); the raw samples are then dropped. (3) The queue maker builds the queue from the local tables and the MuSe table, checks at most two MuSe suggestions on Spotify and writes the reason. (4) The player controller plays the queue in Spotify and records skips, likes, finished songs and the ``Did it fit?'' answer. (5) New songs are scored in the background: MuSe first, then the Worker in batches of 50, else a neutral score.
+\textbf{Main flows.} (1) When the app becomes active, the summary store reads the new HealthKit samples with anchored queries and keeps hourly and nightly summaries only. (2) At each tap on a situation, the state is computed again: the heart rate, steps and sleep of the last 14 days are read into memory, turned into the 17 features of Requirement~4, then given to Core ML (or to the time-of-day model if the watch gave no heart rate in the last 30 minutes); the raw samples are then dropped. (3) The queue maker builds the queue from the local tables and the MuSe table, checks at most two MuSe suggestions on Spotify and writes the reason. (4) The player controller plays the queue in Spotify and records skips, likes, finished songs and the ``Did it fit?'' answer. (5) New songs are scored in the background: MuSe first, then the Worker in batches of 50, else a neutral score.
 
 \textbf{Changes from the specification.} The personal averages are computed in memory at each estimate instead of being stored in a \texttt{baselines} table. The queue is played as a private Spotify playlist named ``Harmony'', created for each queue and played through App Remote, instead of one song plus the Spotify queue. Songs scored by the LLM get no penalty in the song choice (team decision, Nov.\ 23): with any fixed penalty, almost only MuSe songs were chosen. Each queue also records the estimate it really used, from the watch or from the time of day only (Section~\ref{sec:pilot}).
 
@@ -708,7 +709,7 @@ Cyprien & Data: comparison of the EmoPhone waves, MuSe table, title and artist n
 \section{Evaluation and Discussion}\label{sec:eval}
 %=====================================================================
 \subsection{State Model}
-The final model keeps the 13 features of Requirement~4 and a logistic regression. Table~\ref{tab:eval} gives the evaluation, always on people the model has not seen. In cross-validation on waves 1 and 2 (191 participant-waves) and in the single test on wave 3 (106 participants), held out until the code was frozen, the model beats the time-of-day baseline and the time + heart-rate model; steps and sleep add a small gain in the same direction on both. On UC Irvine (24 participants, Samsung watch and Oura ring), the model does not transfer (0.496): the Apple Watch and Hanyang students are a third population that only the pilot measures. The final model is trained on the three waves; the app computes the same probabilities as Python (difference below $10^{-6}$ on ten synthetic cases).
+Table~\ref{tab:eval} evaluates the logistic regression of Requirement~4, always on people the model has not seen. In cross-validation on waves 1 and 2 (191 participant-waves) and in the test on wave 3 (106 participants), held out from every choice, the 13-input model beats the time-of-day baseline and the time + heart-rate model; steps and sleep add a small gain in the same direction on both. The four raw values of the final model, chosen on waves 1 and 2 by a rule written beforehand, add 0.009 and 0.021; a valence model (internal, not used yet) reaches 0.556 and 0.555, against 0.533 and 0.526 for the time of day. On UC Irvine (24 participants, Samsung watch and Oura ring), the 13-input model does not transfer (0.496): the Apple Watch and Hanyang students are a third population that only the pilot measures. The final models are trained on the three waves; the app computes the same probabilities as Python (difference below $10^{-6}$ on ten synthetic cases).
 
 \begin{table}[!t]
 \centering
@@ -721,13 +722,15 @@ The final model keeps the 13 features of Requirement~4 and a logistic regression
 \multicolumn{3}{|l|}{\textit{Waves 1+2, 5 folds by participant (31,301 answers)}} \\ \hline
 Time of day only & 0.534 $\pm$ 0.014 & 0.507 \\ \hline
 Time + heart rate & 0.554 $\pm$ 0.012 & 0.513 \\ \hline
-\textbf{Time + heart rate + steps + sleep} & \textbf{0.563 $\pm$ 0.008} & \textbf{0.538} \\ \hline
+Time + heart rate + steps + sleep (13) & 0.563 $\pm$ 0.008 & 0.538 \\ \hline
+\textbf{+ raw heart rate, steps (17, final)} & \textbf{0.572 $\pm$ 0.018} & \textbf{0.545} \\ \hline
 \multicolumn{3}{|l|}{\textit{Wave 3 held out, tested once (21,838 answers)}} \\ \hline
 Time of day only & 0.534 & 0.511 \\ \hline
 Time + heart rate & 0.570 & 0.537 \\ \hline
-\textbf{Time + heart rate + steps + sleep} & \textbf{0.576} & \textbf{0.541} \\ \hline
-\multicolumn{3}{|l|}{\textit{UC Irvine, final model tested once (3,949 answers)}} \\ \hline
-Time + heart rate + steps + sleep & 0.496 & 0.499 \\ \hline
+Time + heart rate + steps + sleep (13) & 0.576 & 0.541 \\ \hline
+\textbf{+ raw heart rate, steps (17, final)} & \textbf{0.597} & \textbf{0.556} \\ \hline
+\multicolumn{3}{|l|}{\textit{UC Irvine, 13-input model tested once (3,949 answers)}} \\ \hline
+Time + heart rate + steps + sleep (13) & 0.496 & 0.499 \\ \hline
 \end{tabularx}
 \end{table}
 
@@ -744,7 +747,7 @@ The pilot follows the protocol written before any data (\texttt{docs/pilot-proto
 
 \subsection{Limitations}
 \begin{itemize}
-\item \textbf{Modest accuracy.} An AUROC of 0.56--0.58 is close to the best published result on EmoPhone but low in absolute terms, and the probabilities stay between about 0.36 and 0.55, so queues often start from a similar point.
+\item \textbf{Modest accuracy.} An AUROC of 0.57--0.60 is close to the best published result on EmoPhone but low in absolute terms, and 90\,\% of the probabilities lie in 0.32--0.58, so queues often start from a similar point.
 \item \textbf{Transfer.} The model is trained on Fitbit data of Korean students; on another population and other devices (UC Irvine) it does not transfer.
 \item \textbf{Sleep unknown.} The ``sleep unknown'' input has one of the largest weights; it reflects the habit of EmoPhone participants of not wearing the watch at night, not a signal of the body.
 \item \textbf{Song scores.} Most songs are scored by the LLM, whose agreement with MuSe is weak.
