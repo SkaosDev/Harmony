@@ -1276,8 +1276,12 @@ suggéré automatiquement (modèle trop faible sur le stress).
   everything ») ; Debug › Pilot pour démarrer, arrêter et voir le jour du pilote. L'état est
   recalculé à chaque tap (Home peut rester ouvert des heures). `QueueRecord.stateMode` =
   estimation réellement utilisée (sans FC récente, la file part de l'heure seule ; nil pour les
-  files d'avant). Le tirage quotidien par blocs de 2 jours écrit le 23 nov. (`PilotSchedule.swift`,
-  `QueueRecord.kind`) est encore dans le code : il est retiré avant le pilote (TODO 4.4). Export
+  files d'avant ; type `EstimateMode`, mêmes valeurs `body` / `timeOnly`). Le tirage quotidien par
+  blocs de 2 jours écrit le 23 nov. est retiré du code (TODO 4.4, 25 nov.) : plus de `QueueKind` ni
+  de `QueueRecord.kind` ; `PilotSchedule` ne garde que le jour de départ, et l'arrêt du pilote
+  efface aussi l'ancienne graine `pilot.seed`. `ml/pilot_analysis.py` donne les taux de la semaine
+  avec un bootstrap sur les jours (protocole §7.3–7.4) et compte le repli heure seule sur toutes
+  les files. Export
   anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug › Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
   `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Les paires v2 et les
   comptes `PromptLog` (4.5) viendront avec 6.7/6.8, dans un nouveau format.
