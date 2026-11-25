@@ -954,6 +954,26 @@ paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touch
   vérifient les fixtures et la parité entre l'implémentation scalaire et la simulation.
 - **Pendant le pilote** : modèle commun figé ; couche personnelle en mode ombre, énergie seulement
   (§3, D4 et périmètre « collecte seule »).
+- **Dans l'app (TODO 6.7–6.13, 25 nov. 2026 ; `app/Harmony/Core/Personal/`)** — choix du
+  constructeur (design v2 §12) :
+  - **Mode** : une constante, `PersonalMode.current`, livrée à `.shadow` pour le pilote ; `.active`
+    pour la démo finale (tableau en §8).
+  - **`z`** = `logit(p)` du modèle commun (énergie) ; `z_V` = `logit` de la probabilité valence,
+    sinon de 0,566. La grille du rang est scorée avec le bloc énergie de `model_params.json` décodé
+    en `LogisticParams` (identique à Core ML, §6.7), sans ~450 appels Core ML ; mode de chaque point :
+    corps si `raw_hr_30` est connu, sinon heure seule.
+  - **`dayOfUse`** : jour 1 = jour de la première réponse (`personal.firstDay`), remis à zéro par
+    « Reset what Harmony learned » et « Delete everything ».
+  - **Fin d'une file** = max(`createdAt`, dernier `FeedbackEvent` de la file), sans nouveau champ.
+    Une réponse donnée entre le début d'une file et 60 min après sa fin est gardée mais
+    `usableForLearning = false`.
+  - **Réponse sur écran verrouillé** : enregistrée tout de suite (le store reste écrivable
+    verrouillé) avec `zEnergy = nil` ; au retour dans l'app, `completePending` calcule `z`,
+    `pCommonBefore` et `pPersonalBefore` à l'heure de la réponse (`CurrentState.compute(now:)`), de
+    la plus ancienne à la plus récente, et s'arrête au premier échec (Santé encore illisible).
+  - **Conservation** : `CheckIn` et `PromptLog` de plus de 30 jours effacés au premier plan.
+  - **Reset** : efface `CheckIn` et `PromptLog`, retire `personal.firstDay`, pose `personal.resetAt`
+    (le bandit ne lit que les files postérieures) ; les questions restent actives.
 
 ---
 
@@ -1261,7 +1281,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
   Un test balaie toutes les combinaisons contre une liste de mots interdits (émotions, stress, mots
   médicaux) ; « calm » reste permis car il décrit la musique (design).
 - **Suggestion** : Wind-down de 21:00 à 04:59 ; Wake-up prioritaire (inconnu si la nuit l'est) ;
-  `e0` brut jusqu'à 6.11.
+  seuil « état < 0,4 » appliqué au `e0` de la file (rang ou brut au pilote, TODO 6.11).
 - **Temps du tap à la file (TODO 3.21, NFR3 : < 2 s)** : mesuré dans l'app du tap sur une
   situation jusqu'à l'ouverture du lecteur avec la file (avant tout appel de lecture ; écran Debug
   « Tap → queue on screen » et console). iPhone 16, bibliothèque de Clément (2 459 titres), état
@@ -1298,6 +1318,41 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - **Positivité** : quand l'utilisateur répond à l'agrément, un terme de distance de `v0` vers le but
   de la situation remplace la pénalité fixe de +0,2 (après le cours, forme à fixer avec le customer).
 - Les règles ci-dessus restent vraies (wind-down ne finit jamais plus énergique qu'il ne commence).
+
+**Dans l'app (TODO 6.9–6.12b, 25 nov. 2026 ; `Core/Personal/QueueStart.swift`, `Core/Queue/`)** :
+
+| | Mode ombre (pilote, livré) | Mode actif (démo finale) |
+|---|---|---|
+| `e0` | rang (≥ 32 points de grille), sinon brut | `σ(z_E + b_E)` dès 5 réponses énergie étiquetées en 14 j, sinon comme l'ombre |
+| `v0`, terme d'agrément | — | dès 5 réponses d'agrément étiquetées |
+| Stratégie | S1, probabilité 1 | bandit S1/S2/S3 |
+| Raison | §8 ci-dessus | + « your answers show more/less energy than usual » si \|`b_E`\| ≥ 0,5 |
+| Home | `V2-Accueil` | + ligne « Energy right now? » et feuille `V2-CheckIn` |
+| `pPersonal` | calculé et journalisé | calculé, journalisé et utilisé |
+
+- **Journal** : `QueueRecord.strategy`, `strategyProbability`, `e0Source` (rank / raw / personal),
+  `pCommon`, `pPersonal`, `v0`, dans l'export JSON.
+- **Stratégies** (`QueueTargets.targets(e0:situation:strategy:)`, `n` et sens inchangés) : S1 = la
+  règle A ; S2 = une cible à `e0`, puis régulièrement de (`e0` + g)/2 à g ; S3 = `n − 2` cibles à
+  `e0`, puis (`e0` + g)/2 et g.
+- **Terme d'agrément** (forme provisoire, à valider avec le customer) : en Stress et Low energy,
+  0,2 × |positivité − cible| remplace le +0,2 fixe ; cibles régulières de `v0` à max(`v0`, 0,7).
+- **Bandit** (`QueueBandit`) : récompense r d'une file = « Did it fit? » (Yes 1, Nope 0), sinon
+  1 − part des skips parmi les morceaux passés ou finis ; + 0,2 par like, au plus 1 ; aucune
+  récompense sans réponse ni morceau passé ou fini. Beta(1 + Σr, 1 + Σ(1 − r)) par stratégie,
+  files postérieures à `personal.resetAt` seulement. Tirage uniforme avec probabilité 0,45, sinon
+  Thompson : chaque stratégie garde ≥ 0,15 ; probabilité journalisée estimée sur 2 000 tirages.
+- **Questions du jour** (`CheckInSchedule`, `Services/CheckInNotifications.swift`) : une question
+  à heure tirée au hasard dans chaque plage (par défaut 10:00–13:00 et 15:00–19:00 ; plages
+  choisies dans 07:00–22:00, d'au moins 60 min), ≥ 2 h d'écart, aucune dans les 80 min après le
+  lancement d'une file, planifiées 3 jours d'avance. Replanifiées au premier plan, après un
+  réglage et au lancement d'une file. Actions Not now / Low / Medium / High (−2 / 0 / +2), sans
+  ouvrir l'app. `PromptLog` : une ligne par question planifiée, supprimée si la question est
+  annulée avant son envoi ; « Not now » → `notNow` sans `CheckIn` ; livrée depuis 2 h sans réponse
+  → retirée et `ignored`.
+- **Textes** : tous dans `Features/Home/CheckInTexts.swift`, testés contre la liste de mots
+  interdits de 3.7 ; « feel », « pleasant », « unpleasant » ne sont permis que dans la question
+  d'agrément (D2).
 
 ---
 
@@ -1462,7 +1517,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   inclus dans l'export et la suppression totale, « Reset what Harmony learned » les efface. Au
   pilote, seuls des paires (probabilité, étiquette, jour d'utilisation) et des comptes sortent, avec
   consentement écrit (§3, D5) ; ni réponse brute horodatée ni donnée HealthKit. Notifications au
-  texte neutre, sans valeur de santé.
+  texte neutre, sans valeur de santé. Dans l'app (25 nov.) : check-ins et `PromptLog` effacés après
+  30 jours (« Check-ins are kept for 30 days. ») ; « Delete everything » retire aussi les questions
+  planifiées.
 
 ---
 
@@ -1553,6 +1610,12 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - *Pilote revu, 24 nov. 2026 (décision de Clément)* : une semaine, du 26 nov. au 2 déc., avec les
   données de la montre tous les jours, car le projet se termine le 4 déc. ; protocole, TODO,
   rapport, design v2 et blog mis à jour ; retrait du tirage dans le code : TODO 4.4.
+- *Couche personnelle dans l'app, 25 nov. 2026 (TODO 4.4, 6.7–6.13, branche `phase6/app`)* :
+  tirage du pilote retiré (4.4) ; `CheckIn`/`PromptLog`, couche personnelle, rang `e0`, journal de
+  file, bandit, questions par notification, onboarding 2.4b, Settings › Questions, My Data, About,
+  Debug, ligne énergie et feuille (§6.8, §8). Tout est codé ; une constante garde le pilote en
+  mode ombre. Tests sur simulateur verts (278). Restent sur l'iPhone : migration et pilote (4.4),
+  réponse depuis l'écran verrouillé et la montre (6.10) ; relecture des textes par Cyprien (6.13).
 - *Playlists « Harmony », 23 nov.* : l'ancienne playlist ne sortait pas de la bibliothèque (403,
   scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
   file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.

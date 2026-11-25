@@ -273,14 +273,22 @@
   — 25 nov. (avant le pilote) : canvas version `1795581282-7fa3` ; la ligne énergie est dessinée dans la variante `V2-AccueilEnergie` pour que `V2-Accueil` reste le Home du pilote (6.9 les fusionne) ; feuille `V2-CheckIn` ; carte « Your answers » dans `V2-APropos`.
 
 ### 6.APP
-- [ ] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.
-- [ ] **6.8** Couche personnelle (S2 ; énergie seulement au pilote, en mode ombre). — ✔ fixtures 6.5 à 1e-6.
-- [ ] **6.9** Ligne énergie + feuille de check-in (S4). — ✔ NFR5 tenu.
+- [x] **6.7** `CheckIn` + `PromptLog` + export/suppression (S1). — ✔ tables vides après suppression.
+  — 25 nov. (branche `phase6/app`) : modèles `CheckIn` et `PromptLog` (champs du design §6), dans l'export JSON, les comptes et « Delete everything » avec les clés `questions.*` et `personal.*` ; `DataControlTests` vérifie les 10 tables vides après suppression.
+- [x] **6.8** Couche personnelle (S2 ; énergie seulement au pilote, en mode ombre). — ✔ fixtures 6.5 à 1e-6.
+  — 25 nov. : `Core/Personal/PersonalLayer.swift` (étiquette et décalage, fonctions pures) et `CheckInRecorder` (étiquette, utilisabilité, `dayOfUse`, `z` et p avant la réponse, complétion différée, purge à 30 jours, reset) ; `personal_layer_cases.json` reproduit à 1e-6. Mode ombre : `PersonalMode.current = .shadow` (PROJECT.md §6.8).
+- [x] **6.9** Ligne énergie + feuille de check-in (S4). — ✔ NFR5 tenu.
+  — 25 nov. : `V2-AccueilEnergie` fusionné dans `HomeView` et feuille `V2-CheckIn` (`Features/Home/CheckInSheet.swift`), visibles en mode actif seulement : le Home du pilote reste `V2-Accueil`. Textes dans `CheckInTexts`, testés contre la liste de 3.7 (« feel », « pleasant », « unpleasant » permis dans la seule question d'agrément, D2). NFR5 vérifié sur le simulateur, mode basculé en actif localement : les quatre tuiles restent sur le premier écran, rien ne s'ouvre avant elles, et le tap sur une tuile appelle la même fonction qu'avant. Le tap lui-même n'a pas pu être automatisé (pas d'outil de tap dans l'environnement).
 - [ ] **6.10** Notifications à actions (S5). — ✔ réponse depuis l'écran verrouillé et la montre.
-- [ ] **6.11** Rang `e0` (S3) et branchement de `e0`/`v0` dans la file, avec la raison de file tirée des réponses (S6). — ✔ tests de file.
-- [ ] **6.12** Journal de file + modes ombre/actif (S7a). — ✔ champs remplis pour chaque file.
-- [ ] **6.12b** Bandit S1/S2/S3, après le pilote (S7b). — ✔ probabilités ≥ 0,15 journalisées.
+  — 25 nov. : codé (`Core/Personal/CheckInSchedule.swift`, `Services/CheckInNotifications.swift`, catégorie `CHECKIN`, cycle de vie `PromptLog`, replanification au premier plan, après un réglage et au lancement d'une file) ; tests sur simulateur verts. Reste la vérification sur l'iPhone verrouillé et l'Apple Watch : Debug › Personal layer › « Send a test question in 15 s ».
+- [x] **6.11** Rang `e0` (S3) et branchement de `e0`/`v0` dans la file, avec la raison de file tirée des réponses (S6). — ✔ tests de file.
+  — 25 nov. : `PersonalRank` (`rank_cases` et `rank_grid_cases` reproduits), `QueueStart` (rang ou brut en ombre ; personnel dès 5 réponses étiquetées en actif ; `v0` et terme d'agrément), raison « your answers show more/less energy than usual » ; tests : sans réponse, la file active est la règle A ; wind-down jamais plus énergique ; mots interdits.
+- [x] **6.12** Journal de file + modes ombre/actif (S7a). — ✔ champs remplis pour chaque file.
+  — 25 nov. : `QueueRecord` gagne `strategy`, `strategyProbability`, `e0Source`, `pCommon`, `pPersonal`, `v0` (optionnels, migration légère), remplis par `QueueMaker` et exportés ; testé dans `QueueMakerTests`.
+- [x] **6.12b** Bandit S1/S2/S3, après le pilote (S7b). — ✔ probabilités ≥ 0,15 journalisées.
+  — 25 nov. : codé et éteint au pilote (S1, probabilité 1, en mode ombre). `QueueTargets` S1/S2/S3, `Core/Queue/QueueBandit.swift` (récompense, Beta, mélange 0,45, Monte-Carlo) ; tests : cibles monotones, chaque bras ≥ 0,15, stratégie et probabilité journalisées en actif.
 - [ ] **6.13** Étape d'onboarding des questions (avec la demande d'autorisation des notifications), Réglages (« Questions » on/off et plages horaires, « Reset what Harmony learned »), My Data (check-ins et leur durée de conservation), About, Debug (`b_E`, `b_V`, p commune vs personnelle) (S8 ; réduit au pilote : onboarding, « Questions », « Reset », check-ins dans My Data). — ✔ reset → b = 0 ; textes relus par Cyprien.
+  — 25 nov. : tout l'écran S8 est codé, pas seulement la version réduite : onboarding 2.4b (6 étapes), Settings › Questions, My Data, carte « Your answers » dans About, section Debug « Personal layer ». Reset → b = 0 vérifié (`CheckInRecorderTests`). Reste la relecture des textes par Cyprien (tous dans `Features/Home/CheckInTexts.swift`).
 
 ### 6.PILOTE
 - [ ] **6.14** Protocole et consentement incluant les check-ins (complète 4.1) ; demander à l'enseignant si un avis éthique est requis. — ✔ document dans `docs/`.
