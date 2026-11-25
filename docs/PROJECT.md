@@ -1624,16 +1624,19 @@ suggéré automatiquement (modèle trop faible sur le stress).
   tirage du pilote retiré (4.4) ; `CheckIn`/`PromptLog`, couche personnelle, rang `e0`, journal de
   file, bandit, questions par notification, onboarding 2.4b, Settings › Questions, My Data, About,
   Debug, ligne énergie et feuille (§6.8, §8). Tout est codé ; une constante garde le pilote en
-  mode ombre. Tests sur simulateur verts (278). Restent sur l'iPhone : migration et pilote (4.4),
-  réponse depuis l'écran verrouillé et la montre (6.10) ; relecture des textes par Cyprien (6.13).
+  mode ombre. Tests sur simulateur verts (278). Reste la relecture des textes par Cyprien (6.13).
+- *Sur l'iPhone 16, 26 nov. 2026 (TODO 4.4, 6.10)* : build installé par-dessus l'app, base migrée
+  sans perte, pilote lancé ; file en 0,54 s avec l'état « body ». Réponses depuis l'écran verrouillé
+  et l'Apple Watch enregistrées et complétées ; le premier essai plantait (signal de fin rendu à iOS
+  hors du fil principal), corrigé et testé. Ronds de la feuille de check-in rendus visibles
+  (`#535353`). Questions activées pour le pilote. Tests sur simulateur verts (281).
 - *Playlists « Harmony », 23 nov.* : l'ancienne playlist ne sortait pas de la bibliothèque (403,
   scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
   file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.
 
 **Pas encore fait**
 - Démo M3 au customer (3.24).
-- Pilote lui-même (26 nov.–2 déc.) : retrait du tirage dans le code avant le jour 1 (4.4), point à
-  mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
+- Pilote lui-même (26 nov.–2 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
   L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
