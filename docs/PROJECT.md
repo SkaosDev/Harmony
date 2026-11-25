@@ -126,7 +126,7 @@ d'abord par le canvas (design v2 §5.4, TODO 6.6).
 | Modèle entraîné sur EmoPhone | 282 personnes (297 participants-vagues), étiquettes « du moment », étudiants coréens |
 | Sortie = plus/moins activé que d'habitude, jamais une émotion ; + un agrément **interne** (plus/moins agréable que d'habitude), utilisé seulement si l'utilisateur répond à la question d'agrément, jamais affiché comme émotion (D2, 23 nov. 2026) | Honnêteté, pas de prétention médicale. La valence tirée des seuls capteurs se replie sur l'énergie (corrélation 0,71) ; avec les réponses, 0,529 → 0,704 en simulation (design v2 §2, §4.2) |
 | Entrées du modèle : heure, FC, pas, sommeil ; + réponses de l'utilisateur pour la couche personnelle (23 nov. 2026) | Choix d'équipe. Sur D-1, pas et sommeil n'apportent pas de gain mesurable (voir §6.5) ; on les garde, et on repasse au modèle heure + FC si les vagues D-2/D-3 et le pilote ne montrent rien. Le modèle commun v2 garde les mêmes signaux (fenêtres brutes de FC et de pas, §6.8) |
-| Modèle final : 4 entrées (13 features v1), entraîné sur D-1 + D-2 + D-3 (TODO 2.13, 20 nov. 2026). Passe à 17 features **seulement** si le critère écrit avant les résultats (TODO 6.2) est satisfait (D3, 23 nov. 2026) | Features v1 : bat l'heure seule et heure + FC en validation croisée D-1 + D-2 (AUROC 0,563 contre 0,535 et 0,554) et sur D-3 tenue à part (0,576 contre 0,534 et 0,570) ; gain de pas + sommeil petit mais de même sens sur les deux évaluations (§6.5). Repli heure + FC toujours possible si le pilote (sommeil Apple Watch mesuré, pas estimé) ne montre rien. Les 4 valeurs brutes de v2 donnent un gain de valence robuste et un gain d'énergie incertain (design v2 §2) |
+| Modèle final : 4 entrées (13 features v1), entraîné sur D-1 + D-2 + D-3 (TODO 2.13, 20 nov. 2026). Passe à 17 features **seulement** si le critère écrit avant les résultats (TODO 6.2) est satisfait (D3, 23 nov. 2026) ; critère satisfait (6.3), modèle v3 à 17 features livré le 25 nov. 2026 (6.4) | Features v1 : bat l'heure seule et heure + FC en validation croisée D-1 + D-2 (AUROC 0,563 contre 0,535 et 0,554) et sur D-3 tenue à part (0,576 contre 0,534 et 0,570) ; gain de pas + sommeil petit mais de même sens sur les deux évaluations (§6.5). Repli heure + FC toujours possible si le pilote (sommeil Apple Watch mesuré, pas estimé) ne montre rien. Les 4 valeurs brutes de v2 donnent un gain de valence robuste et un gain d'énergie incertain (design v2 §2) |
 | HRV lue mais hors modèle | Absente d'EmoPhone ; sert seulement à l'explication |
 | Météo retirée | Localisations EmoPhone anonymisées ; plafond mesuré à 0,53 AUROC pour tout effet partagé |
 | Évaluation par personnes entières tenues à part ; couche personnelle : évaluation **chronologique** (chaque réponse prédite avec le passé seulement), hyper-paramètres réglés sur des personnes tenues à part (D8, 23 nov. 2026) | Un split aléatoire donne des résultats trop optimistes. Le modèle commun garde la validation croisée par personnes et une seule confirmation sur D-3 par changement |
@@ -867,17 +867,24 @@ Swift S9 sont faits avant le 26 nov.
   même schéma (2,2 Ko). Le modèle 13 features est identique à la version 1 (mêmes valeurs, donc
   `StateModel.mlmodel` inchangé). C'est `prior(heure)` du rapport : l'app l'utilise sans
   référence ou sans FC sur 30 min. Les fixtures donnent sa probabilité attendue (`time_only_probability`).
+- **Modèle v3 (TODO 6.4, 25 nov. 2026)** : `python ml/evaluate_v2.py --final data/results/wp-a1.json
+  data/models/state_v3.joblib` (mêmes 53 139 réponses), puis `ml/export.py --model
+  data/models/state_v3.joblib --coreml` : `model_params.json` version 3 (5,4 Ko : 17 features, blocs
+  `time_only`, `valence` et `valence_time_only`) et `StateModel.mlmodel` (17 entrées, énergie
+  seulement ; la valence est calculée depuis le JSON). Écart Core ML / scikit-learn sur 100 lignes
+  de D-1 : 1e-16. Fixtures `state_cases.json` (version de modèle 3, probabilités de valence) et
+  `rank_grid_cases.json` régénérées ; tests Python et Swift verts (240 tests Swift).
 - Changer `features.py` ou réentraîner = relancer ces trois commandes.
 
-### 6.8 Modèle d'état v2 (candidat évalué, intégration iOS à venir)
+### 6.8 Modèle d'état v2 (contrat v3 en vigueur depuis le 25 nov. 2026)
 
 Source détaillée : `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` (formules, données,
 paquets de travail) ; tâches : TODO Phase 6. Ce paragraphe résume ce qui touche le contrat §6.
 
-- **Le contrat en vigueur reste v1** (13 features, §6.4). Le candidat ci-dessous ne devient le
-  contrat que si le critère écrit avant les résultats (TODO 6.2) est satisfait en 6.3 ; il faut
-  alors réentraîner, exporter `model_params.json` v3 et régénérer les fixtures golden (6.4).
-- **Candidat v2 : 17 features** = les 13 de v1 puis, dans cet ordre, `raw_hr_30`, `raw_hr_60`,
+- **Le contrat en vigueur est v3** (17 features ci-dessous) : critère 6.2 satisfait en 6.3, modèle
+  réentraîné, exporté et porté en Swift en 6.4 (25 nov. 2026, §6.7). Il était livré avant la
+  couche personnelle : aucun décalage personnel à remettre à 0.
+- **Features v2 : 17 features** = les 13 de v1 puis, dans cet ordre, `raw_hr_30`, `raw_hr_60`,
   `raw_log_steps_30`, `raw_log_steps_60`. `raw_hr_w` = `hr_w` de v1 **avant** z-score (moyenne des FC
   rééchantillonnées de `(t − w, t]`, valable dès 1 mesure, sinon inconnue) ; `raw_log_steps_w` =
   `log_steps_w` de v1 avant z-score (0 si montre portée sans pas ; inconnu si ni FC ni pas). Mêmes
@@ -1510,10 +1517,9 @@ suggéré automatiquement (modèle trop faible sur le stress).
   *Suivi ML, 24 nov. 2026* : groupes déterministes et CV v1 reproduite sous Windows
   et sur Mac (§6.5), critères inscrits avant la CV (§3), candidats énergie v2 et valence validés
   (§6.5), simulation WP-B0 et fixtures Python vérifiées (§6.8), hyper-paramètres de la couche
-  personnelle encore à décider (TODO 6.5). Les scripts de
-  préparation v3 sont prêts. L'entraînement final et la validation Core ML/Swift
-  restent à faire à partir du 2 déc. Le pilote débute le 26 nov. avec le modèle à
-  13 features.
+  personnelle encore à décider (TODO 6.5).
+  *25 nov. 2026* : modèle v3 (17 features + valence) entraîné, exporté, porté en Swift et testé
+  (TODO 6.4, §6.7) ; le pilote tourne sur ce modèle, figé (§3).
 - *App utilisable de bout en bout, 23 nov. 2026 (TODO 3.1–3.20)* : file (`Core/Queue/` : cibles,
   choix des morceaux, historique, suggestions MuSe vérifiées, raison, suggestion de situation ;
   règles en §8) ; lecture par App Remote (SDK iOS 5.0.1) d'une playlist privée « Harmony » neuve à
@@ -1550,7 +1556,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 - Pilote lui-même (26 nov.–2 déc.) : retrait du tirage dans le code avant le jour 1 (4.4), point à
   mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
   rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-- Phase 6 : décider `T`, `τ_E`, `τ_V` (6.5), finaliser l'export v3 et le port Swift.
+- Phase 6 : décider `T`, `τ_E`, `τ_V` (6.5).
   L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
 
 ## 13. Risques et questions ouvertes
