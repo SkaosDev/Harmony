@@ -3,7 +3,7 @@ import Testing
 @testable import Harmony
 
 /// The golden cases of `ml/fixtures/state_cases.json` (TODO 2.17), written by
-/// `ml/make_fixtures.py`: synthetic series, the 13 features and the probabilities Python expects.
+/// `ml/make_fixtures.py`: synthetic series, the 17 features and the probabilities Python expects.
 /// The file stays in `ml/fixtures`; the HarmonyTests target copies it into the test bundle, so
 /// the tests also run on an iPhone. Times are minutes since `origin_ms`; local time is Korea.
 struct StateFixtures: Decodable {
@@ -43,6 +43,9 @@ struct StateFixtures: Decodable {
         let features: [String: Double?]
         let probability: Double
         let timeOnlyProbability: Double
+        /// v3 (TODO 6.4): the valence model and its time-of-day model.
+        let valenceProbability: Double?
+        let valenceTimeOnlyProbability: Double?
 
         /// A full night of the 14 previous days: `day` and `wake_minute` count local days and
         /// minutes since 1970-01-01.
@@ -70,6 +73,8 @@ struct StateFixtures: Decodable {
             case name, hr, steps, nights, features, probability
             case originMs = "origin_ms", answerMinute = "answer_minute", answerNight = "answer_night"
             case timeOnlyProbability = "time_only_probability"
+            case valenceProbability = "valence_probability"
+            case valenceTimeOnlyProbability = "valence_time_only_probability"
         }
 
         @MainActor var answer: Date { date(minute: answerMinute) }

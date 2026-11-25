@@ -4,7 +4,7 @@ import Foundation
 /// steps and sleep of the last 14 days are read, used and dropped: nothing raw is stored (§11).
 struct CurrentState {
     let date: Date
-    /// The 13 features by name; nil = unknown.
+    /// The 17 features by name; nil = unknown.
     let features: [String: Double?]
     let estimate: StateEstimate
 

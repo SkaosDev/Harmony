@@ -1,16 +1,20 @@
 import Foundation
 
 /// `Resources/model_params.json`, written by `ml/export.py` (PROJECT.md §6.7). The app takes the
-/// order of the model inputs from it (TODO 2.19); the 13-feature model itself runs in Core ML.
-/// `time_only` is the time-of-day model of the fallback mode (TODO 2.21).
+/// order of the model inputs from it (TODO 2.19); the energy model itself runs in Core ML.
+/// `time_only` is the time-of-day model of the fallback mode (TODO 2.21). Version 3 (TODO 6.4)
+/// has 17 features and the valence models `valence` and `valence_time_only` (PROJECT.md §6.8).
 struct ModelParams: Decodable {
     let version: Int
-    /// The 13 feature names, in the order of the model inputs.
+    /// The feature names, in the order of the model inputs (v3: the 13 of v1, then the 4 raw windows).
     let features: [String]
     let timeOnly: LogisticParams
+    /// Valence: internal, never shown, never used alone (PROJECT.md §6.8); nil before v3.
+    let valence: LogisticParams?
+    let valenceTimeOnly: LogisticParams?
 
     enum CodingKeys: String, CodingKey {
-        case version, features, timeOnly = "time_only"
+        case version, features, valence, timeOnly = "time_only", valenceTimeOnly = "valence_time_only"
     }
 
     static func bundled(_ bundle: Bundle = .main) throws -> ModelParams {

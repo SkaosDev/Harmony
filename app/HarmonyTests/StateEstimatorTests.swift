@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Harmony
 
-/// TODO 2.20: the Core ML model gives the probabilities Python expects.
+/// TODO 2.20, 6.4: the Core ML model gives the probabilities Python expects.
 @MainActor
 struct StateEstimatorTests {
     /// The fixture features in model order (nil = unknown).
@@ -20,13 +20,30 @@ struct StateEstimatorTests {
 
     @Test func unknownFeaturesAreImputedNotZero() throws {
         let estimator = try StateEstimator.bundled()
-        let unknown: [Double?] = Array(repeating: nil, count: 13)
-        let zeros: [Double?] = Array(repeating: 0, count: 13)
+        let count = estimator.params.features.count
+        let unknown: [Double?] = Array(repeating: nil, count: count)
+        let zeros: [Double?] = Array(repeating: 0, count: count)
         #expect(try estimator.modelProbability(unknown) != estimator.modelProbability(zeros))
+    }
+
+    /// TODO 6.4: the valence models (internal, never shown) match Python too.
+    @Test func valenceModelsMatchTheGoldenFixtures() throws {
+        let params = try ModelParams.bundled()
+        let valence = try #require(params.valence)
+        let valenceTimeOnly = try #require(params.valenceTimeOnly)
+        #expect(valence.features == params.features)
+        #expect(valenceTimeOnly.features == ["hour_sin", "hour_cos", "weekend"])
+        for fixture in try StateFixtures.load().cases {
+            expectClose(valence.probability(valence.features.map { fixture.expected($0) }),
+                        fixture.valenceProbability, "\(fixture.name) valence")
+            expectClose(valenceTimeOnly.probability(valenceTimeOnly.features.map { fixture.expected($0) }),
+                        fixture.valenceTimeOnlyProbability, "\(fixture.name) valence time only")
+        }
     }
 }
 
-/// TODO 2.21: time-only mode (`prior(hour)` of the report) without a reference or a heart rate.
+/// TODO 2.21, 6.4: time-only mode (`prior(hour)` of the report) without a heart rate in the last
+/// 30 min; with one, the model even before the 7-day reference (v3 rule, PROJECT.md §6.8).
 @MainActor
 struct TimeOnlyModeTests {
     private func features(_ fixture: StateFixtures.Case) -> [String: Double?] {
@@ -53,23 +70,23 @@ struct TimeOnlyModeTests {
         #expect(estimate.value == estimator.params.timeOnly.probability(row))
     }
 
-    @Test func noReferenceOrNoRecentHeartRateGivesTheTimeOnlyMode() throws {
+    @Test func noRecentHeartRateGivesTheTimeOnlyMode() throws {
         let estimator = try StateEstimator.bundled()
-        for name in ["short_history", "watch_off_last_hour", "constant_heart_rate"] {
-            let fixture = try StateFixtures.named(name)
-            let estimate = try estimator.estimate(features(fixture))
-            #expect(estimate.mode == .timeOnly, "\(name)")
-            expectClose(estimate.value, fixture.timeOnlyProbability, name)
-        }
+        let fixture = try StateFixtures.named("watch_off_last_hour")
+        let estimate = try estimator.estimate(features(fixture))
+        #expect(estimate.mode == .timeOnly)
+        expectClose(estimate.value, fixture.timeOnlyProbability, fixture.name)
+        expectClose(estimate.valence, fixture.valenceTimeOnlyProbability, "\(fixture.name) valence")
     }
 
-    @Test func heartRateComparedWithTheReferenceGivesTheBodyMode() throws {
+    @Test func recentHeartRateGivesTheBodyModeEvenWithoutAReference() throws {
         let estimator = try StateEstimator.bundled()
-        for name in ["weekday_afternoon", "early_night", "night_unknown"] {
+        for name in ["weekday_afternoon", "early_night", "night_unknown", "short_history", "constant_heart_rate"] {
             let fixture = try StateFixtures.named(name)
             let estimate = try estimator.estimate(features(fixture))
             #expect(estimate.mode == .body, "\(name)")
             expectClose(estimate.value, fixture.probability, name)
+            expectClose(estimate.valence, fixture.valenceProbability, "\(name) valence")
         }
     }
 }
