@@ -231,8 +231,10 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
         if done > 0 { print("Answers completed: \(done)") }
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                            didReceive response: UNNotificationResponse) async {
+    /// On the main actor: iOS's completion handler, called when this returns, must run on the
+    /// main thread (a background thread stopped the app on the iPhone).
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse) async {
         guard response.notification.request.content.categoryIdentifier == Self.category else { return }
         let id = response.notification.request.identifier
         let action = response.actionIdentifier
@@ -252,9 +254,9 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// The question shows even while the app is open.
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                            willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+    /// The question shows even while the app is open. On the main actor, like the answer.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         [.banner, .list, .sound]
     }
 }

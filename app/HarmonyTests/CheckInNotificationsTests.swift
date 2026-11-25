@@ -97,4 +97,32 @@ struct CheckInNotificationsTests {
         #expect(QuestionSettings.windows(defaults)[0] == CheckInWindow(start: 480, end: 570))
         #expect(QuestionSettings.windows(defaults)[1] == CheckInSchedule.defaultWindows[1])
     }
+
+    /// iOS must hear back on the main thread once an answer is handled, or the app stops
+    /// ("Call must be made on main thread", seen on the iPhone on 26 Nov). The notification and
+    /// the response have no public initializer: made here as in Apple's own tests.
+    @Test func iOSHearsBackOnTheMainThread() async throws {
+        let content = UNMutableNotificationContent()
+        content.categoryIdentifier = CheckInNotifications.category
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        let notification = try #require(UNNotification.perform(NSSelectorFromString("notificationWithRequest:date:"),
+                                                               with: request, with: now)?.takeUnretainedValue() as? UNNotification)
+        let response = try #require(UNNotificationResponse.perform(
+            NSSelectorFromString("responseWithNotification:actionIdentifier:"),
+            with: notification, with: CheckInNotifications.Action.notNow.rawValue)?.takeUnretainedValue() as? UNNotificationResponse)
+        // No store: the answer goes nowhere, only the way back to iOS is checked.
+        let delegate: UNUserNotificationCenterDelegate = CheckInNotifications()
+        let answered = await withCheckedContinuation { continuation in
+            delegate.userNotificationCenter?(.current(), didReceive: response) {
+                continuation.resume(returning: Thread.isMainThread)
+            }
+        }
+        let presented = await withCheckedContinuation { continuation in
+            delegate.userNotificationCenter?(.current(), willPresent: notification) { _ in
+                continuation.resume(returning: Thread.isMainThread)
+            }
+        }
+        #expect(answered)
+        #expect(presented)
+    }
 }
