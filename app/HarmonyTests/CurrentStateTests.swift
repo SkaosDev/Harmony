@@ -81,4 +81,18 @@ struct CurrentStateTests {
         #expect(state.features.count == 17)
         #expect(state.estimate.value > 0 && state.estimate.value < 1)
     }
+
+    /// TODO 6.11: `compute` scores the grid of the 14 days before from the same data, and the
+    /// rank is the share of those points at or below the current probability.
+    @Test func demoDataGiveTheRankAmongTheirOwnFourteenDays() async throws {
+        let calendar = StateFixtures.calendar
+        let now = calendar.date(from: DateComponents(year: 2026, month: 11, day: 18, hour: 16))!
+        let provider = try DemoHealthProvider(now: now, calendar: calendar)
+        let state = try await CurrentState.compute(provider: provider, estimator: try StateEstimator.bundled(),
+                                                   now: now, calendar: calendar)
+        let grid = state.gridProbabilities
+        #expect(grid.count >= PersonalRank.minimumRows && grid.count <= 14 * 32)
+        #expect(grid.allSatisfy { $0 > 0 && $0 < 1 })
+        #expect(state.rank == Double(grid.filter { $0 <= state.estimate.value }.count) / Double(grid.count))
+    }
 }

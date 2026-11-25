@@ -64,8 +64,6 @@ struct PersonalDebugSection: View {
                 self.state = state
                 self.personal = personal
                 start = QueueStart.choose(state: state, personal: personal, mode: .current)
-                print("Personal: p common \(format(state.estimate.value)), p personal \(format(personal.energy.probability)), "
-                      + "b_E \(format(personal.energy.offset)), n \(personal.energy.count), e0 \(start!.e0Source.rawValue)")
                 message = nil
             } catch {
                 message = "\(error)"

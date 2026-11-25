@@ -32,7 +32,8 @@ struct HarmonyApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .modelContainer(Self.container)
+                // Reading `demoMode` here is what switches the store when demo mode changes.
+                .modelContainer(demoMode ? Self.demoStore : Self.store)
                 .environment(player)
                 .environment(library)
                 // The Spotify app comes back here after being woken up for App Remote (TODO 3.10).
