@@ -8,8 +8,8 @@ Python code for the state model and the song scores.
 | `features.py` | Features v1 of the state model (TODO 2.1–2.6): pure functions, fixed order `FEATURES`, the single source of truth (definitions: `docs/PROJECT.md` §6, "Features v1"). Tests: `ml/tests/test_features.py` (synthetic series only). |
 | `build_features.py` | Builds one local v1 table per wave (TODO 2.7): `python ml/build_features.py --data data/emophone --out data/features` → `data/features/v1_D1.csv`… (ignored by Git). Prints aggregates only; `--check-v0` compares the nights with `explore_d1.py` (TODO 2.5). |
 | `train.py` | Trains and evaluates the state model on the v1 tables (TODO 2.8–2.11): `python ml/train.py --features data/features`; 5 folds by participant on D-1 + D-2, imputation and scaling fitted inside each training fold (sklearn Pipeline). `--test-d3`: single test on the held-out D-3; `--final data/models/state_model.joblib`: final model on all waves (TODO 2.14) and the "time only" model of the app's fallback (TODO 2.21), kept in `data/` (the exported coefficients are in Git, see `export.py`). Prints aggregates only. Tests: `ml/tests/test_train.py` (synthetic tables). |
-| `export.py`, `export_coreml.py` | Export of the final model to the app (TODO 2.15–2.16): `python ml/export.py --model data/models/state_model.joblib [--coreml]` writes `app/Harmony/Resources/model_params.json` (< 5 KB; the time-only model under `time_only`) and, with `--coreml` (macOS, coremltools 8), `StateModel.mlmodel`, checked against scikit-learn on 100 rows (gap < 1e-6). `export.predict` is the reference the Swift code must match. Tests: `ml/tests/test_export.py`. |
-| `make_fixtures.py` | Golden fixtures for the Swift tests (TODO 2.17): `python ml/make_fixtures.py` → `ml/fixtures/state_cases.json`, 10 synthetic cases (fixed seed) with series, expected features, probability and time-only probability. Tests: `ml/tests/test_fixtures.py`. |
+| `export.py`, `export_coreml.py` | Export of the final model to the app (TODO 2.15–2.16): `python ml/export.py --model data/models/state_v3.joblib [--coreml]` writes `app/Harmony/Resources/model_params.json` (< 8 KB; v3: 17 features, the time-only model under `time_only`, the valence models under `valence` and `valence_time_only`) and, with `--coreml` (macOS, coremltools 8), `StateModel.mlmodel`, checked against scikit-learn on 100 rows (gap < 1e-6). `export.predict` is the reference the Swift code must match. Tests: `ml/tests/test_export.py`. |
+| `make_fixtures.py` | Golden fixtures for the Swift tests (TODO 2.17): `python ml/make_fixtures.py` → `ml/fixtures/state_cases.json`, 10 synthetic cases (fixed seed) with series, expected features, probability and time-only probability (v3: also the two valence probabilities). Tests: `ml/tests/test_fixtures.py`. |
 | `explore_waves.py` | Compares aggregate ESM and sensor structure across EmoPhone waves D-1, D-2 and D-3 (TODO 1.35): `python ml/explore_waves.py --data data/emophone`. |
 | `uci_explore.py` | Explores UC Irvine with aggregate outputs only (TODO 5.2): `python ml/uci_explore.py`; streams Samsung PPG and reports dataset coverage. |
 | `uci_build_features.py` | Builds resumable UC Irvine v1 features in `data/features/v1_UCI.csv` with per-participant cache in `data/uci_cache/` (TODO 5.4–5.5); reuses `features.py` unchanged. |
@@ -39,7 +39,8 @@ never paste them into a chat, never ship them in the app (NFR9).
 ## Phase 6 — évaluation locale du modèle d'état
 
 Les critères sont dans `docs/PROJECT.md` §3. Les tables et les fichiers joblib
-restent dans `data/`. Le build du 26 nov. garde son modèle à 13 features.
+restent dans `data/`. Le pilote (26 nov.–2 déc.) tourne sur le modèle v3 à 17 features,
+figé pendant le pilote (TODO 6.4).
 Les résultats agrégés sont résumés dans `docs/PROJECT.md` §6.5 et §6.8.
 
 ```text
@@ -50,10 +51,10 @@ python ml/evaluate_v2.py --confirm-d3 data/results/wp-a1.json
 python ml/simulate_wp_b0.py --out data/results/wp-b0.json
 ```
 
-Après adoption de l'énergie v2, `ml/evaluate_v2.py --final data/results/wp-a1.json
-data/models/state_v3.joblib` entraîne le candidat. Utiliser ensuite `ml/export.py
---model data/models/state_v3.joblib --out data/models/v3 --coreml` sur macOS et
-`ml/make_fixtures.py --model data/models/state_v3.joblib --out data/models/v3/state_cases.json`.
-WP-B0 utilise le contrat v1 du pilote par défaut. L'option `--v2` simule le candidat.
+Modèle livré (TODO 6.4) : `ml/evaluate_v2.py --final data/results/wp-a1.json
+data/models/state_v3.joblib` l'entraîne sur D-1 + D-2 + D-3. Ensuite, sur macOS :
+`ml/export.py --model data/models/state_v3.joblib --coreml` (fichiers de l'app),
+`ml/make_fixtures.py` puis `ml/make_rank_fixtures.py` (fixtures golden).
+WP-B0 utilise le contrat v1 par défaut ; l'option `--v2` simule le modèle livré (v3).
 Fixtures synthétiques de la couche personnelle et du rang : `python ml/make_personal_fixtures.py`
 et `python ml/make_rank_fixtures.py` (tests : `ml.tests.test_personal_layer`, `ml.tests.test_wp_b0`).

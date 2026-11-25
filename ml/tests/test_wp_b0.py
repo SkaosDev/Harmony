@@ -32,7 +32,7 @@ class WPB0Tests(unittest.TestCase):
             self.assertEqual(list(rank_rows(person, Path("unused"), (None, None), F.FEATURES)),
                              [(0.5, 0.5)])
 
-    def test_v3_staging_schema_and_valence_probability(self):
+    def test_v3_schema_and_valence_probability(self):
         rng = np.random.default_rng(2)
         table = pd.DataFrame(rng.normal(size=(64, 17)), columns=F.FEATURES_V2)
         table["arousal_high"] = (table["hour_sin"] > 0).astype(int)

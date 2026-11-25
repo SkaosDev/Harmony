@@ -1,12 +1,12 @@
 """Golden fixtures for the Swift port of the features and the model (TODO 2.17).
 
 Usage:
-    python ml/make_fixtures.py [--model data/models/state_model.joblib]
+    python ml/make_fixtures.py [--model data/models/state_v3.joblib]
 
 Writes ml/fixtures/state_cases.json: 10 SYNTHETIC cases (fixed seed, nothing from EmoPhone, no
 real person). Each case has the raw series the app would hold (heart rate, steps), the answer
-time, the expected 13 features (`null` = unknown), the expected probability and the probability
-of the "time only" model (v3: also `valence_probability` and `valence_time_only_probability`,
+time, the expected features of the shipped model (v3: 17, `null` = unknown), the expected
+probability and the probability of the "time only" model (v3: also `valence_probability` and `valence_time_only_probability`,
 chosen with the same mode rule as the energy). The Swift tests (TODO 2.18-2.21) must retrieve the same values
 (tolerance 1e-6). Without --model the probability
 is computed from app/Harmony/Resources/model_params.json, the file the app ships.
@@ -148,8 +148,6 @@ def main():
         params = json.loads(PARAMS.read_text())
     rng = np.random.default_rng(SEED)
     out = [build_case(*c, rng, params) for c in cases()]
-    if params["version"] == 3 and export.is_within(args.out, OUT):
-        ap.error("write v3 fixtures separately from the active app fixtures")
     args.out.write_text(json.dumps({"version": 1, "model_version": params["version"],
                                "features": params["features"], "cases": out},
                               separators=(",", ":")) + "\n")
