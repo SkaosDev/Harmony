@@ -18,7 +18,7 @@ enum DataControl {
     /// `UserDefaults` keys the app writes; deleting everything removes them.
     static var storedKeys: [String] {
         [LibrarySync.importDateKey, RootView.onboardedKey, SpotifyPlaylist.idKey]
-            + HealthSignal.allCases.map(HealthKitProvider.anchorKey) + PilotSchedule.keys
+            + HealthSignal.allCases.map(HealthKitProvider.anchorKey) + PilotSchedule.keys + CheckInRecorder.keys
     }
 
     static func counts(in context: ModelContext) throws -> Counts {
