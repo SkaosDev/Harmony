@@ -1349,7 +1349,17 @@ suggéré automatiquement (modèle trop faible sur le stress).
   réglage et au lancement d'une file. Actions Not now / Low / Medium / High (−2 / 0 / +2), sans
   ouvrir l'app. `PromptLog` : une ligne par question planifiée, supprimée si la question est
   annulée avant son envoi ; « Not now » → `notNow` sans `CheckIn` ; livrée depuis 2 h sans réponse
-  → retirée et `ignored`.
+  → retirée et `ignored`. Un seul plan à la fois : un nouveau attend celui en cours.
+  Approximations connues, toutes prudentes pour les données :
+  - Toucher le corps de la notification ouvre l'app sans rien enregistrer (pas de feuille en mode
+    ombre) : la question devient `ignored` 2 h plus tard ; le taux de réponse du pilote compte
+    donc « ouverte » avec « ignorée ».
+  - Le silence de 80 min part du lancement de la file : une écoute plus longue peut recevoir une
+    question moins d'une heure après la musique.
+  - Un « Did it fit? » tardif allonge la file (fin = dernier `FeedbackEvent`) et rend inutilisables
+    les réponses de l'heure qui suit.
+  - « Reset what Harmony learned » efface aussi les questions déjà posées ce jour-là : jusqu'à deux
+    de plus peuvent venir le même jour.
 - **Textes** : tous dans `Features/Home/CheckInTexts.swift`, testés contre la liste de mots
   interdits de 3.7 ; « feel », « pleasant », « unpleasant » ne sont permis que dans la question
   d'agrément (D2).
