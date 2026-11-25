@@ -51,6 +51,42 @@ struct CheckInNotificationsTests {
         #expect(first.outcome == .notNow && second.outcome == .ignored)
     }
 
+    /// Two plans made at once (the permission alert closing as the app comes back, or a queue
+    /// starting as the app comes back) keep one set of questions: at most one per window, 2 h
+    /// apart, not two sets on top of each other.
+    @Test func overlappingPlansKeepOneSetOfQuestions() async throws {
+        let suite = "CheckInNotificationsTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: QuestionSettings.enabledKey)
+        func notifications() -> CheckInNotifications {
+            let notifications = CheckInNotifications()
+            notifications.defaults = defaults
+            notifications.isAuthorized = { await Task.yield(); return true }
+            notifications.addRequest = { _ in await Task.yield() }
+            return notifications
+        }
+
+        let aloneContainer = try HarmonyStore.container(inMemory: true)
+        let alone = aloneContainer.mainContext
+        await notifications().reschedule(context: alone, now: now)
+        let expected = try alone.fetchCount(FetchDescriptor<PromptLog>())
+        #expect(expected > 0)
+
+        let container = try HarmonyStore.container(inMemory: true)
+        let context = container.mainContext
+        let shared = notifications()
+        let first = Task { await shared.reschedule(context: context, now: now) }
+        let second = Task { await shared.reschedule(context: context, now: now) }
+        await first.value
+        await second.value
+        let times = try context.fetch(FetchDescriptor<PromptLog>(sortBy: [SortDescriptor(\.scheduledAt)])).map(\.scheduledAt)
+        #expect(times.count == expected)
+        for (earlier, later) in zip(times, times.dropFirst()) {
+            #expect(later.timeIntervalSince(earlier) >= CheckInSchedule.minimumGap)
+        }
+    }
+
     @Test func windowsDefaultToTheDesignAndCanChange() throws {
         let suite = "CheckInNotificationsTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))

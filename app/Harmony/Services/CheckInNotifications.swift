@@ -67,6 +67,13 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
     /// are completed with.
     var container: (() -> ModelContainer)?
     var healthProvider: (() throws -> any HealthProvider)?
+    /// Where the settings are read, whether iOS allows the questions and how one reaches iOS;
+    /// tests replace them (the test host is never allowed to notify).
+    var defaults: UserDefaults = .standard
+    var isAuthorized: () async -> Bool = {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus == .authorized
+    }
+    var addRequest: (UNNotificationRequest) async throws -> Void = { try await UNUserNotificationCenter.current().add($0) }
     private var center: UNUserNotificationCenter { .current() }
 
     /// At launch, before any answer can arrive.
@@ -86,17 +93,31 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: Planning
 
+    /// The plan being made. A new plan waits for it: two plans made at once would each keep
+    /// their own questions (the old ones are deleted before the first wait).
+    private var planning: Task<Void, Never>?
+
     /// Plans the questions of the next 3 days again: after a change of settings, at each return
-    /// to the app and when a queue starts (none in the 80 min after it).
-    func reschedule(context: ModelContext, now: Date = .now) async {
+    /// to the app and when a queue starts (none in the 80 min after it). `now` defaults to the
+    /// time the plan is made, after the one before it.
+    func reschedule(context: ModelContext, now: Date? = nil) async {
+        let previous = planning
+        let current = Task {
+            await previous?.value
+            await plan(context: context, now: now ?? .now)
+        }
+        planning = current
+        await current.value
+    }
+
+    private func plan(context: ModelContext, now: Date) async {
         do {
             let future = try context.fetch(FetchDescriptor<PromptLog>(predicate: #Predicate { $0.scheduledAt > now }))
                 .filter { $0.outcome == nil }
             center.removePendingNotificationRequests(withIdentifiers: future.map(\.id.uuidString))
             future.forEach(context.delete)
             try context.save()
-            guard QuestionSettings.isEnabled(),
-                  await center.notificationSettings().authorizationStatus == .authorized else { return }
+            guard QuestionSettings.isEnabled(defaults), await isAuthorized() else { return }
 
             let dayAgo = now - 86400
             let asked = try context.fetch(FetchDescriptor<PromptLog>(predicate: #Predicate {
@@ -106,7 +127,7 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
             lastQueue.fetchLimit = 1
             let quietUntil = try context.fetch(lastQueue).first.map { $0.createdAt + CheckInSchedule.quietAfterQueue }
             var rng = SystemRandomNumberGenerator()
-            let times = CheckInSchedule.times(now: now, windows: QuestionSettings.windows(), asked: asked,
+            let times = CheckInSchedule.times(now: now, windows: QuestionSettings.windows(defaults), asked: asked,
                                               quietUntil: quietUntil, calendar: .current, using: &rng)
             for time in times {
                 try await add(at: time, context: context)
@@ -162,7 +183,7 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
         content.categoryIdentifier = Self.category
         content.sound = .default
         let clock = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: time)
-        try await center.add(UNNotificationRequest(identifier: log.id.uuidString, content: content,
+        try await addRequest(UNNotificationRequest(identifier: log.id.uuidString, content: content,
                                                    trigger: UNCalendarNotificationTrigger(dateMatching: clock, repeats: false)))
         context.insert(log)
         try context.save()
@@ -199,7 +220,9 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
     /// Gives the waiting answers their state at the time they were given; stops while Apple
     /// Health cannot be read (phone locked).
     func complete(context: ModelContext) async throws {
-        guard let healthProvider else { return }
+        guard let healthProvider,
+              try context.fetchCount(FetchDescriptor<CheckIn>(predicate: #Predicate { $0.zEnergy == nil })) > 0
+        else { return }
         let provider = try healthProvider()
         let estimator = try StateEstimator.bundled()
         let done = try await CheckInRecorder(context: context).completePending { date in
