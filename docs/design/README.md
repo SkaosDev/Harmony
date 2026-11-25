@@ -70,6 +70,8 @@ seulement, cf. TODO 1.6).
 - Police : Helvetica Neue ; titres en graisse 800 avec interlettrage négatif.
 - Fonds : écran `#121212`, lecteur `#191414`, cartes `#181818`, surfaces `#282828`,
   pastilles `#2A2A2A`, champ de saisie `#242424`, séparateurs `#333333`.
+- Ronds des échelles du check-in (`V2-CheckIn`) : `#535353`. Corrigé le 26 nov. 2026 dans
+  cette copie, pas encore dans le canevas : `#2A2A2A` sur la feuille `#282828` ne se voyait pas.
 - Texte : `#FFFFFF`, secondaire `#B3B3B3` ; bordures `#727272` ; piste de progression `#4D4D4D`.
 - Accent : vert `#1ED760` (texte noir dessus) ; destructif `#E91429` ; bleu `#509BF5`.
 - Situations : Wake-up `#E8A21A`, Stress `#E8115B`, Low energy `#E13300`, Wind-down `#477D95`.

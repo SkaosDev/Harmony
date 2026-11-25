@@ -98,8 +98,9 @@ struct CheckInSheet: View {
     }
 }
 
-/// Seven 44 pt circles, `#2A2A2A`, the chosen one green; the end labels below, and "Last" in
-/// white under the previous answer (it takes the end label's place at either end).
+/// Seven 44 pt circles, `#535353` (the design's `#2A2A2A` could not be seen on the sheet), the
+/// chosen one green; the end labels below, and "Last" in white under the previous answer (it
+/// takes the end label's place at either end).
 private struct Scale: View {
     let label: String
     @Binding var selection: Int?
@@ -113,7 +114,7 @@ private struct Scale: View {
                 ForEach(-3...3, id: \.self) { value in
                     Button { selection = value } label: {
                         Circle()
-                            .fill(selection == value ? Theme.accent : Color(hex: 0x2A2A2A))
+                            .fill(selection == value ? Theme.accent : Theme.neutralTile)
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
