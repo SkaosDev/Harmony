@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings tab (TODO 3.19, `docs/design/V2-Reglages.dc.html`): the four pages, the Demo mode
+/// Settings tab (TODO 3.19, 6.13, `docs/design/V2-Reglages.dc.html`): the five pages, the Demo mode
 /// switch and, in Debug builds only, the Debug screen. The design centres the list in the free
 /// space; it sits under the title, as Clément asked for Home (23 Nov.).
 struct SettingsView: View {
@@ -13,6 +13,7 @@ struct SettingsView: View {
                 VStack(spacing: 10) {
                     page(Theme.accent, "Spotify account") { SpotifyAccountView() }
                     page(Theme.stress, "Health data") { HealthDataView() }
+                    page(Situation.windDown.color, "Questions") { QuestionsView() }
                     page(Theme.blue, "My data") { MyDataView() }
                     page(Theme.wakeUp, "About & privacy") { AboutView() }
                     TileRow(color: Situation.lowEnergy.color, title: "Demo mode", detail: "Recorded data, no watch needed.") {

@@ -117,6 +117,13 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Takes every question off: before "Reset what Harmony learned" and "Delete everything"
+    /// delete their log. The app sends no other notification.
+    func removeAll() {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+    }
+
     /// Debug (TODO 6.10 check on the iPhone): one question in `seconds`, for the lock screen and
     /// the watch.
     func sendTest(in seconds: TimeInterval, context: ModelContext) async throws {
