@@ -470,27 +470,14 @@ return StateModel.predict(x)
 \end{code}
 \end{minipage}\par
 
-\textbf{First results.} We ran this pipeline on the first EmoPhone wave (92 participants, 10,259 answers); Table~\ref{tab:results} gives the results. Our four-input model reaches an AUROC of 0.573, close to the best published result on this wave (0.576), which uses thousands of phone and watch features with a slightly different target and protocol~\cite{emophone}. Heart rate carries most of the information. On this wave, steps and sleep do not add a measurable gain: the four-input model is within the variation between folds ($\pm$0.015) of the heart-rate model. We keep them because the Apple Watch measures sleep itself, whereas EmoPhone sleep had to be estimated, and because they drive the rules. The result is unchanged with one heart-rate reading every 5 minutes, which matters because the Apple Watch is expected to measure less often than the Fitbit. Stress is barely predictable, so the Stress situation is chosen by the user. The mood of the \emph{other} participants at the same date and time, which includes shared effects such as the weather, gives only 0.53, so removing the weather costs little. These were first results on one wave; Section~\ref{sec:evalstate} gives the final results on the three waves, where steps and sleep do help.
+\textbf{First results.} On the first EmoPhone wave (92 participants, 10,259 answers), our model reaches an AUROC of 0.573 (balanced accuracy 0.542, Fig.~\ref{fig:wave1}), close to the best published result on this wave (0.576), which uses thousands of phone and watch features~\cite{emophone}. Heart rate carries most of the signal; gradient-boosted trees do no better, and one heart-rate reading every 5 minutes, as the Apple Watch may give, changes nothing. On this wave steps and sleep stay within the variation between folds ($\pm$0.015); they help on the three waves (Section~\ref{sec:evalstate}). Stress is barely predictable, so the user chooses the Stress situation. The mood of the other participants at the same time, which includes the weather, gives only 0.53.
 
-\begin{table}[H]
+\begin{figure}[!t]
 \centering
-\caption{First Results on EmoPhone Wave 1 (people kept apart)}
-\label{tab:results}
-\scriptsize
-\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{1.0cm}|>{\raggedright\arraybackslash}p{1.0cm}|}
-\hline
-\textbf{Target and inputs} & \textbf{AUROC} & \textbf{Bal.\ acc.} \\ \hline
-Arousal: time of day only & 0.532 & 0.509 \\ \hline
-Arousal: time + sleep & 0.526 & 0.507 \\ \hline
-Arousal: time + heart rate & 0.577 & 0.547 \\ \hline
-Arousal: time + heart rate + steps & 0.577 & 0.547 \\ \hline
-\textbf{Arousal: time + heart rate + steps + sleep (our model)} & \textbf{0.573} & \textbf{0.542} \\ \hline
-Arousal: same, gradient-boosted trees & 0.558 & 0.533 \\ \hline
-Arousal: time + heart rate, one reading every 5 min & 0.575 & -- \\ \hline
-Stress: our model & 0.543 & 0.514 \\ \hline
-Arousal: other participants at same date and time & 0.530 & -- \\ \hline
-\end{tabularx}
-\end{table}
+\includegraphics[width=\columnwidth]{figures/wave1-inputs.pdf}
+\caption{First results on EmoPhone wave 1, tested on people kept apart (5 folds). Our model in blue; dashed line: best published result.}
+\label{fig:wave1}
+\end{figure}
 
 \subsection{Requirement 5 -- Situation and Queue (FR5, FR8, FR11, NFR3, NFR5)}
 \goal{Suggest a situation and build a short queue that goes from the current state to the goal.}
@@ -936,56 +923,72 @@ Each use case gives the requirements it satisfies, then the steps. The screensho
 \section{Testing and Evaluation}\label{sec:eval}
 %=====================================================================
 \subsection{Automated Tests}\label{sec:tests}
-On Nov.\ 26, 2026, all 281 Swift tests (46 files), 89 Python tests and 51 Worker tests pass. They check, for example, the personal averages and the 60\,\% rule, the queue rules (``never more than two MuSe songs'', ``Wind-down never ends more energetic''), the reader of the LLM answers, the Worker limits, and that ``Delete everything'' empties every table. Shared test files, written by the Python code, check that the app computes the same inputs and the same probabilities as Python (difference below $10^{-6}$), the same personal adjustment and start point, the same normalised song titles, and writes a pilot file that Python can read.
+On Nov.\ 26, 2026, all 281 Swift tests (46 files), 89 Python tests and 51 Worker tests pass. They cover, for example, the personal averages and the 60\,\% rule, the queue rules (``never more than two MuSe songs'', ``Wind-down never ends more energetic''), the reader of the LLM answers, the Worker limits, and ``Delete everything''. Shared test files written by Python check that the app computes the same inputs and probabilities (difference below $10^{-6}$), the same personal offset and start point, and a pilot file that Python can read.
 
-\subsection{State Model}\label{sec:evalstate}
-We measure the model with the AUROC: take one moment when the person was above their usual and one when they were below; the AUROC is the chance that the model gives the higher number to the first. 0.5 is chance, 1 is perfect. Table~\ref{tab:eval} always tests on people the model has not seen. In cross-validation on waves 1 and 2 (191 participant-waves) and in a single test on wave 3 (106 participants), kept apart from every choice, the model with time, heart rate, steps and sleep (13 inputs) beats the time of day alone and the time with heart rate; steps and sleep add a small gain on both. The final model adds the raw heart rate and steps (17 inputs), chosen on waves 1 and 2 by a rule written beforehand; they add 0.009 and 0.021. On UC Irvine (24 participants, Samsung watch and Oura ring), the 13-input model does not transfer (0.496): the Apple Watch and Hanyang students are a third population, which only the pilot measures. The final model is trained on the three waves; the app computes the same numbers as Python.
+\subsection{Shared State Model}\label{sec:evalstate}
+We measure the model with the AUROC: take one moment when the person was above their usual and one when they were below; the AUROC is the chance that the model gives the higher number to the first (0.5 is chance, 1 is perfect). Every test uses people the model has never seen (Fig.~\ref{fig:eval}): cross-validation on waves 1 and 2 (191 participant-waves, 31,301 answers), then one test on wave 3 (106 participants, 21,838 answers), kept apart from every choice. Each group of inputs adds a little. The final model (17 inputs) reaches 0.572 in cross-validation and 0.597 on wave 3 (balanced accuracy 0.545 and 0.556), above the time of day alone (0.534) and at the level of the best published models (about 0.58~\cite{emophone}). On UC Irvine (24 participants, Samsung watch and Oura ring), it does not transfer (0.496). This is the ceiling of a model that only knows other people, and the reason for the next subsection.
 
-\begin{table}[!t]
+\begin{figure}[!t]
 \centering
-\caption{State Model Evaluation (People Kept Apart)}
-\label{tab:eval}
-\scriptsize
-\begin{tabularx}{\columnwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{1.85cm}|>{\raggedright\arraybackslash}p{0.75cm}|}
-\hline
-\textbf{Test and inputs} & \textbf{AUROC} & \textbf{Bal.\ acc.} \\ \hline
-\multicolumn{3}{|l|}{\textit{Waves 1+2, 5 folds by participant (31,301 answers)}} \\ \hline
-Time of day only & 0.534 $\pm$ 0.014 & 0.507 \\ \hline
-Time + heart rate & 0.554 $\pm$ 0.012 & 0.513 \\ \hline
-Time + heart rate + steps + sleep (13) & 0.563 $\pm$ 0.008 & 0.538 \\ \hline
-\textbf{+ raw heart rate, steps (17, final)} & \textbf{0.572 $\pm$ 0.018} & \textbf{0.545} \\ \hline
-\multicolumn{3}{|l|}{\textit{Wave 3 held out, tested once (21,838 answers)}} \\ \hline
-Time of day only & 0.534 & 0.511 \\ \hline
-Time + heart rate & 0.570 & 0.537 \\ \hline
-Time + heart rate + steps + sleep (13) & 0.576 & 0.541 \\ \hline
-\textbf{+ raw heart rate, steps (17, final)} & \textbf{0.597} & \textbf{0.556} \\ \hline
-\multicolumn{3}{|l|}{\textit{UC Irvine, 13-input model tested once (3,949 answers)}} \\ \hline
-Time + heart rate + steps + sleep (13) & 0.496 & 0.499 \\ \hline
-\end{tabularx}
-\end{table}
+\includegraphics[width=\columnwidth]{figures/eval.pdf}
+\caption{Shared state model on people kept apart: cross-validation on waves 1 and 2 (mean $\pm$ s.d.\ over 5 folds) and one test on the held-out wave 3.}
+\label{fig:eval}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/learning.pdf}
+\caption{Self-learning, simulated on EmoPhone in time order: each answer is predicted from the earlier answers only. (a) AUROC by days of use, shared model against the personal layer with 1, 2 or 4 answers a day. (b) Whole period at 2 answers a day: with the app's 3-level question, with a finer 7-step answer, and with a clock-only shared model.}
+\label{fig:learning}
+\end{figure*}
+
+\subsection{Self-Learning on the Phone}\label{sec:evalperso}
+Since no shared model can know what is usual for \emph{this} person, Harmony learns it on the phone, in two loops, with no server.
+
+\textbf{Loop 1, the personal layer.} Each answer to ``energy right now?'' (Low, Medium, High) is labelled above or below the mean of the person's answers of the last 14 days. The phone fits one number, an offset $b$ added to the log-odds $z$ of the watch model: $p = \sigma(z + b)$. $b$ is the maximum a posteriori estimate of a Bayesian logistic model with a Gaussian prior $\mathcal{N}(0, 2^2)$, in which an answer $a$ days old weighs $e^{-a/2}$; five Newton steps solve it. With no answer, $b = 0$ and day 1 is the shared model; when answers stop, $b$ drifts back to 0 (Fig.~\ref{fig:example}).
+
+\textbf{Loop 2, the queue bandit.} A queue can move toward its goal in three ways: gradually, half-way at once, or after staying longer at the current state. A Thompson-sampling bandit~\cite{thompson} keeps a Beta posterior per way and per situation, updated with each queue's reward (``Did it fit?'', else the share of songs not skipped, plus 0.2 per like). Each way keeps a probability of at least 0.15, so the bandit never stops exploring.
+
+\textbf{Simulation.} We replay EmoPhone in time order, as the app would run: two answers a day are drawn among each person's real answers (three seeds, 24,166 labelled predictions), and each answer is predicted from the earlier ones only. The forgetting time (2 days) and the prior were chosen by nested cross-validation on people kept apart. Days 1--3 equal the shared model, since 5 earlier answers are needed for a label. From days 4--7 the personal estimate reaches an AUROC of 0.736, against 0.534 for the shared model; from day 8 on, about 0.82 against 0.52 (Fig.~\ref{fig:learning}a). Over the whole period it goes from 0.514 to 0.797; four answers a day learn faster, one a day slower.
+
+\textbf{What these numbers mean.} They come from EmoPhone students, not from our users. The AUROC pools all people: within one person the gain is smaller (0.560 to 0.596 in an earlier simulation). With a finer 7-step answer the label is harder and the gain smaller (0.544 to 0.657). And the same layer on a clock-only model also gives 0.797 (Fig.~\ref{fig:learning}b): the watch makes the first day better than chance, the answers make the estimate personal.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/example.pdf}
+\caption{The personal layer at work on a made-up user, computed with the code of the app. Top: chance that the person is above their usual, from the watch alone and with the answers. Bottom: the answers.}
+\label{fig:example}
+\end{figure}
+
+During the pilot both loops run in \emph{shadow mode}: the personal estimate is computed and saved before each answer but does not change the queue, and the bandit always uses the gradual way, so that the shared and personal estimates can be compared on the same answers. Both loops are switched on for the final demo.
 
 \subsection{Song Scores}
-The MuSe table keeps 89,269 songs. On a team member's library of 2,045 songs, 11.4\,\% are found in MuSe and 88.6\,\% are scored by the LLM; the first scoring takes 158\,s, in the background. To check the LLM, we gave it 2,000 MuSe songs without their MuSe scores and compared the two orders of the songs (Spearman correlation: 1 means the same order, 0 no link). Over three trials (two models, three prompts), the correlation is 0.26--0.28 for energy and 0.32--0.34 for positivity, below the rule written before the check (0.4), and the mean error is larger than that of a constant neutral score. The team still uses the LLM for songs missing from MuSe, because the MuSe reference itself is weak: 65\,\% of its songs have at most three tags.
+The MuSe table keeps 89,269 songs. On a 2,045-song library, 11.4\,\% are found in MuSe and 88.6\,\% are scored by the LLM (158\,s, in the background). To check the LLM, we gave it 2,000 MuSe songs without their scores and compared the two orders (Spearman correlation: 1 is the same order, 0 no link). Over three trials, the correlation is 0.26--0.28 for energy and 0.32--0.34 for positivity, below the threshold set before the check (0.4), and the mean error is larger than that of a constant neutral score. We still use the LLM for songs missing from MuSe, because MuSe itself is weak: 65\,\% of its songs have at most three tags.
 
 \subsection{App Performance}
-On the iPhone 16, a queue is on screen 0.28 to 0.37\,s after the tap (median 0.34\,s over 12 queues, library of 2,459 songs; NFR3: under 2\,s), measured before the state was computed again at each tap (Nov.\ 23); this adds the time of one state estimate (0.13--0.15\,s on the same phone), and on Nov.\ 26 a queue was on screen 0.54\,s after the tap. Music starts two taps after launch (NFR5). Without a watch, without network or without the Spotify app, the app does not crash and says what happens in one sentence; without recent heart rate it falls back on the time of day (NFR4).
+On the iPhone 16, a queue is on screen 0.28 to 0.37\,s after the tap (median of 12 queues, 2,459 songs), far below the 2\,s of NFR3 (Fig.~\ref{fig:latency}); a fresh state estimate at each tap adds 0.13--0.15\,s. Music starts two taps after launch (NFR5). Without a watch, network or the Spotify app, the app does not crash and says what happens in one sentence; without recent heart rate it falls back on the time of day (NFR4).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/latency.pdf}
+\caption{Time from the tap to the queue on screen, on the iPhone 16 (bars: median or single measure; whiskers: range).}
+\label{fig:latency}
+\end{figure}
 
 \subsection{Pilot (Under Way)}\label{sec:pilot}
-The pilot follows a protocol written before any data (\texttt{docs/pilot-protocol.md}): one participant, Clément, for one week, from Nov.\ 26 to Dec.\ 2, 2026, with the Apple Watch data used every day. Every queue starts from the state estimate, and from the time of day only when the watch gives no recent heart rate, as in normal use. The phone exports one anonymous file: for each queue, the pilot day and hour, the situation, the estimate used, the origin of each song's scores, the skips, likes and finished songs and the ``Did it fit?'' answer, plus how well the watch covered the days; no song name, health value or date.
-
-\textbf{What we measure.} The share of songs skipped before 30\,s and the share of ``Yes'', with 95\,\% intervals; how often MuSe songs were proposed; how many nights had a known sleep and how many queues fell back on the time of day. For the energy question: how many questions were answered, and whether the personal estimate, computed before each answer, predicts it better than the shared one, for days 1--3, days 4--7 and the whole week. With at most 14 answers, about 9 of them labelled, this checks that the whole chain works on a real Apple Watch user; it cannot prove that the personal adjustment helps. In a simulation on EmoPhone (two answers a day, three levels), days 4--7 give an AUROC of 0.534 for the shared model and 0.736 for the personal one. The results of the pilot will be given in the final paper.
+The pilot follows a protocol written before any data (\texttt{docs/pilot-protocol.md}): one participant, Clément, from Nov.\ 26 to Dec.\ 2, 2026, with the watch data used every day. The phone exports one anonymous file: for each queue, the pilot day and hour, the situation, the estimate used, the origin of each song's scores, the skips, likes, finished songs and ``Did it fit?'' answer, and the watch coverage; for each energy answer, the shared and personal estimates computed just before it. It holds no song name, health value or date. We measure the share of songs skipped before 30\,s and of ``Yes'', with 95\,\% intervals, and whether the personal estimate predicts the answers better than the shared one, for days 1--3, days 4--7 and the whole week. With at most 14 answers, about 9 of them labelled, this checks the whole chain on a real Apple Watch user; it cannot prove that the personal layer helps. The results will be in the final paper.
 
 \subsection{Limitations}
 \begin{itemize}
-\item \textbf{Modest accuracy.} An AUROC of 0.57--0.60 is close to the best published result on EmoPhone but low in absolute terms, and 90\,\% of the estimates lie between 0.32 and 0.58, which is why a queue starts from the place of the estimate among the person's own.
-\item \textbf{Transfer.} The model is trained on Fitbit data of Korean students; on another population and other devices (UC Irvine) it does not transfer.
-\item \textbf{Sleep unknown.} The ``sleep unknown'' input has one of the largest weights; it reflects the habit of EmoPhone participants of not wearing the watch at night, not a signal of the body.
-\item \textbf{Song scores.} Most songs are scored by the LLM, whose agreement with MuSe is weak.
-\item \textbf{Pilot.} One participant for one week, who is also a developer of the app, and no comparison queue: a feasibility test, not a proof; results hold for this participant only. The personal adjustment is judged on a handful of answers, and its expected gain comes from a simulation on EmoPhone students.
+\item \textbf{Shared model.} An AUROC of 0.57--0.60 is close to the best published result on EmoPhone but low in absolute terms, and 90\,\% of the estimates lie between 0.32 and 0.58; a queue therefore starts from the place of the estimate among the person's own (Module~3).
+\item \textbf{Transfer.} The model is trained on Fitbit data of Korean students and does not transfer to UC Irvine.
+\item \textbf{Sleep unknown.} The ``sleep unknown'' input has one of the largest weights; it reflects EmoPhone participants not wearing the watch at night, not a signal of the body.
+\item \textbf{Self-learning.} Its gain is simulated on EmoPhone and depends on the user answering; the bandit has only a few queues per situation to learn from.
+\item \textbf{Pilot.} One participant for one week, who is also a developer of the app, and no comparison queue: a feasibility test, not a proof.
 \end{itemize}
 
 \subsection{Discussion}
-The watch gives an estimate from the first day, without asking anything, but more watch inputs or larger models barely change it: on waves 1 and 2, no other kind of model beats the simple logistic regression by more than the variation between folds. In a simulation on EmoPhone, two short answers a day (``energy right now?'') raise the AUROC of the personal estimate from 0.555 to 0.666 over the study. The app therefore adds this optional question and learns from it on the phone: in the background during the pilot, and used by the queues for the final demo. These figures are simulated on EmoPhone students; the pilot only begins to check them on a real user.
+More watch inputs or larger models barely change the shared model: on waves 1 and 2, no other kind of model beats the logistic regression by more than the variation between folds. What changes the result is learning the person. In simulation, two one-tap answers a day lift the AUROC from 0.51 to about 0.80 within a week, on the phone, without sending anything. The design follows: the watch gives a reasonable first day, and the answers, skips and likes make Harmony personal. The pilot only begins to check this on a real user.
 
 %=====================================================================
 \enlargethispage{5\baselineskip}
@@ -1011,6 +1014,7 @@ The watch gives an estimate from the first day, without asking anything, but mor
 \bibitem{claudepro} Anthropic, ``Plans \& pricing.'' [Online]. Available: \url{https://claude.com/pricing} (accessed Nov.\ 4, 2026).
 \bibitem{cfworkers} Cloudflare, ``Limits,'' Cloudflare Workers docs. [Online]. Available: \url{https://developers.cloudflare.com/workers/platform/limits/} (accessed Nov.\ 4, 2026).
 \bibitem{claudeprice} Anthropic, ``Pricing,'' Claude Platform Docs. [Online]. Available: \url{https://platform.claude.com/docs/en/about-claude/pricing} (accessed Nov.\ 4, 2026).
+\bibitem{thompson} D. J. Russo, B. Van Roy, A. Kazerouni, I. Osband, and Z. Wen, ``A tutorial on Thompson sampling,'' \textit{Found. Trends Mach. Learn.}, vol.~11, no.~1, pp.~1--96, 2018.
 \end{thebibliography}
 
 \end{document}

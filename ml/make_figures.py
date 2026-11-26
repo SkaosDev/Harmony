@@ -315,16 +315,15 @@ def example() -> None:
     fig, (ax, sx) = plt.subplots(2, 1, figsize=(COL, 2.45), sharex=True,
                                  gridspec_kw={"height_ratios": [3.4, 1], "hspace": 0.12})
     ax.axvspan(12, 17, color="#f3f3f3", lw=0, zorder=0)
-    ax.annotate("no answers: drifts\nback to the shared\nmodel", (14.5, 0.98), ha="center", va="top",
-                fontsize=6.3, color=INK2)
+    ax.annotate("no answers:\ndrifts back", (14.5, 0.98), ha="center", va="top", fontsize=6.3, color=INK2)
     ax.plot(grid_t, shared_p, color=SHARED, lw=1.0, label="Shared watch model")
     ax.plot(grid_t, personal_p, color=OURS, lw=1.6, label="Personal estimate")
     ax.axhline(0.5, color=INK2, lw=0.6, ls=(0, (1.5, 2)), zorder=0)
     ax.set_ylim(0.0, 1.0)
     ax.set_yticks([0, 0.5, 1])
     ax.set_ylabel("Chance of 'above\nyour usual'")
-    ax.annotate("learns: more\nHighs than usual", (9.5, 0.98), ha="center", va="top", fontsize=6.3, color=INK)
-    ax.annotate("learns: more\nLows than usual", (19.5, 0.98), ha="center", va="top", fontsize=6.3, color=INK)
+    ax.annotate("learns: more\nHighs than usual", (8.8, 0.98), ha="center", va="top", fontsize=6.3, color=INK)
+    ax.annotate("learns: more\nLows than usual", (19.9, 0.98), ha="center", va="top", fontsize=6.3, color=INK)
     ax.legend(loc="lower left", ncol=2, handlelength=1.4, borderaxespad=0.1, columnspacing=1.0)
     light_grid(ax)
 
