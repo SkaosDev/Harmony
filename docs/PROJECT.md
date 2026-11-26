@@ -1642,13 +1642,13 @@ suggéré automatiquement (modèle trop faible sur le stress).
   pour les check-ins (`docs/pilot-protocol.md` §7, §9, §10) ; export `harmony-pilot-2` (paires
   `dayOfUse`, `labelEnergy`, `pCommonBefore`, `pPersonalBefore`, comptes des questions, stratégie
   des files) ; analyse WP-P dans `ml/pilot_analysis.py` ; rapport : Design, Use Cases et Pilot
-  décrivent le build du pilote, tableau des check-ins en `\tbd`.
+  décrivent le build du pilote, tableau des check-ins en `\tbd`. Pas d'avis éthique nécessaire (réponse de
+  l'enseignant), consentement révisé accepté ; build installé sur l'iPhone 16 le jour même, par-dessus
+  l'app, données gardées.
 
 **Pas encore fait**
 - Démos au customer (1.41, 2.36, 3.24).
-- Question à l'enseignant sur l'avis éthique et signature du consentement révisé (6.14).
-- Pilote lui-même (26 nov.–2 déc.) : point à mi-pilote (4.6), installation du build `harmony-pilot-2`
-  avant l'export, chiffres de 4.7–4.9 et 6.15, résultats dans le rapport (4.12) ; passage de la
+- Pilote lui-même (26 nov.–2 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9 et 6.15, résultats dans le rapport (4.12) ; passage de la
   couche personnelle en mode actif et démo finale (4.13).
 
 ## 13. Risques et questions ouvertes

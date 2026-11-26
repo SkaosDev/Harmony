@@ -212,14 +212,17 @@ questions were switched on and the test answers reset on 26 Nov (TODO 6.10).
 ### 10.3 What is exported and analysed
 Section 7.2 (pairs and counts, decision D5) and sections 7.3–7.4 (answer rate, chronological AUROC
 by days of use, reward by strategy), with `ml/pilot_analysis.py`. The export needs the build with
-format `harmony-pilot-2` (TODO 4.5). If the phone still runs an older build at the end, install
-the new one after day 7 and before the export, over the app as in TODO 4.4 (the data stay; only the
-export changes), and note the date.
+format `harmony-pilot-2` (TODO 4.5). **Installed on 26 Nov 2026 (day 1, 12:19)** over the app
+(branch `phase6/pilote`): only the export changed, the data stayed in place and the app opened on
+them.
 
 ### 10.4 Ethics review
 - Question to the teacher: is an ethics review needed for this pilot (one participant who is a
   team member, one week, optional one-tap energy questions, everything kept on the phone, only the
   aggregates and pairs of section 7.2 leave it, with written consent)?
-- Asked on: ____________ · Answer: ______________________________ (to be filled).
-- Until the answer comes, the questions run and stay on the phone. If a review is required and not
-  obtained before the report, the check-in part of the export is not used.
+- Answer, reported by the participant on 26 Nov 2026: **no ethics review needed**; the pilot runs
+  as described here.
+
+### 10.5 Consent
+The revised consent of section 9 (items 1–7, check-ins included) was accepted in writing by the
+participant on 26 Nov 2026, pilot day 1, before any export.
