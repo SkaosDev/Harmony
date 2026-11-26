@@ -26,6 +26,7 @@ struct PilotExportTests {
     /// One recorded queue: its songs (score origin, MuSe suggestion), its events in order
     /// (position, event, seconds) one minute apart, then the "Did it fit?" answer.
     private func addQueue(at date: Date, _ situation: Situation, stateMode: EstimateMode?,
+                                   strategy: QueueStrategy? = .s1,
                                    songs: [(ScoreOrigin, Bool)], events: [(Int, FeedbackType, Double?)],
                                    fit: FeedbackType?) {
         let id = UUID()
@@ -38,7 +39,9 @@ struct PilotExportTests {
             QueueItem(position: index, spotifyId: ids[index], targetEnergy: 0.42, isSuggestion: song.1)
         }
         context.insert(QueueRecord(id: id, createdAt: date, situation: situation, startEnergy: 0.42,
-                                   stateMode: stateMode, reason: "Short night, morning: calm songs first.", items: items))
+                                   stateMode: stateMode, strategy: strategy, strategyProbability: strategy == nil ? nil : 1,
+                                   e0Source: .rank, pCommon: 0.42, pPersonal: 0.42,
+                                   reason: "Short night, morning: calm songs first.", items: items))
         for (offset, event) in events.enumerated() {
             context.insert(FeedbackEvent(queueId: id, spotifyId: ids[event.0], event: event.1, seconds: event.2,
                                          time: date + Double(offset + 1) * 60))
@@ -58,7 +61,7 @@ struct PilotExportTests {
         addQueue(at: at(day: 1, hour: 22, minute: 30), .windDown, stateMode: .body,
                  songs: [(.muse, false), (.muse, true), (.llm, false)],
                  events: [(0, .finish, 210), (1, .skip, 8), (2, .skip, 20)], fit: .fitNo)
-        addQueue(at: at(day: 2, hour: 14), .lowEnergy, stateMode: .timeOnly,
+        addQueue(at: at(day: 2, hour: 14), .lowEnergy, stateMode: .timeOnly, strategy: nil,
                  songs: [(.llm, false), (.neutral, false), (.muse, false)],
                  events: [(0, .skip, 5), (1, .finish, 190), (2, .finish, 230)], fit: nil)
         addQueue(at: at(day: 3, hour: 9), .wakeUp, stateMode: .timeOnly,
@@ -77,6 +80,33 @@ struct PilotExportTests {
         for hour in -3..<65 {
             context.insert(HourSummary(hourStart: at(day: 1, hour: 0) + Double(hour) * 3600, meanHR: 70,
                                        hrCount: (0..<60).contains(hour) || hour < 0 ? 10 : 0, sdnnHRV: 40, steps: 300))
+        }
+
+        // Check-ins (TODO 6.14): one before day 1 left out, then two a day. No label before 5
+        // earlier answers; the last one is still waiting for its state (phone locked).
+        let answers: [(day: Int, hour: Int, label: Bool?, common: Double?, personal: Double?)] = [
+            (0, 11, nil, 0.5, 0.5),
+            (1, 11, nil, 0.48, 0.48), (1, 16, nil, 0.51, 0.51),
+            (2, 12, nil, 0.47, 0.47), (2, 17, nil, 0.55, 0.55),
+            (3, 10, nil, 0.5, 0.5), (3, 15, true, 0.53, 0.53),
+            (4, 11, false, 0.52, 0.5), (4, 16, true, 0.49, 0.61), (4, 18, false, nil, nil),
+        ]
+        for answer in answers {
+            context.insert(CheckIn(answeredAt: at(day: answer.day, hour: answer.hour, minute: 7), channel: .notification,
+                                   promptedAt: at(day: answer.day, hour: answer.hour), energy: 2,
+                                   zEnergy: answer.common.map(PersonalLayer.logit), estimateMode: .body,
+                                   labelEnergy: answer.label, usableForLearning: true,
+                                   pCommonBefore: answer.common, pPersonalBefore: answer.personal,
+                                   dayOfUse: max(1, answer.day)))
+        }
+        // Questions: one before day 1, 9 answered, 1 "Not now", 2 ignored, 1 waiting, 2 planned
+        // after the export.
+        let prompts: [(day: Int, hour: Int, outcome: PromptOutcome?)] =
+            [(0, 11, .answered)] + (1...4).flatMap { [($0, 11, .answered), ($0, 16, .answered)] }
+            + [(4, 18, .answered), (2, 9, .notNow), (3, 9, .ignored), (3, 20, .ignored), (4, 19, nil),
+               (5, 11, nil), (5, 16, nil)]
+        for prompt in prompts {
+            context.insert(PromptLog(scheduledAt: at(day: prompt.day, hour: prompt.hour), outcome: prompt.outcome))
         }
         try context.save()
     }
@@ -99,13 +129,15 @@ struct PilotExportTests {
         #expect((encoded as? NSDictionary)?.isEqual(to: wanted as? [String: Any] ?? [:]) == true)
     }
 
-    /// `docs/pilot-protocol.md` §7.2: no song, no reason, no state, no health value, no date.
+    /// `docs/pilot-protocol.md` §7.2: no song, no reason, no state of a queue, no health value, no
+    /// check-in answer or logit, no date.
     @Test func exportHoldsNothingIdentifying() throws {
         try fill()
         let text = try #require(String(data: PilotExport.json(from: context, schedule: schedule, now: exportTime), encoding: .utf8))
 
         for word in ["SPID", "spotifyId", "reason", "Short night", "startEnergy", "targetEnergy", "0.42", "meanHR",
-                     "sleepMinutes", "2026", "createdAt", "\"time\""] {
+                     "sleepMinutes", "2026", "createdAt", "\"time\"", "pCommon\"", "pPersonal\"", "e0Source",
+                     "\"energy\"", "zEnergy", "answeredAt", "promptedAt", "scheduledAt", "deliveredAt"] {
             #expect(!text.contains(word), "\(word)")
         }
     }
