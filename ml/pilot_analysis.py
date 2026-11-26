@@ -1,7 +1,7 @@
 """Pilot analysis (TODO 4.7-4.9, docs/pilot-protocol.md section 7): aggregate tables only.
 
 Reads the anonymous export of the app (Settings > Debug > Pilot > Export pilot data, format
-harmony-pilot-1, kept in data/pilot/, never committed) and prints Markdown tables:
+harmony-pilot-2, kept in data/pilot/, never committed) and prints Markdown tables:
 skip rate and "Did it fit?" over the week (4.7), MuSe suggestions (4.8), watch coverage (4.9).
 
     python ml/pilot_analysis.py data/pilot/harmony-pilot.json
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-FORMAT = "harmony-pilot-1"
+FORMAT = "harmony-pilot-2"
 RESAMPLES = 2000
 SEED = 406
 
