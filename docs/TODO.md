@@ -217,7 +217,7 @@
 ### 4.C Rapport et démo finale
 - [x] **4.10** Sections conception : architecture, structure des modules, répartition des tâches. — ✔ dans `docs/main.tex`. *(23 nov. : section Design de `docs/main.tex` (figure d'architecture, table des modules, répartition tirée de Git, à confirmer par l'équipe)  ; compilé avec tectonic, 10 pages.)*
 - [x] **4.11** Cas d'usage pas à pas (onboarding, une file, suppression des données). — ✔ dans le rapport. *(23 nov. : section Use Cases, UC1–UC3  ; compilé avec tectonic.)*
-- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport. *(23 nov., partiel : modèle, scores, performances, limites, discussion ; résultats du pilote en `\tbd`.)*
+- [ ] **4.12** Résultats (modèle + pilote, dont la courbe commune vs personnelle de 6.15), limites honnêtes, discussion. — ✔ dans le rapport. *(23 nov., partiel : modèle, scores, performances, limites, discussion ; résultats du pilote en `\tbd`.)* *(26 nov., branche `phase6/pilote` : Design, Use Cases et Pilot décrivent le build du pilote (couche personnelle en ombre, questions, rang `e0`, 10 tables, 281 tests Swift et 89 Python) ; mesures des check-ins et tableau « Pilot Check-ins » en `\tbd` ; 11 pages, les références débordent sur la 11e.)*
 - [ ] **4.13** Démo finale répétée, couche personnelle en mode actif (PROJECT.md §3, D4). — ✔ fonctionne aussi en mode démo si le réseau tombe. *(Dépend de la couche personnelle, Phase 6.)*
 
 ---
