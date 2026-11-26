@@ -297,6 +297,7 @@
 - [ ] **6.14** Protocole et consentement incluant les check-ins (complète 4.1) ; demander à l'enseignant si un avis éthique est requis. — ✔ document dans `docs/`.
   — 26 nov. (jour 1 du pilote, avant tout export ; branche `phase6/pilote`) : `docs/pilot-protocol.md` §10 (questions, journaux, export, avis éthique), §7.2–7.4 (paires et comptes exportés, mesures WP-P et leurs intervalles, fixés avant les données), consentement §9 (points 6 et 7). Reste : poser la question à l'enseignant et noter sa réponse en §10.4 ; signer le consentement révisé.
 - [ ] **6.15** Analyse WP-P. — ✔ tableau d'agrégats dans le rapport.
+  — 26 nov. (branche `phase6/pilote`) : `ml/pilot_analysis.py` lit l'export `harmony-pilot-2` et sort les tableaux WP-P fixés au protocole §7.3–7.4 : taux de réponse, réponses étiquetées, AUROC chronologique commune vs personnelle et leur différence pour les jours d'utilisation 1–3, 4–7 et la semaine (bootstrap sur les jours d'utilisation, mêmes tirages), récompense moyenne par stratégie (règle de `QueueBandit.reward`) ; testé sur l'export synthétique (AUROC égale à scikit-learn, égalités comprises). Reste : les chiffres du pilote après le 2 déc.
 
 ---
 
