@@ -7,3 +7,5 @@ scikit-learn==1.5.2
 coremltools>=8,<9; sys_platform == "darwin"
 # LLM song-score check (ml/llm_check.py, TODO 2.30).
 anthropic==2.12.0
+# Charts of the report, the blog and the README (ml/make_figures.py).
+matplotlib>=3.9
