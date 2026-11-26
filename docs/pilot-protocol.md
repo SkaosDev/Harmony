@@ -84,7 +84,9 @@ never pasted into a chat). It contains only:
 - for each queue started since day 1: pilot day, hour of day, situation, mode really used (state
   estimate, or time of day when the watch gave no recent heart rate), and for each song its position, score origin (MuSe, language model, neutral) and whether it
   was a MuSe suggestion; the skip / like / finish events with their position and seconds played;
-  the "Did it fit?" answer; the queue strategy (always S1 during the pilot, decision D4);
+  the "Did it fit?" answer; the queue strategy (always S1 in shadow mode, decision D4; chosen by
+  the bandit after the amendment of section 10.6) and, from that amendment, where the queue's start
+  point came from (`e0Source`: rank, raw or personal);
 - watch coverage counts: pilot days, nights with known sleep, hours elapsed, hours with at least one
   heart rate;
 - for each answer to the check-in question since day 1 (section 10, decision D5): its day of use,
@@ -172,6 +174,14 @@ rates (that would break section 7):
 >    Settings › Questions. My answers are treated as health data: they stay on my iPhone, are
 >    deleted after 30 days, and I can delete them with "Reset what Harmony learned". During the
 >    pilot they do not change my queues.
+>
+>    *Item 6 as revised by the amendment of section 10.6 (26 Nov 2026):* Harmony asks me "Quick
+>    check: energy right now?" by notification, at most twice a day, and during the pilot, from the
+>    evening of 26 Nov, up to four times a day. The questions are optional: I can answer "Not now",
+>    ignore them, or switch them off in Settings › Questions. My answers are treated as health data:
+>    they stay on my iPhone, are deleted after 30 days, and I can delete them with "Reset what
+>    Harmony learned". From the evening of 26 Nov, my answers, skips and likes change my queues:
+>    Harmony learns from them on my iPhone.
 > 7. For each answer, the exported file holds only its day of use, whether it was above my usual,
 >    and the two estimates the app computed just before it (from the shared model, and adjusted to
 >    my earlier answers), plus how many questions I answered, declined or ignored. It never holds
@@ -226,3 +236,36 @@ them.
 ### 10.5 Consent
 The revised consent of section 9 (items 1–7, check-ins included) was accepted in writing by the
 participant on 26 Nov 2026, pilot day 1, before any export.
+
+### 10.6 Amendment: active mode and up to four questions a day (26 Nov 2026, evening of day 1)
+Written on 26 Nov 2026, pilot day 1, before any export or analysis; decided by the participant
+and the team.
+
+- **Why.** In shadow mode the app cannot improve during the week, and two questions a day give few
+  labelled answers (a label needs 5 earlier answers). The team wants the pilot to show the app
+  learning from one real user.
+- **What changes, from the installation of the active build** (branch `phase6/actif`; time noted
+  below):
+  1. Both learning loops run in **active mode** (D4 revised, `docs/PROJECT.md` §3). The queue
+     starts from the personal estimate once there are 5 labelled energy answers in the 14 days,
+     and its reason may say "your answers show more / less energy than usual". The bandit chooses
+     the strategy (S1 / S2 / S3) by Thompson sampling, with a uniform choice 45% of the time, and
+     logs the probability of its choice. Home shows the energy row and the check-in sheet.
+  2. **Up to four questions a day, for the pilot only.** The setting Settings › Debug › Personal
+     layer › "Pilot: 4 questions a day" uses four fixed windows, 09:00–11:00, 12:00–14:00,
+     15:00–17:00 and 18:00–21:00, instead of the two of Settings › Questions. The other rules of
+     section 10.1 stay: at least 2 h apart, none in the 80 min after a queue starts, planned 3 days
+     ahead, ignored after 2 h. Known gap: Settings › Questions still shows two windows and "Up to 2
+     a day"; the app keeps two questions a day for every other user.
+  3. The export adds, for each queue, where its start point came from (`e0Source`, section 7.2).
+- **What stays.** The measures of section 7.3, fixed before the data, are computed as planned
+  (days 1–3, 4–7, the week). Day 1 before the installation ran in shadow mode.
+- **Added as exploratory, marked as such in the analysis:** queues that start from the rank against
+  queues that start from the personal estimate (`e0Source`); the reward of each strategy chosen by
+  the bandit; before against after the switch.
+- **Expected size.** About 2 answers on day 1, then up to 4 a day: at most about 26 answers, about
+  21 of them labelled; queues should start from the personal estimate from about day 3. With one
+  participant who also built the app, this is a demonstration, not a proof.
+- **Consent.** Item 6 of section 9 is revised as shown there, and accepted in writing by the
+  participant before the installation of the active build.
+- **Installed:** 26 Nov 2026 at ______ (filled in at the installation).
