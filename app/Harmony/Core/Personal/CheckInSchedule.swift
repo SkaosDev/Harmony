@@ -13,6 +13,9 @@ nonisolated struct CheckInWindow: Equatable, Sendable {
 nonisolated enum CheckInSchedule {
     /// Late morning and afternoon (`V2-Questions`).
     static let defaultWindows = [CheckInWindow(start: 10 * 60, end: 13 * 60), CheckInWindow(start: 15 * 60, end: 19 * 60)]
+    /// Pilot only (`docs/pilot-protocol.md` §10.6): up to four questions a day, set in Debug.
+    static let pilotWindows = [CheckInWindow(start: 9 * 60, end: 11 * 60), CheckInWindow(start: 12 * 60, end: 14 * 60),
+                               CheckInWindow(start: 15 * 60, end: 17 * 60), CheckInWindow(start: 18 * 60, end: 21 * 60)]
     /// Bounds of a window and its shortest length, for the time pickers.
     static let earliest = 7 * 60
     static let latest = 22 * 60

@@ -136,7 +136,7 @@ struct PilotExportTests {
         let text = try #require(String(data: PilotExport.json(from: context, schedule: schedule, now: exportTime), encoding: .utf8))
 
         for word in ["SPID", "spotifyId", "reason", "Short night", "startEnergy", "targetEnergy", "0.42", "meanHR",
-                     "sleepMinutes", "2026", "createdAt", "\"time\"", "pCommon\"", "pPersonal\"", "e0Source",
+                     "sleepMinutes", "2026", "createdAt", "\"time\"", "pCommon\"", "pPersonal\"",
                      "\"energy\"", "zEnergy", "answeredAt", "promptedAt", "scheduledAt", "deliveredAt"] {
             #expect(!text.contains(word), "\(word)")
         }

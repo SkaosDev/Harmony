@@ -7,6 +7,7 @@ import SwiftUI
 /// questions. "Send a test question in 15 s" is for the lock screen and Apple Watch check (6.10).
 struct PersonalDebugSection: View {
     @AppStorage(DemoMode.key) private var demoMode = false
+    @AppStorage(QuestionSettings.pilotFourKey) private var pilotFour = false
     @Environment(\.modelContext) private var context
     @Query(sort: \CheckIn.answeredAt, order: .reverse) private var checkIns: [CheckIn]
     @Query(sort: \PromptLog.scheduledAt, order: .reverse) private var prompts: [PromptLog]
@@ -19,6 +20,11 @@ struct PersonalDebugSection: View {
         Section {
             LabeledContent("Mode", value: PersonalMode.current == .shadow ? "Shadow" : "Active")
             LabeledContent("Questions", value: QuestionSettings.isEnabled() ? "On" : "Off")
+            // Pilot only (`docs/pilot-protocol.md` §10.6): 09–11, 12–14, 15–17 and 18–21.
+            Toggle("Pilot: 4 questions a day", isOn: $pilotFour)
+                .onChange(of: pilotFour) {
+                    Task { await CheckInNotifications.shared.reschedule(context: context) }
+                }
             Button("Compute") { compute() }
             if let state, let personal, let start {
                 LabeledContent("p common", value: format(state.estimate.value))

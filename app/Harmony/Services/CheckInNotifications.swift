@@ -8,7 +8,10 @@ enum QuestionSettings {
     /// Start and end of each window, in minutes after midnight.
     static let windowKeys = [("questions.window1Start", "questions.window1End"),
                              ("questions.window2Start", "questions.window2End")]
-    static var keys: [String] { [enabledKey] + windowKeys.flatMap { [$0.0, $0.1] } }
+    /// Pilot only (`docs/pilot-protocol.md` §10.6): Settings › Debug plans with the four pilot
+    /// windows instead of these two; Settings › Questions is unchanged.
+    static let pilotFourKey = "questions.pilotFour"
+    static var keys: [String] { [enabledKey, pilotFourKey] + windowKeys.flatMap { [$0.0, $0.1] } }
 
     static func isEnabled(_ defaults: UserDefaults = .standard) -> Bool {
         defaults.bool(forKey: enabledKey)
@@ -19,6 +22,11 @@ enum QuestionSettings {
             CheckInWindow(start: defaults.object(forKey: keys.0) as? Int ?? fallback.start,
                           end: defaults.object(forKey: keys.1) as? Int ?? fallback.end)
         }
+    }
+
+    /// The windows the questions are planned in.
+    static func plannedWindows(_ defaults: UserDefaults = .standard) -> [CheckInWindow] {
+        defaults.bool(forKey: pilotFourKey) ? CheckInSchedule.pilotWindows : windows(defaults)
     }
 
     static func setWindow(_ window: CheckInWindow, at index: Int, _ defaults: UserDefaults = .standard) {
@@ -127,7 +135,7 @@ final class CheckInNotifications: NSObject, UNUserNotificationCenterDelegate {
             lastQueue.fetchLimit = 1
             let quietUntil = try context.fetch(lastQueue).first.map { $0.createdAt + CheckInSchedule.quietAfterQueue }
             var rng = SystemRandomNumberGenerator()
-            let times = CheckInSchedule.times(now: now, windows: QuestionSettings.windows(defaults), asked: asked,
+            let times = CheckInSchedule.times(now: now, windows: QuestionSettings.plannedWindows(defaults), asked: asked,
                                               quietUntil: quietUntil, calendar: .current, using: &rng)
             for time in times {
                 try await add(at: time, context: context)

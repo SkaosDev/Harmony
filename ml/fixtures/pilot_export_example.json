@@ -16,6 +16,7 @@
   "queues" : [
     {
       "day" : 1,
+      "e0Source" : "rank",
       "events" : [
         { "event" : "finish", "position" : 0, "seconds" : 200 },
         { "event" : "skip", "position" : 1, "seconds" : 12 },
@@ -35,6 +36,7 @@
     },
     {
       "day" : 1,
+      "e0Source" : "rank",
       "events" : [
         { "event" : "finish", "position" : 0, "seconds" : 210 },
         { "event" : "skip", "position" : 1, "seconds" : 8 },
@@ -53,6 +55,7 @@
     },
     {
       "day" : 2,
+      "e0Source" : "rank",
       "events" : [
         { "event" : "skip", "position" : 0, "seconds" : 5 },
         { "event" : "finish", "position" : 1, "seconds" : 190 },
@@ -69,6 +72,7 @@
     },
     {
       "day" : 3,
+      "e0Source" : "rank",
       "events" : [
         { "event" : "finish", "position" : 0, "seconds" : 200 },
         { "event" : "finish", "position" : 1, "seconds" : 150 },
@@ -87,6 +91,7 @@
     },
     {
       "day" : 4,
+      "e0Source" : "rank",
       "events" : [
         { "event" : "skip", "position" : 0, "seconds" : 3 },
         { "event" : "finish", "position" : 1, "seconds" : 200 }

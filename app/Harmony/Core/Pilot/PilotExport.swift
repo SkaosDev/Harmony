@@ -48,8 +48,12 @@ enum PilotExport {
         let situation: String
         /// Nil for a queue recorded before TODO 4.4.
         let stateMode: String?
-        /// "s1" during the pilot (D4); nil for a queue recorded before TODO 6.12.
+        /// "s1" in shadow mode, chosen by the bandit in active mode (D4); nil for a queue recorded
+        /// before TODO 6.12.
         let strategy: String?
+        /// Where the start point came from: "rank", "raw" or "personal" (`docs/pilot-protocol.md`
+        /// §10.6); nil for a queue recorded before TODO 6.12.
+        let e0Source: String?
         let items: [Item]
         let events: [Event]
         /// "yes", "no", or nil when "Did it fit?" was not answered.
@@ -138,6 +142,7 @@ enum PilotExport {
                      situation: record.situation.rawValue,
                      stateMode: record.stateMode?.rawValue,
                      strategy: record.strategy?.rawValue,
+                     e0Source: record.e0Source?.rawValue,
                      items: items.map {
                          // A suggestion is a MuSe song outside the library: no `SongScore`.
                          Item(position: $0.position, origin: $0.isSuggestion ? ScoreOrigin.muse.rawValue : scores[$0.spotifyId]?.rawValue,
