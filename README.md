@@ -36,44 +36,65 @@ real implementation and a **demo** one (synthetic data), so the app runs entirel
 
 | Module | Role | Status |
 |---|---|---|
-| `MusicProvider` + Spotify / Demo | sign-in (PKCE), library import, lookup, playback, save | sign-in, import, demo done; playback to do |
+| `MusicProvider` + Spotify / Demo | sign-in (PKCE), library import, lookup, playback, save | done (the queue plays as a private playlist) |
 | `HealthProvider` + HealthKit / Demo | consents, anchored reads of heart rate, steps, HRV, sleep | done |
-| `SummaryStore` / `BaselineCalculator` | hourly and nightly summaries, 14-day personal baselines | summaries done; baselines to do |
+| `SummaryStore` / `BaselineCalculator` | hourly and nightly summaries, 14-day personal baselines | done (baselines computed in memory) |
 | `SongScorer` | energy / positivity per song: MuSe, then LLM via the Worker, cached | done (run from the Debug screen) |
-| `FeatureBuilder` + `StateEstimator` | the 13 features of `PROJECT.md` §6, Core ML inference | model and fixtures ready; Swift to do |
-| `SituationSuggester` | which of the 4 situations to highlight | to do |
-| `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | to do |
-| `PlayerController` + `FeedbackStore` | playback, skip / like / "did it fit?" | to do |
-| `DataControl` | see, export, delete all data | to do |
+| `FeatureBuilder` + `StateEstimator` | the 17 features of `PROJECT.md` §6, Core ML inference | done |
+| `CheckInSchedule` + `CheckInRecorder` + `PersonalLayer` | "energy right now?" questions, labels, personal offset `b` learned on the phone | done, active in the pilot |
+| `PersonalRank` + `QueueStart` | queue start: rank among the person's own estimates, then the personal estimate | done |
+| `QueueBandit` | Thompson sampling over three ways of moving, rewarded by skips, likes and "Did it fit?" | done, active in the pilot |
+| `SituationSuggester` | which of the 4 situations to highlight | done |
+| `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | done |
+| `PlayerController` + `FeedbackEvent` | playback, skip / like / "did it fit?" (stored as SwiftData events) | done |
+| `DataControl` | see, export, delete all data | done |
 | Worker (`worker/`) | `POST /score`, Spotify-token auth, daily limit | done, deployed (Claude Haiku 5.5) |
 
 ### Data flow in one sentence
 
 Watch data are reduced to hourly and nightly summaries (raw samples are dropped), compared with
-the person's own last 14 days, turned into 13 features, and fed to a small logistic model
-(Core ML) that gives a 0–1 "state"; with the chosen situation, it selects a short queue of songs
-the user already likes, scored by energy and positivity. There is no medical claim and no emotion
+the person's own last 14 days, turned into 17 features, and fed to a small logistic model
+(Core ML) that gives a 0–1 "state", corrected on the phone by what the app has learned from the
+user's one-tap answers; with the chosen situation, it selects a short queue of songs the user
+already likes, scored by energy and positivity, and a bandit learns from skips and likes how the
+queue should move. There is no medical claim and no emotion
 is named to the user.
 
 ### Python ↔ Swift contract
 
 `ml/features.py` is the single source of truth for the features. The model is exported with
 `ml/export.py` (`model_params.json`, `StateModel.mlmodel`) and 10 synthetic golden cases
-(`ml/fixtures/state_cases.json`) let the Swift tests check the same values to 1e-6. Changing a
-feature means retraining and regenerating these files.
+(`ml/fixtures/state_cases.json`) let the Swift tests check the same values to 1e-6; the personal
+layer is checked the same way (`ml/fixtures/personal_layer_cases.json`). Changing a feature means
+retraining and regenerating these files.
 
 ### Tech stack
 
 Swift 6, SwiftUI, SwiftData, HealthKit, Core ML (iOS 18+, Xcode 27.2) · Spotify Web API + iOS SDK
-App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudflare Worker (TypeScript).
+App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8, matplotlib · Cloudflare Worker (TypeScript).
+
+## Results
+
+The shared watch model (17 inputs, logistic regression) reaches an AUROC of 0.572 in
+cross-validation and 0.597 on a held-out EmoPhone wave, above the time of day alone (0.534) and at
+the level of the best published models (about 0.58). What changes the result is learning each
+person on the phone: replayed on EmoPhone in time order, two one-tap answers a day lift the AUROC
+from 0.51 to about 0.82 after a week (pooled over people; the gain is smaller within one person).
+Details: the report (`docs/main.pdf`, Section VII) and the blog (`index.md`, Section IV).
+
+<p align="center">
+  <img src="docs/figures/learning.svg" alt="AUROC by days of use: shared model against the personal layer" width="100%">
+</p>
+
+The one-week pilot (Nov. 26 – Dec. 2, 2026) runs with both learning loops switched on.
 
 ## Start here
 
 1. `docs/PROJECT.md` — full context: idea, decisions, architecture, data, model, where we are.
 2. `docs/TODO.md` — ordered checklist, from setup to the final report.
 3. `CLAUDE.md` — rules for Claude Code (general guidelines + project rules).
-4. `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` — state model v2 (decided, not yet
-   built): one-tap questions that tune the model to each user on the iPhone; TODO Phase 6.
+4. `docs/superpowers/specs/2026-11-23-modele-etat-v2-design.md` — state model v2 (built): one-tap
+   questions that tune the model to each user on the iPhone, and the queue bandit; TODO Phase 6.
    Evidence: `docs/research/2026-11-23-modele-etat-v2/`.
 
 ## Repository layout
@@ -83,7 +104,7 @@ App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudfla
 | `docs/` | LaTeX sources of the documents (IEEE template). `main.tex` holds Submissions A and B (revised) and Submissions C and D (architecture, use cases, tests). `Submission-C.tex`, `.pdf` and `.md` are the version handed in for C and D; `Submission-B.md` is a Markdown version of B. `submission-A.pdf` is the version handed in for A. |
 | `docs/design/` | The app's screens (copy of the design canvas): to reproduce exactly, see its `README.md` |
 | `app/` | iPhone app (Swift, SwiftUI) — from the implementation phase |
-| `ml/` | Python code for the song scores and the state model (`explore_d1.py` reproduces Table VII of Submission B) |
+| `ml/` | Python code for the song scores, the state model and the personal layer (`explore_d1.py` reproduces Table VII of Submission B; `make_figures.py` draws the charts of `docs/figures/`) |
 | `data/` | **Local only, never committed** (see below) |
 
 ## Prerequisites
