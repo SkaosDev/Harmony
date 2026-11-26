@@ -126,7 +126,7 @@ struct CheckInRecorder {
         return queues.map { $0.createdAt...max($0.createdAt, lastEvent[$0.id] ?? $0.createdAt) }
     }
 
-    private static func energyObservations(_ answers: [CheckIn]) -> [PersonalObservation] {
+    static func energyObservations(_ answers: [CheckIn]) -> [PersonalObservation] {
         answers.compactMap { answer in
             answer.zEnergy.map {
                 PersonalObservation(answeredAt: answer.answeredAt, value: answer.energy, z: $0,
