@@ -1302,9 +1302,12 @@ suggéré automatiquement (modèle trop faible sur le stress).
   efface aussi l'ancienne graine `pilot.seed`. `ml/pilot_analysis.py` donne les taux de la semaine
   avec un bootstrap sur les jours (protocole §7.3–7.4) et compte le repli heure seule sur toutes
   les files. Export
-  anonyme `harmony-pilot-1` (`Core/Pilot/PilotExport.swift`, Debug › Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
-  `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Les paires v2 et les
-  comptes `PromptLog` (4.5) viendront avec 6.7/6.8, dans un nouveau format.
+  anonyme `harmony-pilot-2` (`Core/Pilot/PilotExport.swift`, Debug › Pilot › Export pilot data ; contenu et exclusions : protocole §7.2 ; exemple partagé
+  `ml/fixtures/pilot_export_example.json`) ; analyse `ml/pilot_analysis.py`. Depuis le 26 nov.
+  (TODO 4.5, 6.15), l'export ajoute la stratégie de chaque file, une paire par check-in
+  (`dayOfUse`, `labelEnergy`, `pCommonBefore`, `pPersonalBefore`) et les comptes des questions
+  (`PromptLog`) ; le script en tire le taux de réponse, l'AUROC chronologique commune vs
+  personnelle par jours d'utilisation et la récompense par stratégie (protocole §7.3–7.4, §10).
 
 **Modèle v2 (§3, §6.8 ; design v2 §4.3–§4.6)** — ce qui change dans la file :
 - **`e0`** : sans check-in étiqueté récent, rang personnel de l'état (§6.8) au lieu de la
@@ -1533,7 +1536,7 @@ suggéré automatiquement (modèle trop faible sur le stress).
 
 ---
 
-## 12. Où on en est (23 novembre 2026)
+## 12. Où on en est (26 novembre 2026)
 
 **Fait**
 - Rendu A ; rendu B rédigé (7 pages, `docs/main.tex`, PDF, version Markdown).
@@ -1634,11 +1637,19 @@ suggéré automatiquement (modèle trop faible sur le stress).
   scope `playlist-modify-public` manquant) ; corrigé, et les anciennes sont nettoyées à chaque
   file (§9). Vérifié sur l'iPhone 16 : 67 sorties d'un coup, puis une par file.
 
+- *Pilote : check-ins, export et analyse, 26 nov. 2026 (TODO 4.5, 6.14, 6.15, branche
+  `phase6/pilote`), jour 1 du pilote, avant tout export* : protocole et consentement complétés
+  pour les check-ins (`docs/pilot-protocol.md` §7, §9, §10) ; export `harmony-pilot-2` (paires
+  `dayOfUse`, `labelEnergy`, `pCommonBefore`, `pPersonalBefore`, comptes des questions, stratégie
+  des files) ; analyse WP-P dans `ml/pilot_analysis.py` ; rapport : Design, Use Cases et Pilot
+  décrivent le build du pilote, tableau des check-ins en `\tbd`.
+
 **Pas encore fait**
-- Démo M3 au customer (3.24).
-- Pilote lui-même (26 nov.–2 déc.) : point à mi-pilote (4.6), chiffres de 4.7–4.9, résultats dans le
-  rapport (4.12) ; paires v2 de l'export (4.5) avec 6.7/6.8 ; démo finale (4.13).
-  L'intégration des check-ins et les autres tâches applicatives sont suivies dans TODO.
+- Démos au customer (1.41, 2.36, 3.24).
+- Question à l'enseignant sur l'avis éthique et signature du consentement révisé (6.14).
+- Pilote lui-même (26 nov.–2 déc.) : point à mi-pilote (4.6), installation du build `harmony-pilot-2`
+  avant l'export, chiffres de 4.7–4.9 et 6.15, résultats dans le rapport (4.12) ; passage de la
+  couche personnelle en mode actif et démo finale (4.13).
 
 ## 13. Risques et questions ouvertes
 
