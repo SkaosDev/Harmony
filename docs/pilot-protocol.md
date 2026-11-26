@@ -235,7 +235,9 @@ them.
 
 ### 10.5 Consent
 The revised consent of section 9 (items 1–7, check-ins included) was accepted in writing by the
-participant on 26 Nov 2026, pilot day 1, before any export.
+participant on 26 Nov 2026, pilot day 1, before any export. Item 6 as revised by the amendment of
+section 10.6 was accepted in writing by the participant on 26 Nov 2026, before the installation
+of the active build at 18:20.
 
 ### 10.6 Amendment: active mode and up to four questions a day (26 Nov 2026, evening of day 1)
 Written on 26 Nov 2026, pilot day 1, before any export or analysis; decided by the participant
@@ -268,4 +270,6 @@ and the team.
   participant who also built the app, this is a demonstration, not a proof.
 - **Consent.** Item 6 of section 9 is revised as shown there, and accepted in writing by the
   participant before the installation of the active build.
-- **Installed:** 26 Nov 2026 at ______ (filled in at the installation).
+- **Installed:** 26 Nov 2026 at 18:20 (day 1), over the pilot app, which was not deleted: the
+  answers and data of day 1 stayed. After the installation, the participant switches on
+  "Pilot: 4 questions a day" in Settings › Debug › Personal layer.
