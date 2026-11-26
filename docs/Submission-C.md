@@ -9,7 +9,7 @@ Group G02 "FireStarter" — Repository: <https://github.com/SkaosDev/Harmony>
 
 *Submissions C and D, handed in together: architecture design, implementation, use cases. Sections I–IV revise Submissions A and B; Sections V–VII are new. Markdown version of `Submission-C.pdf` (Nov. 26, 2026).*
 
-**Abstract —** Waking up, stress, an afternoon dip and falling asleep are moments in which the right music helps, but nobody wants to search for it then. We built an **iPhone app** that plays a short queue from the user’s own **Spotify** library to fit the moment. Each song gets an energy and a positivity score from the public **MuSe** dataset or, when missing, from a **language model**. A small model trained on **EmoPhone** (282 students in Korea) reads the **Apple Watch** heart rate, steps and sleep and estimates whether the person is more or less activated than usual. Like every published model on these data, it is modest (AUROC 0.57–0.60): a model that only knows other people cannot know *you*. Harmony therefore **learns on the phone**: a one-tap question, “energy right now?”, updates a Bayesian personal layer, and a Thompson-sampling bandit learns from skips and likes how to shape the queue. Replayed in time order on EmoPhone, the personal estimate goes from an AUROC of 0.51 on the first days to 0.82 after a week, at two answers a day. Health data never leave the phone (**Swift**, **SwiftUI**, **HealthKit**, **Core ML**); the model is trained in **Python** with **scikit-learn**. The app is built and tested, and a one-week pilot is under way.
+**Abstract —** Waking up, stress, an afternoon dip and falling asleep are moments in which the right music helps, but nobody wants to search for it then. We built an **iPhone app** that plays a short queue from the user’s own **Spotify** library to fit the moment. Each song gets an energy and a positivity score from the public **MuSe** dataset or, when missing, from a **language model**. A small model trained on **EmoPhone** (282 students in Korea) reads the **Apple Watch** heart rate, steps and sleep and estimates whether the person is more or less activated than usual. Like every published model on these data, it is modest (AUROC 0.57–0.60): a model that only knows other people cannot know *you*. Harmony therefore **learns on the phone**: a one-tap question, “energy right now?”, updates a Bayesian personal layer, and a Thompson-sampling bandit learns from skips and likes how to shape the queue. Replayed in time order on EmoPhone, the personal estimate goes from an AUROC of 0.51 on the first days to 0.82 after a week, at two answers a day. Health data never leave the phone (**Swift**, **SwiftUI**, **HealthKit**, **Core ML**); the model is trained in **Python** with **scikit-learn**. The app is built and tested, and a one-week pilot with the learning switched on is under way.
 
 **Index Terms —** music recommendation, wearable data, on-device learning, personalization, multi-armed bandit, Spotify, Core ML
 
@@ -574,7 +574,7 @@ Each module is described below with its purpose, what it does, where its code is
 
 **Purpose.** Turn a situation and a start point into 3 to 5 songs and a one-line reason, and learn how this user likes a queue to move (FR5, FR8, FR10, FR11).
 
-**What it does.** Each situation has a goal energy: 0.7 for Wake-up and Low energy, 0.3 for Stress, 0.2 for Wind-down. The queue first plays one or two songs that match the current state, then moves in equal steps to the goal (Fig. 4). Each step takes the closest library song, prefers positive songs for Stress and Low energy, avoids repeating an artist, and leaves out songs of the last 72 hours and songs skipped twice in this situation; at most two MuSe songs fill the gaps, after a check on Spotify. The reason is built from fixed sentence parts, e.g. “Evening: medium songs first, then a little calmer.” In the final demo, the bandit of Requirement 9 picks among three ways of moving (gradual, half-way at once, or later) from the rewards of the user’s earlier queues.
+**What it does.** Each situation has a goal energy: 0.7 for Wake-up and Low energy, 0.3 for Stress, 0.2 for Wind-down. The queue first plays one or two songs that match the current state, then moves in equal steps to the goal (Fig. 4). Each step takes the closest library song, prefers positive songs for Stress and Low energy, avoids repeating an artist, and leaves out songs of the last 72 hours and songs skipped twice in this situation; at most two MuSe songs fill the gaps, after a check on Spotify. The reason is built from fixed sentence parts, e.g. “Evening: medium songs first, then a little calmer.” The bandit of Requirement 9 picks among three ways of moving (gradual, half-way at once, or later) from the rewards of the user’s earlier queues.
 
 **Where.** `app/Harmony/Core/Queue`.
 
@@ -593,7 +593,7 @@ Each module is described below with its purpose, what it does, where its code is
 
 **Purpose.** Give a number between 0 and 1 that says how activated the person is compared with their usual, never a named emotion, and learn it for this person (FR4, FR7, FR15, NFR7).
 
-**What it does.** At each tap, it computes the person’s usual values over the last 14 days, builds the 17 inputs of Requirement 4 and runs the shared model; without heart rate in the last 30 minutes it uses the time of day. The shared numbers vary little (90% between 0.32 and 0.58), so without answers the queue starts from the place of the estimate among the person’s own estimates of the last 14 days (calmest 0, most activated 1). It also plans the two questions of the day, saves each answer with the shared and personal estimates computed just before it, and refits the personal layer of Requirement 9 (Fig. 8). From five labelled answers, the queue starts from the personal estimate, and the reason says so (“your answers show more energy than usual”). During the pilot the layer runs in shadow mode (computed and saved, not used); one switch turns it on for the final demo.
+**What it does.** At each tap, it computes the person’s usual values over the last 14 days, builds the 17 inputs of Requirement 4 and runs the shared model; without heart rate in the last 30 minutes it uses the time of day. The shared numbers vary little (90% between 0.32 and 0.58), so without answers the queue starts from the place of the estimate among the person’s own estimates of the last 14 days (calmest 0, most activated 1). It also plans the questions of the day (two by default, four during the pilot), saves each answer with the shared and personal estimates computed just before it, and refits the personal layer of Requirement 9 (Fig. 8). From five labelled answers, the queue starts from the personal estimate, and the reason says so (“your answers show more energy than usual”). One switch (`PersonalMode`) chooses between shadow mode (computed and saved, not used) and active mode; the pilot runs in active mode (Section VII-F).
 
 **Where.** `app/Harmony/Core/State`, `app/Harmony/Core/Personal`, `app/Harmony/Services/CheckInNotifications.swift`.
 
@@ -671,7 +671,7 @@ Each module is described below with its purpose, what it does, where its code is
 
 ### L. Implementation Status
 
-On Nov. 26, 2026, the app has 93 Swift files and every requirement is implemented, with two limits: FR14 is only prepared, through the two interfaces; and during the pilot both learning loops run in shadow mode, as planned, and one switch (`PersonalMode`) turns them on for the final demo.
+On Nov. 26, 2026, the app has 93 Swift files and every requirement is implemented; FR14 is only prepared, through the two interfaces. Both learning loops run on the phone, in active mode since the first evening of the pilot.
 
 ### M. Changes From the Specification
 
@@ -680,6 +680,7 @@ On Nov. 26, 2026, the app has 93 Swift files and every requirement is implemente
 - Songs scored by the LLM get no penalty: with any fixed penalty, almost only MuSe songs were chosen.
 - A queue starts from the place of the estimate among the person’s own, not from the estimate itself, which varied too little.
 - The energy question, the personal layer and the bandit come from a new design of the state model (Nov. 23); each queue records its estimates for the pilot.
+- The pilot, planned in shadow mode with two questions a day, runs in active mode with four (amendment of Nov. 26).
 
 ### N. Task Distribution
 
@@ -725,14 +726,14 @@ Each use case gives its requirements, then its steps. The screenshots (Fig. 5) w
 
 1. A song left before 30 s counts as a skip; skipped twice in a situation, it is left out of its next queues.
 2. “+” saves the song to the Spotify library (like); a song played to its end is recorded as finished.
-3. After the last song, “Did it fit?” offers Yes, Nope or Skip. The queue’s reward (Requirement 9) updates the bandit of this situation (final demo).
+3. After the last song, “Did it fit?” offers Yes, Nope or Skip. The queue’s reward (Requirement 9) updates the bandit of this situation.
 
 **UC4 – Teaching Harmony one’s usual.** *Requirements:* FR15, NFR1, NFR7. *Actor:* user who allowed the questions. *Result:* the personal layer learns from the answer, on the phone.
 
 1. At a random time in each of the two time windows (Settings → Questions), a notification asks “Quick check: energy right now?”.
 2. The user answers Low, Medium or High from the lock screen or the watch, or taps Not now; ignoring it is fine.
 3. The answer is stored with the shared and personal estimates of that moment; from the sixth answer on, it is labelled above or below the person’s usual.
-4. The offset *b* is refitted on the phone. In the final demo, the next queue starts from the personal estimate and its reason may say “your answers show more energy than usual”. “Reset what Harmony learned” erases it all. The question only speaks of energy, never of an emotion (NFR7).
+4. The offset *b* is refitted on the phone. From five labelled answers, the next queue starts from the personal estimate and its reason may say “your answers show more energy than usual”. “Reset what Harmony learned” erases it all. The question only speaks of energy, never of an emotion (NFR7).
 
 **UC5 – Browsing the library.** *Requirements:* FR2, FR6. *Actor:* any user. *Result:* the user sees the songs and the origin of their scores.
 
@@ -786,7 +787,7 @@ Since no shared model can know what is usual for *this* person, Harmony learns i
 
 *Fig. 8. The personal layer at work on a made-up user, computed with the code of the app. Top: chance that the person is above their usual, from the watch alone and with the answers. Bottom: the answers.*
 
-During the pilot both loops run in *shadow mode*: the personal estimate is computed and saved before each answer but does not change the queue, and the bandit always uses the gradual way, so that the shared and personal estimates can be compared on the same answers. Both loops are switched on for the final demo.
+The app also has a *shadow mode*, in which the personal estimate is computed and saved but does not change the queue, and the bandit always uses the gradual way. The pilot was planned in this mode; we switched it to active mode on its first evening, so that the app improves during the week (Section VII-F). Both estimates are still saved before each answer, so the comparison of Fig. 7 can be repeated on the pilot’s answers.
 
 ### D. Song Scores
 
@@ -802,7 +803,7 @@ On the iPhone 16, a queue is on screen 0.28 to 0.37 s after the tap (median of 1
 
 ### F. Pilot (Under Way)
 
-The pilot follows a protocol written before any data (`docs/pilot-protocol.md`): one participant, Clément, from Nov. 26 to Dec. 2, 2026. The phone exports one anonymous file (no song name, health value or date): for each queue, its context, estimate, song origins and feedback; for each energy answer, the shared and personal estimates computed just before it. We measure the share of quick skips and of “Yes”, with 95% intervals, and whether the personal estimate predicts the answers better than the shared one. With at most 14 answers, about 9 of them labelled, this checks the whole chain on a real Apple Watch user, not that the personal layer helps. Results will be in the final paper.
+The pilot follows a protocol written before any data (`docs/pilot-protocol.md`): one participant, Clément, from Nov. 26 to Dec. 2, 2026. A dated amendment, made on the first evening before any analysis, switches both loops to active mode and raises the questions to four a day for the pilot only, so that the app can learn during the week. The phone exports one anonymous file (no song name, health value or date): for each queue, its context, estimate, way of moving, song origins and feedback; for each energy answer, the shared and personal estimates computed just before it. The measures set in advance are kept: the share of quick skips and of “Yes”, with 95% intervals, and whether the personal estimate predicts the answers better than the shared one, for days 1–3, days 4–7 and the week. A before/after comparison is added as exploratory: queues that start from the person’s rank against queues that start from the personal estimate, and the reward of each way of the bandit. With at most about 26 answers, about 21 of them labelled, the queues should start from the personal estimate from about day 3. This shows the learning on a real Apple Watch user; it cannot prove that it helps. Results will be in the final paper.
 
 ### G. Limitations
 
@@ -810,11 +811,11 @@ The pilot follows a protocol written before any data (`docs/pilot-protocol.md`):
 - **Transfer.** The model is trained on Fitbit data of Korean students and does not transfer to UC Irvine.
 - **Sleep unknown.** This input has one of the largest weights; it reflects EmoPhone participants not wearing the watch at night, not the body.
 - **Self-learning.** Its gain is simulated on EmoPhone and depends on the user answering; the bandit has only a few queues per situation to learn from.
-- **Pilot.** One participant for one week, who is also a developer of the app, and no comparison queue: a feasibility test, not a proof.
+- **Pilot.** One participant for one week, who is also a developer of the app, and no comparison queue: a demonstration, not a proof. Before and after the switch differ in time as well as in learning, so that comparison stays exploratory.
 
 ### H. Discussion
 
-More watch inputs or larger models barely change the shared model. What changes the result is learning the person. In simulation, two one-tap answers a day lift the AUROC from 0.51 to about 0.82 after a week, on the phone, without sending anything. The design follows: the watch gives a reasonable first day, and the answers, skips and likes make Harmony personal. The pilot only begins to check this on a real user.
+More watch inputs or larger models barely change the shared model. What changes the result is learning the person. In simulation, two one-tap answers a day lift the AUROC from 0.51 to about 0.82 after a week, on the phone, without sending anything. The design follows: the watch gives a reasonable first day, and the answers, skips and likes make Harmony personal. The pilot, with both loops switched on, begins to check this on a real user.
 
 ## References
 
