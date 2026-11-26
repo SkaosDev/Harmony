@@ -228,7 +228,7 @@ deux protocoles : il ne doit jamais appeler Spotify ou HealthKit directement (FR
 Harmony/
 ├── CLAUDE.md                 consignes pour Claude Code
 ├── README.md
-├── docs/                     main.tex (rapport), PROJECT.md, TODO.md, Submission-B.md
+├── docs/                     main.tex (rapport), PROJECT.md, TODO.md, Submission-B.md, Submission-C (.tex/.pdf/.md)
 ├── app/                      projet Xcode (Harmony.xcodeproj, Harmony/, HarmonyTests/)
 │   └── Harmony/
 │       ├── App/              HarmonyApp.swift, RootView

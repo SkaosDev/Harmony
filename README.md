@@ -80,7 +80,7 @@ App Remote · Python 3.12, pandas, scikit-learn 1.5.2, coremltools 8 · Cloudfla
 
 | Folder | Content |
 |---|---|
-| `docs/` | LaTeX sources of the documents (IEEE template). `main.tex` holds Submission A (revised) and Submission B; `Submission-B.md` is a Markdown version. `submission-A.pdf` is the version handed in for A. |
+| `docs/` | LaTeX sources of the documents (IEEE template). `main.tex` holds Submissions A and B (revised) and Submissions C and D (architecture, use cases, tests). `Submission-C.tex`, `.pdf` and `.md` are the version handed in for C and D; `Submission-B.md` is a Markdown version of B. `submission-A.pdf` is the version handed in for A. |
 | `docs/design/` | The app's screens (copy of the design canvas): to reproduce exactly, see its `README.md` |
 | `app/` | iPhone app (Swift, SwiftUI) — from the implementation phase |
 | `ml/` | Python code for the song scores and the state model (`explore_d1.py` reproduces Table VII of Submission B) |
