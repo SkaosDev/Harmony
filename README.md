@@ -46,7 +46,7 @@ real implementation and a **demo** one (synthetic data), so the app runs entirel
 | `QueueBandit` | Thompson sampling over three ways of moving, rewarded by skips, likes and "Did it fit?" | done, active in the pilot |
 | `SituationSuggester` | which of the 4 situations to highlight | done |
 | `QueueBuilder` + `Explainer` | short queue from the library and its plain-words reason | done |
-| `PlayerController` + `FeedbackStore` | playback, skip / like / "did it fit?" | done |
+| `PlayerController` + `FeedbackEvent` | playback, skip / like / "did it fit?" (stored as SwiftData events) | done |
 | `DataControl` | see, export, delete all data | done |
 | Worker (`worker/`) | `POST /score`, Spotify-token auth, daily limit | done, deployed (Claude Haiku 5.5) |
 
