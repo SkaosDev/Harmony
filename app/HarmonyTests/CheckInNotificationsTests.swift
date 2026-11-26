@@ -98,6 +98,19 @@ struct CheckInNotificationsTests {
         #expect(QuestionSettings.windows(defaults)[1] == CheckInSchedule.defaultWindows[1])
     }
 
+    /// The pilot setting of the Debug screen (`docs/pilot-protocol.md` §10.6) plans with the four
+    /// pilot windows; Settings › Questions keeps its two, and "Delete everything" clears it.
+    @Test func thePilotSettingPlansFourWindows() throws {
+        let suite = "CheckInNotificationsTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        #expect(QuestionSettings.plannedWindows(defaults) == CheckInSchedule.defaultWindows)
+        defaults.set(true, forKey: QuestionSettings.pilotFourKey)
+        #expect(QuestionSettings.plannedWindows(defaults) == CheckInSchedule.pilotWindows)
+        #expect(QuestionSettings.windows(defaults) == CheckInSchedule.defaultWindows)
+        #expect(QuestionSettings.keys.contains(QuestionSettings.pilotFourKey))
+    }
+
     /// iOS must hear back on the main thread once an answer is handled, or the app stops
     /// ("Call must be made on main thread", seen on the iPhone on 26 Nov). The notification and
     /// the response have no public initializer: made here as in Apple's own tests.

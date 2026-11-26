@@ -50,6 +50,26 @@ struct CheckInScheduleTests {
         }
     }
 
+    /// Pilot only (`docs/pilot-protocol.md` §10.6): four windows give four questions a day, each in
+    /// its window, 2 hours apart, never at night.
+    @Test func pilotWindowsGiveFourADayTwoHoursApart() {
+        let windows = CheckInSchedule.pilotWindows
+        #expect(windows.count == 4)
+        #expect(windows.allSatisfy { $0.start >= CheckInSchedule.earliest && $0.end <= CheckInSchedule.latest })
+        for seed in 0..<200 as Range<UInt64> {
+            let planned = times(now: at(7), windows: windows, seed: seed)
+            #expect(planned.count == 12)
+            #expect(planned == planned.sorted())
+            for (index, time) in planned.enumerated() {
+                let window = windows[index % 4]
+                #expect(minutes(time) >= window.start && minutes(time) < window.end)
+            }
+            for (a, b) in zip(planned, planned.dropFirst()) {
+                #expect(b.timeIntervalSince(a) >= CheckInSchedule.minimumGap)
+            }
+        }
+    }
+
     @Test func timesAreSpreadOverTheWindow() {
         let mornings = (0..<300 as Range<UInt64>).map { minutes(times(now: at(7), seed: $0)[0]) }
         #expect(mornings.min()! < 10 * 60 + 20 && mornings.max()! > 12 * 60 + 40)

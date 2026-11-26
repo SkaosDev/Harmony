@@ -1,14 +1,15 @@
 import Foundation
 import SwiftData
 
-/// Shadow or active (decision D4, design v2 §4.5, §15). In shadow, the pilot's mode, the personal
-/// layer is computed and logged only: queues start from the rank and always use S1, Home has no
-/// energy row. In active, the answers change `e0`, `v0`, the queue reason and the strategy.
+/// Shadow or active (decision D4, design v2 §4.5, §15). In shadow, the personal layer is computed
+/// and logged only: queues start from the rank and always use S1, Home has no energy row. In
+/// active, the answers change `e0`, `v0`, the queue reason and the strategy.
 nonisolated enum PersonalMode {
     case shadow, active
 
-    /// The one switch. Shadow for the pilot (26 Nov – 2 Dec 2026).
-    static let current: PersonalMode = .shadow
+    /// The one switch. Active from the evening of pilot day 1 (D4 revised, `docs/pilot-protocol.md`
+    /// §10.6); shadow before.
+    static let current: PersonalMode = .active
 }
 
 /// Where a queue's `e0` came from (`QueueRecord.e0Source`, TODO 6.12).

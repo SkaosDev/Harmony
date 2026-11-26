@@ -64,12 +64,30 @@ enum CheckInTexts {
     static let answersTune = "Your answers to the quick questions tune Harmony to you, on this iPhone only."
     static let answersFade = "Recent answers count most; older ones fade within a few days. Reset anytime in Settings › Questions."
 
+    // MARK: What Harmony learned, in the "Your answers" card (`V2-APropos`, TODO 6.16)
+    static let learnedMore = "Your answers show more energy than usual."
+    static let learnedLess = "Your answers show less energy than usual."
+    static let learnedSame = "No clear difference yet."
+    static let learnedFew = "Not enough answers yet."
+    static func curveAppears(soFar count: Int) -> String {
+        "Your curve appears after \(LearnedCurve.minimumAnswers) answers. \(count) so far."
+    }
+    static let watchOnly = "Watch only"
+    static let withYourAnswers = "With your answers"
+    static let moreEnergy = "More energy"
+    static let lessEnergy = "Less energy"
+    static let yourUsual = "Your usual"
+    static let twoWeeksAgo = "2 weeks ago"
+    static let today = "Today"
+
     /// Every text above, for the forbidden-word test; `pleasantness` holds the D2 exceptions.
     static var all: [String] {
         [rowTitle, rowDetail, learning(answersThisWeek: 1), learning(answersThisWeek: 4), sheetTitle, sheetText, last,
          low, high, optional, save, notNow, notification, medium, onboardingTitle, onboardingText, onboardingNote,
          allowNotifications, questions, questionsText, questionsSwitch, askBetween, change, windowsText, resetText,
-         reset, windowRule, resetQuestion, resetButton, checkIns, checkInsKept, answersLabel, answersTune, answersFade]
+         reset, windowRule, resetQuestion, resetButton, checkIns, checkInsKept, answersLabel, answersTune, answersFade,
+         learnedMore, learnedLess, learnedSame, learnedFew, curveAppears(soFar: 2), watchOnly, withYourAnswers,
+         moreEnergy, lessEnergy, yourUsual, twoWeeksAgo, today]
             + onboardingTiles.flatMap { [$0.0, $0.1] } + windowNames
     }
     static let pleasantness = [pleasantnessQuestion, unpleasant, pleasant]

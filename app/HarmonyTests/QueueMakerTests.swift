@@ -30,7 +30,8 @@ struct QueueMakerTests {
         try addLibrary(context, count: 40)
         // A track without score is never picked.
         context.insert(Track(spotifyId: "unscored", title: "X", artists: ["Y"], coverURL: nil, source: .top, addedAt: now))
-        let maker = QueueMaker(context: context, catalog: nil, music: LookUpOnlyProvider())
+        // Shadow mode: S1 with probability 1, whatever `PersonalMode.current` is.
+        let maker = QueueMaker(context: context, catalog: nil, music: LookUpOnlyProvider(), mode: .shadow)
 
         let queue = try await maker.prepare(.windDown, state: state(0.8))
         #expect(queue.entries.count == 5)
@@ -60,7 +61,7 @@ struct QueueMakerTests {
         let container = try HarmonyStore.container(inMemory: true)
         let context = container.mainContext
         try addLibrary(context, count: 40)
-        let maker = QueueMaker(context: context, catalog: nil, music: LookUpOnlyProvider())
+        let maker = QueueMaker(context: context, catalog: nil, music: LookUpOnlyProvider(), mode: .shadow)
 
         let fallback = try await maker.prepare(.wakeUp, state: state(0.3, mode: .timeOnly))
         #expect(fallback.stateMode == .timeOnly)

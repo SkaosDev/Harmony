@@ -270,6 +270,8 @@ struct ShareSheet: UIViewControllerRepresentable {
 /// `V2-APropos` (TODO 3.19, 6.13): what Harmony does and does not do, where the data go, how the
 /// answers are used, credits.
 struct AboutView: View {
+    @Query private var checkIns: [CheckIn]
+
     var body: some View {
         SettingsPage(title: "About & privacy", spacing: 12) {
             Text("A wellbeing companion. Not a medical tool.")
@@ -298,12 +300,7 @@ struct AboutView: View {
                 CardText(text: "Titles and artists: sent to the scoring service, nothing else.")
             }
             .card()
-            VStack(alignment: .leading, spacing: 8) {
-                CardLabel(text: CheckInTexts.answersLabel)
-                CardText(text: CheckInTexts.answersTune)
-                CardText(text: CheckInTexts.answersFade)
-            }
-            .card()
+            AnswersCard(answers: checkIns)
         } bottom: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
