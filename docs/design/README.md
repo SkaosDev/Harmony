@@ -3,7 +3,7 @@
 **Source de vérité :** le canvas claude.ai « Harmony — brand identity + screens »
 https://claude.ai/code/artifact/0daa5d2a-f709-49a4-b443-88a879845319 (privé, compte de Clément).
 
-Ce dossier en est une **copie** (version `1795635347-1efa`, copiée le 26 nov. 2026) pour que toute
+Ce dossier en est une **copie** (version `1795681777-16c4`, copiée le 26 nov. 2026) pour que toute
 l'équipe, et son Claude Code, puisse lire le design sans accès au canvas.
 L'app doit reproduire ces écrans **à l'identique** : couleurs, police, tailles, espacements,
 rayons, textes, icônes.
@@ -42,7 +42,7 @@ rayons, textes, icônes.
 | `V2-CompteSpotify.dc.html` | 6.2 Spotify account | 1.26, 3.19 |
 | `V2-Sante.dc.html` | 6.3 Health & consents | 3.19 |
 | `V2-MesDonnees.dc.html` | 6.4 My data | 3.19 |
-| `V2-APropos.dc.html` | 6.5 About & privacy | 3.19, 6.13 |
+| `V2-APropos.dc.html` | 6.5 About & privacy | 3.19, 6.13, 6.16 |
 | `V2-Questions.dc.html` | 6.6 Questions | 6.13 |
 | `V2-Notification.dc.html` | 7.1 Check-in notification | 6.10 |
 | `V2-CheckIn.dc.html` | 7.2 Check-in | 6.9 |

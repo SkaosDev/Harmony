@@ -299,6 +299,8 @@
   — 26 nov. : réponse de l'enseignant rapportée par Clément : pas d'avis éthique nécessaire (§10.4) ; consentement révisé (points 1–7) accepté par écrit le jour 1, avant tout export (§10.5).
 - [ ] **6.15** Analyse WP-P. — ✔ tableau d'agrégats dans le rapport.
   — 26 nov. (branche `phase6/pilote`) : `ml/pilot_analysis.py` lit l'export `harmony-pilot-2` et sort les tableaux WP-P fixés au protocole §7.3–7.4 : taux de réponse, réponses étiquetées, AUROC chronologique commune vs personnelle et leur différence pour les jours d'utilisation 1–3, 4–7 et la semaine (bootstrap sur les jours d'utilisation, mêmes tirages), récompense moyenne par stratégie (règle de `QueueBandit.reward`) ; testé sur l'export synthétique (AUROC égale à scikit-learn, égalités comprises). Reste : les chiffres du pilote après le 2 déc.
+- [ ] **6.16** « Ce que Harmony a appris » : la carte « Your answers » de About montre, sur 14 jours, l'estimation de la montre seule et celle avec les réponses (`pCommonBefore`, `pPersonalBefore`), les réponses au-dessus ou en dessous de l'habitude, et une phrase selon le décalage (même seuil que la raison de la file) ; courbe dès 6 réponses dans les 14 jours, cadre d'attente avant. — ✔ design validé et copié dans `docs/design/` ; série testée (vide, < 6 réponses, purge à 30 jours, vide après « Reset ») ; capture du simulateur conforme au canvas, en mode démo.
+  — 26 nov. : design validé par Clément dans le canvas (`V2-APropos`, réglage « variant » : more / less / no clear difference / few answers).
 
 ---
 
