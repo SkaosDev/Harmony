@@ -90,6 +90,16 @@ struct LearnedCurveTests {
         #expect(try content(at: start + 32 * 86400) == .few(count: 0))
     }
 
+    @Test func demoAnswersShowACurveAboveTheUsual() throws {
+        defer { defaults.removePersistentDomain(forName: suite) }
+        try DemoMode.seedAnswers(in: context, now: start)
+        guard case .curve(let points, let headline) = try content(at: start) else {
+            Issue.record("no curve in demo mode")
+            return
+        }
+        #expect(points.count == 28 && headline == .more)
+    }
+
     @Test func resetEmptiesTheCurve() throws {
         defer { defaults.removePersistentDomain(forName: suite) }
         try answer([-2, 0, 0, -2, 0, 2, 3, 2])
