@@ -71,18 +71,17 @@
 \maketitle
 
 \begin{abstract}
-Waking up, stress, an afternoon energy dip and falling asleep are moments in which the right music can help, but nobody wants to search for it at that moment. We built an \textbf{iPhone app} that picks songs from the user's own \textbf{Spotify} library to fit the moment. Each saved song gets two simple scores (how calm or energetic it is, and how positive it sounds) from the public \textbf{MuSe} dataset or, when missing, from a \textbf{language model}. From the \textbf{Apple Watch} heart rate, steps and sleep, and the time of day, a small model estimates whether the person is more or less activated than usual; an optional one-tap question, ``energy right now?'', lets the app learn over time what is usual for this person. Simple rules then play a short queue that starts close to the person's current state and moves step by step toward a calmer or more energetic state. The model is trained on \textbf{EmoPhone}, a dataset of 282 students in Korea who wore a watch and reported their mood several times a day; its results are modest but real, and we report them honestly. The app is built and tested, and a one-week pilot with a real user is under way.
-The tech stack is as follows: \textbf{Swift} and \textbf{SwiftUI} for the app, \textbf{HealthKit} for watch data, the \textbf{Spotify Web API} and \textbf{iOS SDK} for the library and playback, \textbf{Python} and \textbf{scikit-learn} for training, and \textbf{Core ML} to run the model on the phone, so that health data never leave it.
+Waking up, stress, an afternoon dip and falling asleep are moments in which the right music helps, but nobody wants to search for it then. We built an \textbf{iPhone app} that plays a short queue from the user's own \textbf{Spotify} library to fit the moment. Each song gets an energy and a positivity score from the public \textbf{MuSe} dataset or, when missing, from a \textbf{language model}. A small model trained on \textbf{EmoPhone} (282 students in Korea) reads the \textbf{Apple Watch} heart rate, steps and sleep and estimates whether the person is more or less activated than usual. Like every published model on these data, it is modest (AUROC 0.57--0.60): a model that only knows other people cannot know \emph{you}. Harmony therefore \textbf{learns on the phone}: a one-tap question, ``energy right now?'', updates a Bayesian personal layer, and a Thompson-sampling bandit learns from skips and likes how to shape the queue. Replayed in time order on EmoPhone, the personal estimate goes from an AUROC of 0.51 on the first days to 0.82 after a week, at two answers a day. Health data never leave the phone (\textbf{Swift}, \textbf{SwiftUI}, \textbf{HealthKit}, \textbf{Core ML}); the model is trained in \textbf{Python} with \textbf{scikit-learn}. The app is built and tested, and a one-week pilot is under way.
 \end{abstract}
 
 \begin{IEEEkeywords}
-music recommendation, wearable data, context-aware app, Spotify, iOS, Core ML
+music recommendation, wearable data, on-device learning, personalization, multi-armed bandit, Spotify, Core ML
 \end{IEEEkeywords}
 
 %=====================================================================
 \section*{Role Assignments}
 %=====================================================================
-Table~\ref{tab:roles} gives the roles. The group has no leader: every member develops, every pull request is reviewed by another member, and decisions are taken together at a weekly meeting. Building an iPhone app requires a Mac, and Clément is the only member who owns one, so Clément writes the app in Swift while the other members work on the AI model and on the design of the app.
+Table~\ref{tab:roles} gives the roles. The group has no leader: every member develops, every pull request is reviewed by another member, and decisions are taken together each week. Clément owns the team's only Mac, which an iPhone app requires, so Clément writes the app in Swift while the other members work on the AI model and the design.
 \begin{table}[!ht]
 \centering
 \caption{Role Assignments}
@@ -93,7 +92,7 @@ Table~\ref{tab:roles} gives the roles. The group has no leader: every member dev
 \textbf{Role} & \textbf{Name} & \textbf{Task description} \\ \hline
 User & Clément & Uses the app every day with a Spotify account and an Apple Watch during the one-week pilot; reports bugs. The other members try the app in demo mode. \\ \hline
 Customer & Cyprien & Checks that each feature answers the needs of Section~\ref{sec:needs}; reviews every text of the app and the screen designs; approves demos; decides trade-offs such as privacy versus accuracy. \\ \hline
-Software developer & Clément & Builds the iPhone app in Swift: Spotify, Apple Health, state estimate on the phone, queue, screens and tests; maintains the repository and the documents. \\ \hline
+Software developer & Clément & Builds the iPhone app in Swift: Spotify, Apple Health, state estimate and self-learning on the phone, queue, screens and tests; maintains the repository and the documents. \\ \hline
 Software developer & Cyprien & Builds the AI model: datasets, song-score table, training and evaluation of the state model. \\ \hline
 Software developers & Lucas, Riad & Work on parts of the AI model and design the screens of the app. \\ \hline
 \end{tabularx}
@@ -103,14 +102,12 @@ Software developers & Lucas, Riad & Work on parts of the AI model and design the
 \section{Introduction}
 %=====================================================================
 \subsection{Motivation}
-Poor sleep and stress are an everyday problem in Korea. A report based on a KB Financial Group study gives an average sleep time of 471 minutes per day, 30 minutes below the OECD average, and cites a Philips survey in which only 41\% of Koreans were satisfied with their sleep, with stress as the first cause of disturbed sleep~\cite{koreatimes_sleep}.
+Poor sleep and stress are common in Korea: average sleep is 30 minutes below the OECD average, and in one survey only 41\% of Koreans were satisfied with their sleep, with stress as the first cause of disturbed sleep~\cite{koreatimes_sleep}. Music can help: a Cochrane review of 13 randomised trials (1,007 adults) found that listening to music improved sleep quality, with moderate certainty~\cite{cochrane}. This is evidence about music in general, not about our app, and our pilot does not test it.
 
-Music can help: a Cochrane review of 13 randomised trials (1,007 adults) found that listening to music improved sleep quality by 2.79 points on the Pittsburgh Sleep Quality Index, with moderate certainty of evidence~\cite{cochrane}. This is evidence about music in general; it does not show that our app will improve well-being, and our pilot will not test that.
-
-Music streaming is part of daily life, yet streaming platforms still ignore the body of the listener. Our first users are students and young workers who listen to music on their phone, wear a smartwatch and have irregular schedules. They want the music they already like, at the right moment, with one tap. The team members belong to this group and act as users during development.
+Streaming platforms still ignore the listener's body. Our first users are students and young workers who listen on their phone, wear a smartwatch and have irregular schedules; they want the music they already like, at the right moment, with one tap. The team members belong to this group.
 
 \subsection{Problem Statement (User Needs)}\label{sec:needs}
-Given the time of day and the recent signals of the person's body compared with their own usual values, which songs from their own library should be played, and in which order, to help them through the moment? Table~\ref{tab:situations} lists the four situations we address.
+Given the time of day and the person's body signals compared with their own usual values, which songs from their own library should be played, and in which order, to help them through the moment? Table~\ref{tab:situations} lists the four situations.
 
 \begin{table}[H]
 \centering
@@ -148,14 +145,14 @@ Table~\ref{tab:related} compares the closest products we found, from their publi
 Endel~\cite{endel} & Yes: heart rate, time, weather & No: generates its own sounds & Paid; iOS, Android, Watch \\ \hline
 Spotify daylist~\cite{daylist} & No: habits and time of day & Yes, through history & Updated several times a day \\ \hline
 Spotify Prompted Playlists~\cite{prompted} & No: typed prompt and history & Yes, through history & Premium, US and Canada, beta \\ \hline
-\textbf{Our app} & \textbf{Yes: heart rate, steps, sleep, time} & \textbf{Yes: saved library first} & \textbf{iPhone and Spotify first} \\ \hline
+\textbf{Our app} & \textbf{Yes: heart rate, steps, sleep, time} & \textbf{Yes: saved library first} & \textbf{iPhone and Spotify first; learns the user on the phone} \\ \hline
 \end{tabularx}
 \end{table}
 
-\textbf{Endel} reacts to the body but creates its own audio, and its claims about effects are company claims~\cite{endel}. \textbf{Spotify} personalises from history and context, but the articles on daylist and Prompted Playlists mention no wearable~\cite{daylist},~\cite{prompted}. A systematic review of context-aware music recommenders (100 papers) finds that body signals are little studied, partly because suitable datasets are lacking~\cite{lozano}. We found no product that combines body signals and the user's own library; this rests on a limited search, so our argument is the added value of body signals and of a clear goal, not better accuracy than Spotify.
+\textbf{Endel} reacts to the body but creates its own audio, and its claims about effects are company claims~\cite{endel}. \textbf{Spotify} personalises from history and context, but the articles on daylist and Prompted Playlists mention no wearable~\cite{daylist},~\cite{prompted}. A review of 100 papers on context-aware music recommenders finds that body signals are little studied, partly for lack of datasets~\cite{lozano}. We found no product that combines body signals and the user's own library; as our search was limited, we argue for the value of body signals and of a clear goal, not for better accuracy than Spotify.
 
 \subsection{Proposed Solution}\label{sec:solution}
-Fig.~\ref{fig:overview} shows the app in three parts. The person can always choose the situation with one tap and skip any song.
+Fig.~\ref{fig:overview} shows the app. The person can always choose the situation with one tap and skip any song.
 
 \begin{figure}[!t]
 \centering
@@ -163,49 +160,48 @@ Fig.~\ref{fig:overview} shows the app in three parts. The person can always choo
 \node[box, minimum width=3.6cm] (sp) {Spotify account\\{\tiny saved songs, top, recent}};
 \node[box, minimum width=3.6cm, right=0.3cm of sp] (wt) {Apple Watch and time\\{\tiny heart rate, steps, sleep}};
 \node[box, minimum width=3.6cm, below=of sp] (s1) {1. Song scores\\{\tiny energy and positivity}};
-\node[box, minimum width=3.6cm, below=of wt] (s2) {2. State estimate\\{\tiny more or less activated than usual}};
-\node[box, minimum width=5.2cm, below=0.55cm of $(s1.south)!0.5!(s2.south)$] (s3) {3. Song choice (rules)\\{\tiny start near the current state, then move toward the goal}};
-\node[box, minimum width=5.2cm, below=0.45cm of s3] (pl) {Playback in Spotify};
+\node[box, minimum width=3.6cm, below=of wt] (s2) {2. State estimate\\{\tiny shared model + personal layer}};
+\node[box, minimum width=5.2cm, below=0.55cm of $(s1.south)!0.5!(s2.south)$] (s3) {3. Song choice\\{\tiny rules, and a bandit for the shape of the queue}};
+\node[box, minimum width=5.2cm, below=0.45cm of s3] (pl) {Playback in Spotify\\{\tiny the listener skips, likes, answers}};
 \draw[flow] (sp) -- (s1);
 \draw[flow] (wt) -- (s2);
 \draw[flow] (s1.south) -- (s1.south |- s3.north);
 \draw[flow] (s2.south) -- (s2.south |- s3.north);
 \draw[flow] (s3) -- (pl);
-\draw[flow, dashed] (pl.east) -- ++(0.5,0) |- node[lbl, pos=0.25]{skip,\\like} (s3.east);
+\draw[flow, dashed] (pl.east) -- ++(0.35,0) |- node[lbl, pos=0.25]{skip,\\like} (s3.east);
+\draw[flow, dashed] (pl.east) -- ++(1.5,0) |- node[lbl, pos=0.2]{energy\\answers} (s2.east);
 \end{tikzpicture}
-\caption{System overview. The dashed arrow is the feedback from the listener.}
+\caption{System overview. Dashed arrows: what Harmony learns on the phone. Energy answers tune the state estimate (personal layer); skips and likes tune the shape of the queue (bandit).}
 \label{fig:overview}
 \end{figure}
 
-\textbf{Song scores.} Spotify removed its audio features (valence, energy) for new apps in November 2024~\cite{spotify2024}, so the app cannot analyse the sound. We use \textbf{MuSe}, a public dataset of 90,408 songs with valence and arousal scores built from Last.fm tags, with tentative Spotify IDs for about 68\% of them~\cite{muse}. For songs not in MuSe, a large language model (LLM) estimates the two scores from the title and artist; this estimate is checked on songs present in MuSe.
+\textbf{Song scores.} Spotify removed its audio features for new apps in November 2024~\cite{spotify2024}, so the app cannot analyse the sound. We use \textbf{MuSe}, a public dataset of 90,408 songs with valence and arousal scores built from Last.fm tags, about 68\% with Spotify IDs~\cite{muse}. For songs not in MuSe, a large language model (LLM) estimates the two scores from the title and artist.
 
-\textbf{State estimate.} A small model says whether the person is currently more or less activated than usual, never a named emotion. Asking each user for weeks of personal data would make a poor first day, so we train on \textbf{EmoPhone}~\cite{emophone}: three yearly waves (2020--2022) of university students in Korea who wore a Fitbit and answered short mood questions about seven times a day for four weeks (297 participant records from 282 people after quality control). Its \emph{arousal} answer, turned into ``above or below this person's own average'', is exactly our output. The model uses four inputs: the time of day, the heart rate, the steps and last night's sleep, each compared with the person's own average over the last 7 to 14 days, which needs no training on the user. A night or a period when the watch was not worn is marked as unknown, never as zero sleep or zero steps. The dataset authors granted us access for this project; the data files stay on team computers (NFR9).
+\textbf{State estimate.} A small model says whether the person is more or less activated than usual, never a named emotion. It is trained on \textbf{EmoPhone}~\cite{emophone}: three yearly waves (2020--2022) of university students in Korea who wore a Fitbit and answered short mood questions about seven times a day for four weeks (297 participant records from 282 people). Its \emph{arousal} answer, turned into ``above or below this person's own average'', is exactly our output. The inputs are the time of day, the heart rate, the steps and last night's sleep, each compared with the person's own average over the last 7 to 14 days; a night without the watch is unknown, never zero sleep. The dataset authors granted us access; the files stay on team computers (NFR9).
 
-\textbf{Learning the person's usual.} People differ, and a model trained on other people cannot know them. If the user agrees, the app therefore asks at most twice a day one optional question, ``energy right now?'' (Low, Medium or High), answered with one tap from the notification. The answers stay on the phone and slowly adjust the estimate to this person (FR15).
+\textbf{Learning the person.} A model trained on other people cannot know what is usual for \emph{you}: the best published models on EmoPhone stay near an AUROC of 0.58. Harmony therefore learns on the phone, in two loops (dashed in Fig.~\ref{fig:overview}). If the user agrees, the app asks at most twice a day ``energy right now?'' (Low, Medium or High), answered with one tap from the notification; each answer updates a \emph{personal layer} that moves the shared estimate toward this person (FR15). Skips, likes and ``Did it fit?'' feed a \emph{bandit} that learns how this user likes a queue to move toward its goal. Nothing leaves the phone. In simulation, the personal estimate rises from an AUROC of 0.51 to 0.82 within a week (Section~\ref{sec:evalperso}).
 
-\textbf{Song choice.} Rules build a queue of 3 to 5 songs: the first one or two match the current state, the next ones move step by step toward the goal of the situation. This follows the \textbf{iso principle} of music therapy, supported by a controlled experiment on mood after a sad film clip~\cite{iso}. If the library has too few suitable songs, at most two MuSe songs close to the user's taste complete the queue and are marked as new.
+\textbf{Song choice.} Rules build a queue of 3 to 5 songs: the first ones match the current state, the next ones move step by step toward the goal of the situation, following the \textbf{iso principle} of music therapy~\cite{iso}. If the library has too few suitable songs, at most two MuSe songs close to the user's taste complete the queue and are marked as new.
 
-\textbf{An example.} At 11:30 p.m.\ the user taps Wind-down. The heart rate is above the person's usual evening value, so the first two songs have a medium energy and the next ones become calmer step by step. A skip is recorded for future queues.
+\textbf{An example.} At 11:30 p.m.\ the user taps Wind-down. The heart rate is above the person's usual evening value, so the first song has a medium energy and the next ones become calmer step by step. A skip is recorded for future queues.
 
-\textbf{How we test it.} (1) Song scores: correlation between the LLM estimate and MuSe on shared songs. (2) State estimate: tests on people the model has not seen, never a random split of one person's data, then on a whole held-out wave, compared with a time-of-day baseline; if the model does not beat the baseline, it is not used. (3) Pilot: one participant, a team member (Spotify's development mode allows at most five accounts~\cite{spotify2026}), for one week, with the watch data used every day; we measure skip rates, a one-tap ``did it fit?'' answer and whether the optional questions help the estimate for this person. The pilot measures fit, not health benefits.
+\textbf{How we test it.} Song scores: correlation between the LLM and MuSe on shared songs. State estimate: tests on people the model has never seen, then on a held-out wave, against a time-of-day baseline. Self-learning: EmoPhone replayed in time order, each answer predicted from the earlier ones only. Pilot: one team member (Spotify's development mode allows five accounts~\cite{spotify2026}) for one week; we measure skips, a one-tap ``did it fit?'' answer and whether the answers help the estimate. The pilot measures fit, not health benefits.
 
-\textbf{Limits.} The app is a demonstrator for five users and a wellness companion, not a medical tool. The training data come from a Fitbit and Android phones, not from an Apple Watch, so the pilot measures the remaining gap. Accuracy is modest (Section~\ref{sec:eval}); the one-tap situation choice keeps the app useful when the estimate is wrong.
-
-\textbf{Going further.} All music access goes through one small interface and all health data through another, so supporting Apple Music, Deezer or a watch on Android means writing one new connector (Section~\ref{sec:req7}).
+\textbf{Limits.} The app is a wellness demonstrator for five users, not a medical tool. The training data come from a Fitbit, not an Apple Watch, and the one-tap situation choice keeps the app useful when the estimate is wrong. All music access goes through one interface and all health data through another, so another music service or watch needs one new connector (Section~\ref{sec:req7}).
 
 \subsection{Development Plan and Status}\label{sec:plan}
-Each milestone ends with a demo to the customer. The plan of Submission~A put M1 at the end of October; the dates below replace it.
+Each milestone ends with a demo to the customer; these dates replace those of Submission~A.
 \begin{itemize}
-\item \textbf{M1, Nov.\ 15:} Spotify sign-in and import tested with a live account, reading of Apple Health data, demo mode.
+\item \textbf{M1, Nov.\ 15:} Spotify sign-in and import tested with a live account, Apple Health reading, demo mode.
 \item \textbf{M2:} song scores; state model trained on EmoPhone and tested on held-out people and a held-out wave.
 \item \textbf{M3:} queue building, playback, feedback, explanation and data-control screens.
-\item \textbf{M4, Nov.\ 26 to Dec.\ 4 (end of the project):} pilot (one week, Nov.\ 26 to Dec.\ 2), evaluation, final report and demo.
+\item \textbf{M4, Nov.\ 26 to Dec.\ 4:} pilot (Nov.\ 26 to Dec.\ 2), evaluation, final report and demo.
 \end{itemize}
-\textbf{Status on Nov.\ 26, 2026.} The features of M1 to M3 are built and tested (Section~\ref{sec:arch}); the optional questions were added just before the pilot, which started on Nov.\ 26. All code goes through pull requests on GitHub, reviewed by another member; the team meets weekly and decides together.
+\textbf{Status on Nov.\ 26, 2026.} M1 to M3 are built and tested (Section~\ref{sec:arch}); the energy question and the self-learning were added just before the pilot, which started on Nov.\ 26. All code goes through pull requests reviewed by another member.
 
-\textbf{Changes since Submission A.} EmoPhone replaces UC Irvine and PMData as training data (larger, in-the-moment labels, Korean students). The model inputs are now the time of day, the heart rate, the steps and last night's sleep. Heart-rate variability is no longer a model input, because EmoPhone does not contain it; it is still read for the explanation. EmoPhone has no watch-measured sleep either, so for training we estimate it from the Fitbit heart rate and steps (Section~\ref{sec:req4}). The weather is removed: EmoPhone locations are anonymised, so weather cannot be matched to each participant. The plan has new dates, and NFR9 is new.
+\textbf{Changes since Submission A.} EmoPhone replaces UC Irvine and PMData as training data (larger, in-the-moment labels, Korean students). Heart-rate variability is no longer a model input, since EmoPhone lacks it, but still feeds the explanation. EmoPhone has no watch-measured sleep, so we estimate it from the Fitbit heart rate and steps (Section~\ref{sec:req4}). The weather is removed, as EmoPhone locations are anonymised. NFR9 is new.
 
-\textbf{Changes since Submission B.} The optional energy question (FR15) is new, and each queue is played as a private Spotify playlist; Section~\ref{sec:changes} lists all the differences between the plan and the app as built.
+\textbf{Changes since Submission B.} The energy question with the personal layer (FR15) and the queue bandit are new, and each queue plays as a private Spotify playlist (Section~\ref{sec:changes}).
 
 %=====================================================================
 \section{Requirements}\label{sec:req}
